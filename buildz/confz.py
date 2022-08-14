@@ -14,6 +14,8 @@
     loadfile(filepath)
 5, simple read filepath to string:
     fread(filepath)
+
+
 example:
 demo.txt:
 [
@@ -50,9 +52,12 @@ demo.txt:
     <5.0, float>
     <true, bool>
 ]
+
 code:
+
 obj = confz.loadfile("demo.txt")
 obj: [{'filepath': 'D:\\demo\\demo.txt', 'key': 'test.com', 'array': ['1', '2', '3']}, {'test': ':test{}??', 'val': 10, 'cost': 10.0, 'check': True, 10: 'test'}, 'test line\n        1\n        2\n        3\n    ', '1', '2', '3', 4, 5.0, True]
+
 s = confz.output(obj)
 print(s):
 [
@@ -355,7 +360,7 @@ def read(s):
 pass
 loads = read
 def loadfile(filepath, coding="utf-8"):
-    return read(fread(filepath, coding))
+    return read(fread(filepath, coding=coding))
 
 pass
 import re
@@ -379,7 +384,7 @@ def oqt(s):
     if type(s)!= str:
         return out_str(s)
     s = str(s)
-    if '"' in s and "'" in s:
+    if '"' in s and "'" in s or "\n" in s:
         match = '"""'
         if match in s:
             match = "'''"
@@ -391,7 +396,7 @@ def oqt(s):
 pass
 
 
-def output(data, level = 0, simple = True, orders = []):
+def output(data, level = 0, simple = True, orders = [], format = False):
     rst = []
     wraps = "()"
     mark_min = simple
@@ -406,17 +411,20 @@ def output(data, level = 0, simple = True, orders = []):
         for key in keys:
             val = data[key]
             if type(val) in [list, dict]:
-                val = output(val, level = level+1, simple = simple).strip()
+                val = output(val, level = level+1, simple = simple, orders = orders, format = format).strip()
                 mark_min = False
             else:
                 val = oqt(val)
             rst.append([oqt(key), val])
-        rst = [(": ".join(k)) for k in rst]
+        key_map = ": "
+        if not format:
+            key_map = ":"
+        rst = [(key_map.join(k)) for k in rst]
     elif type(data) in [list,tuple]:
         wraps = "[]"
         for val in data:
             if type(val) in [list, dict]:
-                val = output(val, level = level+1, simple = simple).strip()
+                val = output(val, level = level+1, simple = simple, orders = orders, format = format).strip()
                 mark_min = False
             else:
                 val = oqt(val)
@@ -430,6 +438,11 @@ def output(data, level = 0, simple = True, orders = []):
     spc1 = " "*((level+1)<<2)
     if mark_min:
         spt1 = ", "
+        spc1 = ""
+        spc = ""
+        spt = ""
+    if not format:
+        spt1 = ","
         spc1 = ""
         spc = ""
         spt = ""

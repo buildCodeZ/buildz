@@ -1,11 +1,12 @@
 # confz
 ```
-一个类似json的数据交换格式，取名叫做confz，并用python实现了读写代码
-a json-like file format's read and write code by python, english description is in "2) english"
+一个类似json的数据交换格式，取名叫做confz，并用python实现了读写代码，另外还根据confz写了个代码配置框架
+a json-like file format's read and write code by python, also write a code building framework configure by confz, english description is in "2) english"
 ```
 
 ## 1) 简介
 ```
+1. confz(buildz.confz)
 和json主要区别:
   1，默认所有值都是字符串，而如果没有包含confz的关键字，不需要用引号引起来；
   2，换行符\n和逗号,和分号;都作为分割符; 单引号和双引号具有一样的效果
@@ -37,22 +38,31 @@ confz的关键字如下:
   output(obj): 把数据obj转换成confz格式字符串，这里要注意的是output输出的字符串做了基本的换行
 目前只有读和写的代码，之后有空的话可能会写一个confz格式校验代码
 
+2. 配置框架(buildz.build, buildz.base)
+    根据confz写的代码配置框架（配置中生成对象实例和运行）：buildz.Builder或buildz.main
+    具体描述还没写好，但包里有个例子可以看下：buildz/demo
+        测试：在demo文件夹中打开命令行，运行：
+            1) python test.py ./demo.confz ./value.confz
+            或
+            2) python test.py ./run.confz
+        1)和2)是等价的
 ```
 ## 2) english:
 ```
-1, remain char:
+1. confz(buildz.confz)
+(1) remain char:
     {}[]()<>:'"#\n,;
    to write a string contain remain char, user '' or "" or " x3 or ' x3: 
     "hello:world, 'zero'" 
     'hello:world, "zero"'
     """zero say: "hello, 'world'!" """
-2, from string to obj:
+(2) from string to obj:
     read(s)
-3, from obj to string:
+(3) from obj to string:
     output(obj)
-4, from filepath to obj:
+(4) from filepath to obj:
     loadfile(filepath, coding="utf-8")
-5, simple read filepath to string:
+(5) simple read filepath to string:
     fread(filepath)
 example:
 demo.txt:
@@ -109,4 +119,13 @@ print(s):
     <true, bool>
 ]
 only realize codes of read and write now,  code of format checking may be writing in future, if I have time.
+
+2. build instance and run from confz format configure file(buildz.build, buildz.base)
+    description is not done yet
+    here is an example in buildz/demo
+    you can open an commond line in demo folder and run like this:
+        1) python test.py ./demo.confz ./value.confz
+        or:
+        2) python test.py ./run.confz
+    1) and 2) is equivalent
 ```

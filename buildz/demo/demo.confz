@@ -1,0 +1,33 @@
+[
+    {
+        key: inst.demo
+        import: buildz.demo.demo
+        call: Demo
+        maps: [
+            (a, value.a, ref)
+            (b, value.b, ref)
+        ]
+    }
+    {
+        key: fc.demo
+        ref: inst.demo
+        call: show
+        maps: [
+            (data, inst.demo, ref)
+        ]
+    }
+    {
+        key: fc.call
+        ref: inst.demo
+        maps: [
+            (data, inst.demo, ref)
+        ]
+    }
+    {
+        key: main
+        calls: [
+            fc.demo
+            fc.call
+        ]
+    }
+]

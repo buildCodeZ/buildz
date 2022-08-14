@@ -1,0 +1,26 @@
+[
+    {
+        key: value.paths
+        call: list
+        args: [
+            ".\demo.confz"
+            ".\value.confz"
+        ]
+    }
+    {
+        key: fc.run
+        import: buildz.build
+        call: main
+        maps: [
+            (paths, value.paths, ref)
+            (default_import, buildz.base) #optional
+            (ref_this, this) #optional
+        ]
+    }
+    {
+        key: main
+        calls: [
+            fc.run
+        ]
+    }
+]
