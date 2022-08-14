@@ -1,6 +1,8 @@
 # confz
+```
 一个类似json的数据交换格式，取名叫做confz，并用python实现了读写代码
 a json-like file format's read and write code by python, english description is in "2) english"
+```
 
 ## 1) 简介
 ```
