@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'buildz',
-    version = '0.1.4',
+    version = '0.1.5',
     keywords='buildz',
     description = "a json-like file format's read and write code by python, and codes to read and product object from configure file in such format",
     license = 'Apache License 2.0',
