@@ -40,11 +40,28 @@ pass
 builtins._list = build_list
 builtins._dict = build_dict
 g_default_import = "buildz"+".base"
+def read_confz(filepath):
+    from buildz import confz
+    s = confz.fread(filepath)
+    obj = confz.read(s)
+    return obj
+
+pass
+def read_json(filepath):
+    from buildz import confz
+    import json
+    s = confz.fread(filepath)
+    obj = json.loads(s)
+    return obj
+
+pass
+    
 class Builder:
-    def __init__(self, default_single = "0", default_import = g_default_import, ref_this = "this"):
+    def __init__(self, default_single = "0", default_import = g_default_import, ref_this = None, format = "confz"):
         self.ref_this = ref_this
         self.default_import = default_import
         self.default_single = default_single
+        self.format = format
         self.maps = {}
         self.objs = {}
         types = {}
@@ -57,10 +74,13 @@ class Builder:
         self.types['call'] = EpFc(self.run, 2)
         self.types['fc'] = EpFc(self.run, 1)
         self.types['run'] = EpFc(self.run, 1)
-    def add_file(self, filepath):
-        from buildz import confz
-        s = confz.fread(filepath)
-        obj = confz.read(s)
+        self.loadtypes = {}
+        self.loadtypes['json'] = read_json
+        self.loadtypes['confz'] = read_confz
+    def add_file(self, filepath, format = None):
+        if format is None:
+            format = self.format
+        obj = self.loadtypes[format](filepath)
         self.add(obj)
     def add(self, data):
         if type(data) == dict:
@@ -108,7 +128,7 @@ class Builder:
     def get(self, key, src = None, force_new = False):
         return self.run(key, src, force_new)
     def run(self, key, src = None, force_new = False):
-        if key == self.ref_this:
+        if self.ref_this is not None and key == self.ref_this:
             return self
         if key not in self.maps:
             raise Exception("Error not such fc:"+key)
@@ -138,6 +158,7 @@ class Builder:
                 mark_var = True
                 fc = var
         obj = None
+        _data = get(data, "data", None)
         if fc is not None or src is not None:
             fcs = []
             if fc is not None:
@@ -152,7 +173,6 @@ class Builder:
                 fc = getattr(fc, nfc)
             if mark_var:
                 return fc
-            _data = get(data, "data", None)
             if _data is None:
                 obj = fc(*args, **maps)
             else:
@@ -164,7 +184,9 @@ class Builder:
         calls = get(data, "calls", [])
         self.deal_fcs(calls, obj)
         if obj is None:
-            if val is not None:
+            if _data is not None:
+                return _data
+            elif val is not None:
                 return val
             elif args is not None:
                 return args

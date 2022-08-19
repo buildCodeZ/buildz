@@ -1,5 +1,6 @@
 from buildz.confz import read, loadfile, output, fread
 from buildz.build import Builder, main
+from buildz.keys import help
 """
 json-like(called 'confz' in here) data format function:
     read: string -> obj
