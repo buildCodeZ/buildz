@@ -38,14 +38,18 @@ confz的关键字如下:
   output(obj): 把数据obj转换成confz格式字符串，这里要注意的是output输出的字符串做了基本的换行
 目前只有读和写的代码，之后有空的话可能会写一个confz格式校验代码
 
-2. 配置框架(buildz.build, buildz.base)
-    根据confz写的代码配置框架（配置中生成对象实例和运行）：buildz.Builder或buildz.main
-    具体描述还没写好，但包里有个例子可以看下：buildz/demo
+2. 控制反转框架(buildz.build, buildz.base)
+    根据confz写的控制反转框架（IoC框架）：buildz.Builder或buildz.main
+    具体描述在buildz.keys里，可以调用buildz.keys.help()查看，另外包里有个例子可以看下：buildz/demo
         测试：在demo文件夹中打开命令行，运行：
             1) python test.py ./demo.confz ./value.confz
             或
             2) python test.py ./run.confz
-        1)和2)是等价的
+        1)和2)是等价的，另外如果把buildz当作python来安装，也可以这样运行:
+            1) python -m buildz ./demo.confz ./value.confz
+            或
+            2) python -m buildz ./run.confz
+
 ```
 ## 2) english:
 ```
@@ -120,12 +124,15 @@ print(s):
 ]
 only realize codes of read and write now,  code of format checking may be writing in future, if I have time.
 
-2. build instance and run from confz format configure file(buildz.build, buildz.base)
-    description is not done yet
+2. IoC framework codes(buildz.Builder, buildz.main)
+    description is in buildz.keys, run this code to see: buildz.keys.help('en')
     here is an example in buildz/demo
     you can open an commond line in demo folder and run like this:
         1) python test.py ./demo.confz ./value.confz
         or:
         2) python test.py ./run.confz
-    1) and 2) is equivalent
+    1) and 2) is equivalent, besides, if you install buildz as python lib, you can also run like this:
+        1) python -m buildz ./demo.confz ./value.confz
+        or
+        2) python -m buildz ./run.confz
 ```

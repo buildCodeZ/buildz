@@ -211,7 +211,7 @@ def help(lang = 'cn'):
     if lang in ['cn', 'ch']:
         print(chinese)
     else:
-        print(enghlish)
+        print(english)
 
 pass
 
