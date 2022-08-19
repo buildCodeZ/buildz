@@ -1,7 +1,7 @@
 [
     {
         key: inst.demo
-        import: buildz.demo.demo
+        import: demo
         call: Demo
         maps: [
             (a, value.a, ref)
