@@ -7,8 +7,9 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'buildz',
-    version = '0.1.5',
+    version = '0.1.6',
     keywords='buildz',
+    long_description=open('README.md', 'r', encoding="utf-8").read()
     description = "a json-like file format's read and write code by python, and codes to read and product object from configure file in such format",
     license = 'Apache License 2.0',
     url = 'https://github.com/buildCodeZ/buildz',
