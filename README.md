@@ -40,7 +40,7 @@ confz的关键字如下:
 
 2. 控制反转框架(buildz.build, buildz.base)
     根据confz写的控制反转框架（IoC框架）：buildz.Builder或buildz.main
-    具体描述在buildz.keys里，可以调用buildz.keys.help()查看，另外包里有个例子可以看下：buildz/demo
+    具体描述在buildz.keys里，可以调用buildz.keys.help()查看，或者运行"python -m buildz ? ch"来查查，另外包里有个例子可以看下：buildz/demo
         测试：在demo文件夹中打开命令行，运行：
             1) python test.py ./demo.confz ./value.confz
             或
@@ -125,7 +125,7 @@ print(s):
 only realize codes of read and write now,  code of format checking may be writing in future, if I have time.
 
 2. IoC framework codes(buildz.Builder, buildz.main)
-    description is in buildz.keys, run this code to see: buildz.keys.help('en')
+    description is in buildz.keys, run this code to see: "buildz.keys.help('en')" or "python -m buildz ? en"
     here is an example in buildz/demo
     you can open an commond line in demo folder and run like this:
         1) python test.py ./demo.confz ./value.confz
