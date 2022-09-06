@@ -12,7 +12,7 @@ a json-like file format's read and write code by python, also write a code build
   2，换行符\n和逗号,和分号;都作为分割符; 单引号和双引号具有一样的效果
   3，可以写注释，单行注释用#，多行注释用### 注释 ###
   4, 字符串可以多行，用'''字符串'''或"""字符串"""
-  5, 如果要confz不把取值当作字符串，要写在尖括号<>里: <数值, 数据类型>，比如整数10写成<10, int>, 浮点数11.1写成<11.1, float>，布尔类型true写成<true, bool>
+  5, 如果要confz不把取值当作字符串，要写在尖括号<>里: <数值, 数据类型>，比如整数10写成<10, int>, 浮点数11.1写成<11.1, float>，布尔类型true写成<true, bool>，None写成<-, null>
 写这个东西是为了方便写配置文件和读配置文件，xml感觉有点麻烦，直接用json又要写很多引号，就对json做了简化
 confz的关键字如下:
   {}[]()<>:'"#\n,;
@@ -123,7 +123,7 @@ print(s):
     <true, bool>
 ]
 only realize codes of read and write now,  code of format checking may be writing in future, if I have time.
-
+PS: None write as <-, null> (confz: '{data: <-,null>}' == json: '{"data":null}')
 2. IoC framework codes(buildz.Builder, buildz.main)
     description is in buildz.keys, run this code to see: "buildz.keys.help('en')" or "python -m buildz ? en"
     here is an example in buildz/demo
