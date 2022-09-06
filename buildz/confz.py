@@ -281,17 +281,24 @@ def get_bool(s):
     return g_bools[s]
 
 pass
+def get_none(s):
+    return None
+
+pass
 g_types = {}
 g_types['int'] = int
 g_types['float'] = float
 g_types['str'] = str
 g_types['bool'] = get_bool
+g_types['null'] = get_none
+
 
 g_rtypes = {}
 g_rtypes[int] = 'int'
 g_rtypes[float] = 'float'
 g_rtypes[str] = 'str'
 g_rtypes[bool] = 'bool'
+g_rtypes[type(None)] = 'null'
 def getVal(stack):
     global g_types
     rst = []
@@ -365,7 +372,7 @@ def loadfile(filepath, coding="utf-8"):
 pass
 import re
 def need_qt(s):
-    pt = "^[a-zA-Z0-9\_\.]*$"
+    pt = "^[a-zA-Z0-9\_\.]+$"
     return re.match(pt, s) is None
 
 pass
