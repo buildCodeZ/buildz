@@ -127,6 +127,9 @@ class Builder:
             self.types[call[1]](call[0], obj)
     def get(self, key, src = None, force_new = False):
         return self.run(key, src, force_new)
+    def set(self, key, val):
+        self.maps[key] = {"single":"1"}
+        self.objs[key] = val
     def run(self, key, src = None, force_new = False):
         if self.ref_this is not None and key == self.ref_this:
             return self
