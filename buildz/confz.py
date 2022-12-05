@@ -326,8 +326,11 @@ def get(obj, key, default = None):
     return obj[key]
 
 pass
-
-def read(s):
+paths = []
+def read(s, path = None):
+    global paths
+    if path is not None:
+        paths.append(path)
     stack = []
     while s != "": 
         if G_DEBUG:
@@ -362,14 +365,22 @@ def read(s):
                     stack.append([key, val])
     if G_DEBUG:
         print("stack:", stack)
+    if path is not None:
+        paths.pop(-1)
     return stack.pop(-1)
 
 pass
 loads = read
+import os
 def loadfile(filepath, coding="utf-8"):
-    return read(fread(filepath, coding=coding))
+    global paths
+    if len(paths)>0:
+        if filepath[0] not in ["/", "\\\\"] and filepath.find(":")<0:
+            filepath = os.path.join(paths[-1], filepath)
+    return read(fread(filepath, coding=coding), os.path.dirname(filepath))
 
 pass
+g_types['file'] = loadfile
 import re
 def need_qt(s):
     pt = "^[a-zA-Z0-9\_\.]+$"
