@@ -77,19 +77,21 @@ class Builder:
         self.loadtypes = {}
         self.loadtypes['json'] = read_json
         self.loadtypes['confz'] = read_confz
-    def add_file(self, filepath, format = None):
+    def add_file(self, filepath, format = None, update = False):
         if format is None:
             format = self.format
         obj = self.loadtypes[format](filepath)
-        self.add(obj)
-    def add(self, data):
+        self.add(obj, update)
+    def add(self, data, update = False):
         if type(data) == dict:
             data = [data]
         for obj in data:
             key = get(obj, "key")
-            if key in self.maps:
+            if key in self.maps and not update:
                 raise Exception("duple define key: ["+key+"]")
             self.maps[key] = obj
+            if update and key in self.objs:
+                del self.objs[key]
     def get_this(self, key, obj):
         return getattr(obj, key)
     def deal_args(self, args, obj = None):
@@ -219,7 +221,7 @@ def main(paths, default_import = g_default_import, ref_this = "this"):
         if os.path.isfile(path):
             builder.add_file(path)
         elif os.path.isdir(path):
-            files = os.listdirs(path)
+            files = os.listdir(path)
             files = [os.path.join(path, file) for file in files]
             [builder.add_file(file) for file in files]
         else:
