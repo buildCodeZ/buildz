@@ -2,8 +2,8 @@
 '''
 1, remain char:
     {}[]()<>:'"#\n,;
-   to write a string contain remain char, user '' or "" or "x3 or 'x3: 
-    "hello:world, 'zero'" 
+   to write a string contain remain char, user '' or "" or "x3 or 'x3:
+    "hello:world, 'zero'"
     'hello:world, "zero"'
     """zero say: "hello, 'world'" """
 2, from string to obj:
@@ -32,10 +32,10 @@ demo.txt:
         3
     ###
     {
-        test: ":test{}??", 
-        val: <10, int>, 
-        cost: <10.0, float>, 
-        check: <true, bool>, 
+        test: ":test{}??",
+        val: <10, int>,
+        cost: <10.0, float>,
+        check: <true, bool>,
         <10, int>: "test"
     }
     #multi-line string
@@ -332,7 +332,7 @@ def read(s, path = None):
     if path is not None:
         paths.append(path)
     stack = []
-    while s != "": 
+    while s != "":
         if G_DEBUG:
             print("stack:", stack)
         w, s = sread(s)
