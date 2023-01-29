@@ -152,6 +152,14 @@ def sread(s):
             a = s[:j+1].strip()
             b = s[j+1:]
             return a, b
+    if c == '/':
+        if s[:2].count(c) == 2:
+            j = s.find("\n")
+            if j < 0:
+                return s, ""
+            a = s[:j+1].strip()
+            b = s[j+1:]
+            return a, b
     if c in "{}[]():<>":
         return c, s[1:]
     if c in ['"', "'", '#']:
@@ -196,6 +204,8 @@ def qt(s):
 pass
 def note(s):
     if s=="":
+        return True
+    if s[:2] == "//":
         return True
     return s[0] == "#"
 
