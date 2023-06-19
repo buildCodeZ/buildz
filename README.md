@@ -2,6 +2,10 @@
 ```
 一个类似json的数据交换格式，取名叫做confz，并用python实现了读写代码，另外还根据confz写了个代码配置框架
 a json-like file format's read and write code by python, also write a code building framework configure by confz, english description is in "2) english"
+
+update:
+新增buildz.xconfz，用模式化的代码重构buildz.confz，让代码更容易维护（相应的速度会更慢些），目前只重构了loads
+add sub module buildz.xconfz, which reconstruct buidlz.confz by modularized code, making it easier to update(and run slower), currently only reconstruct method 'loads'
 ```
 
 ## 1) 简介

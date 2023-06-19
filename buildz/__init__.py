@@ -1,4 +1,4 @@
-from buildz.confz import read, loadfile, output, fread
+#from buildz.confz import read, loadfile, output, fread
 from buildz.build import Builder, main
 from buildz.keys import help
 """
