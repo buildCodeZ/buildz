@@ -117,6 +117,7 @@ def build(bts = False):
     cfz.add(types)
 
 
+    cfz.add_fc(StrDeal,"/*","*/", note = True)
     cfz.add_fc(StrDeal,*["###"]*2, note = True)
     cfz.add_fc(StrDeal,"#", "\n", single_line = True, note = True)
     cfz.add_fc(StrDeal,"//", "\n", single_line = True, note = True)

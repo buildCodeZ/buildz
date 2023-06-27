@@ -109,6 +109,8 @@ class BaseDeal:
         return buff.curr(len(s))==s
     def init(self, reg):
         pass
+    def make(self, data, fc, format = False, simple = True):
+        return None
     def prev(self, buff, queue):
         return False
     def deal(self, queue, stack):
@@ -116,9 +118,35 @@ class BaseDeal:
 
 pass
 
-class BaseOutput:
+class BaseFormat:
     def deal(self, data, fc):
-        return ""
+        return None
 
 pass
 
+
+class FormatNode:
+    def init(self):
+        self.childs = []
+        self.value = None
+        self.up = None
+        return self
+    def val(self, value):
+        self.value = value
+    def add(self, node):
+        self.childs.append(node)
+        node.up = self
+    def is_leaf(self):
+        return len(self.childs)==0
+
+pass
+
+class KVFormatNode(FormatNode):
+    pass
+
+pass
+
+class SptFormatNode(FormatNode):
+    pass
+
+pass

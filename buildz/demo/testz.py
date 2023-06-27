@@ -45,9 +45,31 @@ s = r"""
     d= [a,b,c]y=0,
     y = 1,
     val = <1, i>
+
+
+
+
     bl = 1|b
     x = 0|nil
+    lst = [
+    a,b,c,
+
+1
+2
+3
+
+
+    x,y,z,,,
+    ]
 }
+"""
+s=r"""
+[1,2,
+
+
+3
+4
+5]
 """
 try:
     from buildz import build
