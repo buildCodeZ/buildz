@@ -1,6 +1,7 @@
 #coding=utf-8
 from buildz.xconfz.base import *
 
+from buildz.xconfz.fmt_base import *
 
 """
 去左空格
@@ -71,5 +72,13 @@ class ItemDeal(BaseDeal):
             queue.pop(0)
             return True
         return False
+
+pass
+
+class ItemFormat(BaseFormat):
+    def deal(self, data, fc):
+        node = FormatNode().init().val(data)
+        return node
+
 
 pass

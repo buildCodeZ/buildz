@@ -9,7 +9,7 @@ import io
 # io.StringIO("asdf")
 from buildz.xconfz.buff import *
 from buildz.xconfz.fc import *
-
+from buildz.xconfz.fmt_base import *
 
 class Confz:
     def fcs(self, fc, *args, **maps):
@@ -26,7 +26,7 @@ class Confz:
         return [self.c(k) for k in args]
     def c(self, s):
         if self.bts:
-            s = s.encode("ascii")
+            s = s.encode("utf-8")
         return s
     def add(self,obj):
         obj.init(self.reg)
@@ -69,6 +69,7 @@ class Confz:
             return [it.val for it in stack]
 
 pass
+
 class Map:
     def __init__(self):
         self.maps = {}
@@ -151,5 +152,12 @@ import io
 def loads(s):
     cfz = build(type(s)==bytes)
     return cfz.load(io.StringIO(s).read)
+
+pass
+
+from buildz.xconfz.file import *
+
+def loadfile(fp, coding = 'utf-8'):
+    return loads(fread(fp, coding))
 
 pass

@@ -94,6 +94,15 @@ class Reg:
         self.index = 0
         self.sets = set()
         self.keys = {}
+    def exist(self, s):
+        bts = type(s)==bytes
+        for key in self.keys:
+            val = key
+            if bts:
+                val = val.encode("utf-8")
+            if s.find(val)>=0:
+                return True
+        return False
     def __call__(self, key):
         if key in self.keys:
             return self.keys[key]
@@ -115,38 +124,5 @@ class BaseDeal:
         return False
     def deal(self, queue, stack):
         return False
-
-pass
-
-class BaseFormat:
-    def deal(self, data, fc):
-        return None
-
-pass
-
-
-class FormatNode:
-    def init(self):
-        self.childs = []
-        self.value = None
-        self.up = None
-        return self
-    def val(self, value):
-        self.value = value
-    def add(self, node):
-        self.childs.append(node)
-        node.up = self
-    def is_leaf(self):
-        return len(self.childs)==0
-
-pass
-
-class KVFormatNode(FormatNode):
-    pass
-
-pass
-
-class SptFormatNode(FormatNode):
-    pass
 
 pass

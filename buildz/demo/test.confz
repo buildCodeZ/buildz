@@ -1,0 +1,24 @@
+[
+    {
+        key: value.a
+        import: demo
+        var: demo_value
+    }
+    {
+        key: value.b
+        args: [
+            (value.a, ref) # a reference to key<value.a>
+            (value.b, str) #str mean this is a string, not a reference
+            (value.c, ref)
+            '"asdfa'
+            '''"asdfa
+x\t\n
+            ?"""a
+            l'''
+        ]
+    }
+    {
+        key: value.c
+        val: <1024.0, float>
+    }
+]

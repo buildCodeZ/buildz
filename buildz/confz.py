@@ -419,6 +419,8 @@ def oqt(s):
         return match+s+match
     if not need_qt(s):
         return s
+    if '"' in s:
+        return "'"+s+"'"
     return '"'+s+'"'
 
 pass

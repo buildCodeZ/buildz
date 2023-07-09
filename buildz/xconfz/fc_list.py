@@ -1,6 +1,7 @@
 #coding=utf-8
 from buildz.xconfz.base import *
 
+from buildz.xconfz.fmt_base import *
 
 class ListDeal(BaseDeal):
     def init(self, reg):
@@ -54,5 +55,31 @@ class ListDeal(BaseDeal):
         if rst:
             queue.pop(0)
         return rst
+
+pass
+
+
+class ListFormat(BaseFormat):
+    def __init__(self, left, right):
+        self.l = left
+        self.r = right 
+    def deal(self, data, fc):
+        if type(data) not in [list, tuple]:
+            raise FormatExp("not list found:"+type(data), [-1,-1])
+        node = FormatNode().init()
+        node.add(SymbolFormatNode().init().val(self.l))
+        #_node = FormatNode().init()
+        #node.add(_node)
+        nds = []
+        for dt in data:
+            nds.append(SpcFormatNode(0,1))
+            nds.append(fc(dt))
+            nds.append(SptFormatNode())
+        for nd in nds[:-1]:
+            node.add(nd)
+        node.add(SpcFormatNode(0, 0))
+        node.add(SymbolFormatNode().init().val(self.r))
+        return node
+
 
 pass
