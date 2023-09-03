@@ -10,4 +10,5 @@ pd = lambda x:p(d(x))
 pd({})
 pd([''])
 pd([{}])
+pd({a:[]})
 
