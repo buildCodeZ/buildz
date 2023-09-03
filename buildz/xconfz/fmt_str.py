@@ -39,7 +39,7 @@ class StrForamt(BaseFormat):
             return None
         if self.single and self.f(val.find, "\n")>=0:
             return None
-        if not self.reg.exist(val):
+        if not self.reg.exist(val) and val.strip()!="":
             return val
         val = self.f(val.replace, "\\", "\\\\")
         if self.t_single:
