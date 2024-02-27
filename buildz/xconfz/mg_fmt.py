@@ -80,7 +80,7 @@ class JsonFormat(BaseFormat):
         value = node.value
         if value is None:
             return None
-        return json.dumps(node.value)
+        return json.dumps(node.value, ensure_ascii=False)
 
 pass
 def build_format(bts = False, size = 4, format = False, simple = 1, simple_size = 1, loads = None, as_json =False, t_single = True):

@@ -19,6 +19,7 @@ pass
 
 """
 没有其他处理的默认处理：当前字符放入保留字符串，读取下一个字符
+该处理应该放处理列表的最后（优先级最低）
 """
 class NextCharDeal(BaseDeal):
     def prev(self, buff, queue):
@@ -75,6 +76,9 @@ class ItemDeal(BaseDeal):
 
 pass
 
+'''
+数据生成格式化字符串
+'''
 class ItemFormat(BaseFormat):
     def deal(self, data, fc):
         node = FormatNode().init().val(data)
