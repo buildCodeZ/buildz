@@ -13,7 +13,7 @@ class Map:
         if obj is None:
             obj = {}
         else:
-            obj = dict(obj)
+            obj = builtins.dict(obj)
         obj.update(maps)
         self.__dict__[Map.Key] = obj
     def __call__(self, **maps):

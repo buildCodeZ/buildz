@@ -18,16 +18,19 @@ class PrevSptDeal(base.BaseDeal):
         buffer.clean()
         crr = pos.get()
         pos.update(data)
+        item_spt = item.PrevItem(self.spt, pos.get(), self.id(), src='spt', allow_empty = self.allow_empty)
         pos.update(c)
         data = data.strip()
         if len(data)==0 and not self.allow_empty:
+            queue.append(item_spt)
             return True
         if len(data)==0:
-            if len(queue)>0 and queue[-1].check(is_val = 1):
+            if len(queue)>0 and queue[-1].any(is_val = 1, right=1):
+                queue.append(item_spt)
                 return True
         obj = item.PrevItem(data, crr, is_val = 1, src='spt')
         queue.append(obj)
-        queue.append(item.PrevItem(self.spt, pos.get(), self.id(), src='spt', allow_empty = self.allow_empty))
+        queue.append(item_spt)
         return True
     def deal(self, queue, stack):
         bl = False

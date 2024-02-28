@@ -1,2 +1,2 @@
 include README.md
-recursive-include buildz/demo *
+recursive-include buildz *
