@@ -28,7 +28,11 @@ class ValDeal(base.BaseDeal):
         pt = self.like(self.pt, val)
         if re.match(pt, val) is None:
             return False
-        val = self.fc(val)
+        try:
+            val = self.fc(val)
+        except Exception as exp1:
+            print("exp:", exp1)
+            raise exp.FormatExp("error in reval fc:\""+str(exp1)+"\"", _item.pos, _item.val)
         queue.pop(0)
         out_item = item.DealItem(val, _item.pos, self.id(), is_val = 1)
         stack.append(out_item)

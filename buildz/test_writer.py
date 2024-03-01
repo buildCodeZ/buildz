@@ -30,7 +30,7 @@ s = r"""
 def test():
     obj = xfz.loads(s)
     obj = xf.loads(s)
-    rs = xf.dumps(obj,format=0,deep=0,json_format=1)
+    rs = xf.dumps(obj,format=1,deep=1,json_format=1)
     print(obj)
     print(json.dumps(obj))
     print(rs)

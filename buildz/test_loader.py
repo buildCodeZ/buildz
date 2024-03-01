@@ -17,6 +17,9 @@ s=r"""
         c:d
         url:"http://test.com.cn"
     }
+    # test
+    hehe: <"1", i>
+    nill: <,nil>
 }
 """
 rst = xf.loads(s)

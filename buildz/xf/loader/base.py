@@ -9,7 +9,8 @@ class BaseDeal:
         return self._id
     def same(self, s, target):
         return self.like(s, target) == target
-    def like(self, s, target):
+    @staticmethod
+    def like(s, target):
         if type(target) ==type(s):
             return s
         if type(s)==str:
