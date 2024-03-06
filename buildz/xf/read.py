@@ -1,11 +1,11 @@
 
-from .loader import mg, buffer
+from .loader import mg, buffer, base
 
 from .loader.deal import nextz, spt, strz, listz, spc, setz, mapz, reval, lrval
 def bl(val):
-    trues = [BaseDeal.like(k, val) for k in ["true", "True", "1"]]
+    trues = [base.BaseDeal.like(k, val) for k in ["true", "True", "1"]]
     trues += [1,True]
-    falses = [BaseDeal.like(k, val) for k in ["false", "False", "0"]]
+    falses = [base.BaseDeal.like(k, val) for k in ["false", "False", "0"]]
     falses += [0,False]
     if val in trues:
         return True
