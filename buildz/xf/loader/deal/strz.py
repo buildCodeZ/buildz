@@ -18,7 +18,10 @@ class PrevStrDeal(base.BaseDeal):
         qt = self.like('"',s)
         ql = self.like("\\", s)
         et = self.like("\n", s)
+        tr = self.like("\r", s)
+        nt = self.like("",s)
         s = s.replace(qt, ql+qt)
+        s = s.replace(tr, nt)
         arr = s.split(et)
         outs = [json.loads(qt+k+qt) for k in arr]
         outs = et.join(outs)
