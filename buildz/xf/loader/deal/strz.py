@@ -67,7 +67,7 @@ class PrevStrDeal(base.BaseDeal):
         pos.update(tmp)
         if self.note:
             if len(rm)>0:
-                queue.append(item.PrevItem(rm, rm_pos, is_val = 1, src='str'))
+                queue.append(item.PrevItem(rm.rstrip(), rm_pos, is_val = 1, src='str'))
             return True
         queue.append(item.PrevItem(xtmp, curr_pos, self.id(), is_val = 1, src='str'))
         return True
