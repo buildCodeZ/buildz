@@ -32,6 +32,10 @@
         {
             type: var,
             build: buildz.ioc.ioc_deal.var.VarDeal
+        },
+        {
+            type: calls,
+            build: buildz.ioc.ioc_deal.calls.CallsDeal
         }
     ]
 }

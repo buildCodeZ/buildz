@@ -39,5 +39,13 @@
             id: test.obj
             val: test.show
         }
+        {
+            id: calls
+            type: calls
+            calls: [
+                [mcall, test, run,,,]
+                [call, test.show]
+            ]
+        }
     ]
 }

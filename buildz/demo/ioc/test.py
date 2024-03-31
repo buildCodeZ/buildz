@@ -28,6 +28,8 @@ def test():
     confs.get("data1.run")
     obj = confs.get("data1.test.obj")
     print(f"obj: {obj}")
+    print("DO CALLS")
+    confs.get("data1.calls")
 
 pass
 
