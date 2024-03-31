@@ -35,7 +35,8 @@ class LRDeal(base.BaseDeal):
             buffer.clean()
             pos.update(rm)
             # 这里对扩展不太好，需要注意
-            if len(rm.strip())>0 or len(queue)==0 or queue[-1].none(is_val = 1,type=self.id(), right=1,allow_empty=0):
+            #if len(rm.strip())>0 or len(queue)==0 or queue[-1].none(is_val = 1,type=self.id(), right=1,allow_empty=0):
+            if len(rm.strip())>0:
                 queue.append(item.PrevItem(rm, pos.get(), is_val=1))
             pos.update(cr)
             queue.append(item.PrevItem(cr, pos.get(), self.id(), right = 1))
