@@ -20,7 +20,11 @@ class PrevStrDeal(base.BaseDeal):
         et = self.like("\n", s)
         tr = self.like("\r", s)
         nt = self.like("",s)
-        s = s.replace(qt, ql+qt)
+        pt = ql+qt
+        arr = s.split(pt)
+        arr = [k.replace(qt, pt) for k in arr]
+        s = pt.join(arr)
+        #s = s.replace(qt, ql+qt)
         s = s.replace(tr, nt)
         arr = s.split(et)
         outs = [json.loads(qt+k+qt) for k in arr]
@@ -49,7 +53,7 @@ class PrevStrDeal(base.BaseDeal):
                 pos.update(tmp)
                 raise exp.FormatExp("unexcept file end while reading string", pos.get())
             tmp += c
-            if self.same("\\", c) and self.translate:
+            if self.same("\\", c):
                 c = buffer.read(1,1)
                 if len(c)==0:
                     pos.update(tmp)

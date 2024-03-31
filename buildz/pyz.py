@@ -1,7 +1,7 @@
 
 def load(md, fc = None):
     """
-        import module from string md
+        import object(whether module or others) from md(or md.fc)
         exp:
             load("buildz.xf") = package xf
             load("buildz.xf", "loads") = function loads from package buildz.xf
