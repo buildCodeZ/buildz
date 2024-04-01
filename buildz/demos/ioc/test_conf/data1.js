@@ -45,7 +45,7 @@
         }
         {
             id: test.obj
-            val: test.show
+            data: test.show
         }
         {
             id: calls

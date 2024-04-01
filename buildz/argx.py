@@ -26,6 +26,8 @@ def fetch(argv = None):
                 x = kv.split("=")
                 key = x[0]
                 val = "=".join(x[1:])
+                if len(val)==0:
+                    val = 1
             else:
                 key = v[1]
                 if len(v)>2:
@@ -36,8 +38,14 @@ def fetch(argv = None):
                     else:
                         val = argv[i+1]
                         i+=1
-        maps[key] = val
+        if key not in maps:
+            maps[key] = []
+        maps[key].append(val)
         i+=1
+    for k in maps:
+        v = maps[k]
+        if len(v)==1:
+            maps[k] = v[0]
     return lists, maps
 
 pass

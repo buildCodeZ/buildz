@@ -68,7 +68,7 @@ class ObjectDeal(BaseDeal):
         if fc is None:
             fc = pyz.load(source)
             self.sources[source]=fc
-        cst = xf.g(data, construct = 0)
+        cst = xf.g(data, construct = [])
         cst = self.fmt_cst(cst)
         args = xf.g(cst, args=[])
         maps = xf.g(cst, maps={})

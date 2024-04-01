@@ -40,6 +40,18 @@
         {
             type: ioc,
             build: buildz.ioc.ioc_deal.ioc.IOCObjectDeal
+        },
+        {
+            type: list,
+            build: buildz.ioc.ioc_deal.list.ListDeal
+        },
+        {
+            type: map,
+            build: buildz.ioc.ioc_deal.map.MapDeal
+        },
+        {
+            type: join,
+            build: buildz.ioc.ioc_deal.join.JoinDeal
         }
     ]
 }

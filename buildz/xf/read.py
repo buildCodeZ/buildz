@@ -31,7 +31,7 @@ def build_lrval(mgs):
 pass
 def build_val(mgs):
     mgs.add(reval.ValDeal("[\+\-]?\d+", int))
-    mgs.add(reval.ValDeal("[\+\-]?\d+\.\d+", float))
+    mgs.add(reval.ValDeal("[\+\-]?\d*\.\d+", float))
     mgs.add(reval.ValDeal("[\+\-]?\d+e[\+\-]?\d+", float))
     mgs.add(reval.ValDeal("null", lambda x:None))
     mgs.add(reval.ValDeal("true", lambda x:True))
@@ -71,6 +71,14 @@ def load(read):
     mgs = build()
     return msg.load(read)
 def loads(s):
+    # lr = "{}"
+    # ls = "{[("
+    # if type(s)==bytes:
+    #     lr = lr.encode()
+    #     ls = ls.encode()
+    # x = s.strip()
+    # if len(x)>0 and x[0] not in ls:
+    #     s = lr[0]+s+lr[1]
     mgs = build()
     input = buffer.BufferInput(s)
     return mgs.load(input)

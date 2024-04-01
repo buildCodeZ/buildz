@@ -1,6 +1,7 @@
 #coding=utf-8
 from buildz import xf, pyz
 from buildz.xf import g as xg
+from buildz import argx
 import json
 from .base import Base, EncapeData
 from .conf import Conf
@@ -47,7 +48,53 @@ class Confs(Base):
         return id.split(self.env_spt)
     def env_id(self, ids):
         return self.env_spt.join(ids)
+    def get_env_sys(self, id, sid=None):
+        sysdt = os.getenv(id)
+        return sysdt
+    def build_env_args_xf(self):
+        data = xf.args()
+        env = data['env']
+        self.envs_args = env
+    def build_env_args_buildz(self):
+        args, maps = argx.fetch()
+        e = xf.get(maps, e = [])
+        env = xf.get(maps, env=[])
+        env += e
+        env = [k.split("=") for k in env]
+        env = {k[0]:"=".join(k[1:]) for k in env}
+        self.envs_args = env
+    def get_env_args(self, id, sid=None):
+        if self.envs_args is not None:
+            if self.args_type == "xf":
+                self.build_env_args_xf()
+            else:
+                self.build_env_args_buildz()
+        return xf.get(self.envs_args, id)
+    def get_env_local(self, id, sid=None):
+        if sid is not None and not self.global_env:
+            val = self.confs[sid].get_env(id, False)
+            if val is not None:
+                return val
+        return None
+    def get_env_conf(self, id, sid=None):
+        ids = self.env_ids(id)
+        envs = self.envs
+        for id in ids:
+            if type(envs)!=dict:
+                envs = None
+                break
+            if id not in envs:
+                envs = None
+                break 
+            envs = envs[id]
+        return envs
     def get_env(self, id, sid=None):
+        for key in self.env_orders:
+            fc = self.env_fcs[key]
+            obj = fc(id, sid)
+            if obj is not None:
+                return obj
+        return None
         if sid is not None and not self.global_env:
             val = self.confs[sid].get_env(id, False)
             if val is not None:
@@ -111,6 +158,13 @@ class Confs(Base):
             // true=环境变量env都是全局的（全局查找），否则优先每个配置文件里查环境变量，查不到才查全局
             // default = true
             global_env: true
+            // 环境变量读取顺序，默认先命令行配置，然后系统变量，然后本地配置文件配置(设置全局则不查)，最后配置文件配置，不想读哪个把哪个删了就可以
+            // 命令行配置格式:
+            //     -e a=b --env=a=b --env=c=d
+            //     env: {a=b, c=d}
+            env_orders: [args, sys, local, conf]
+            // 命令行读取方式：默认xf(xf.args),可选: buildz(buidlz.argx)
+            args_type: 'xf'
             // true=类型处理函数deal都是全局的（全局查找），否则优先每个配置文件里查处理函数，查不到才查全局
             // default = true 
             global_deal: true
@@ -151,12 +205,21 @@ class Confs(Base):
         self.data_index_type = xf.g(conf, data_index_type = [0,1])
         self.deal_key_type = xf.g(conf, deal_key_type = 'type')
         self.deal_index_type = xf.g(conf, deal_index_type = 0)
+        self.env_orders = xf.g(conf, env_orders = ['args', 'sys', 'local', 'conf'])
+        self.env_fcs = {
+            'args': self.get_env_args,
+            'sys': self.get_env_sys,
+            'local': self.get_env_local,
+            'conf': self.get_env_conf
+        }
+        self.args_type = xf.g(conf, args_type = "xf")
         self._conf_id = 0
         self.conf = conf
         self.node = ConfsNode()
         self.confs = {}
         self.deals = {}
         self.envs = {}
+        self.envs_args = None
     def get_deal_type(self, obj):
         if type(obj)==dict:
             return obj[self.deal_key_type]
@@ -200,9 +263,15 @@ class Confs(Base):
             例: ids = ['a','b','c'], spt = ".", id = 'a.b.c', 
         """
         return self.spt.join(ids)
+    def add_fps(self, fps):
+        for fp in fps:
+            self.add_fp(fp)
     def add_fp(self, fp):
         conf = self.loads(xf.fread(fp))
         return self.add(conf)
+    def adds(self, confs):
+        for conf in confs:
+            self.add(conf)
     def add(self, conf):
         """
             {

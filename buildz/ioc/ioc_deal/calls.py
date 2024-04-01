@@ -29,6 +29,7 @@ class CallsDeal(BaseDeal):
         data = self.format(data)
         src = edata.src
         calls = xf.g(data, calls=[])
+        rst = None
         for call in calls:
             rst = self.get_obj(call, conf, src)
         return rst

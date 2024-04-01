@@ -1,6 +1,7 @@
 from .. import base
 from .. import item
 from .. import exp
+from ... import file
 import json
 class PrevStrDeal(base.BaseDeal):
     def init(self, left = '"', right= '"', single_line = False, note = False, translate = False):
@@ -11,6 +12,15 @@ class PrevStrDeal(base.BaseDeal):
         self.single_line = single_line
         self.note = note
         self.translate = translate
+    def json_loads(self, s):
+        x = s
+        cd = None
+        if type(x)==bytes:
+            x, cd = file.decode_c(x)
+        rs = json.loads(x)
+        if type(s)==bytes:
+            rs = rs.encode(cd)
+        return rs
     def do_translate(self, s):
         """
             取巧直接调用json
@@ -27,7 +37,7 @@ class PrevStrDeal(base.BaseDeal):
         #s = s.replace(qt, ql+qt)
         s = s.replace(tr, nt)
         arr = s.split(et)
-        outs = [json.loads(qt+k+qt) for k in arr]
+        outs = [self.json_loads(qt+k+qt) for k in arr]
         outs = et.join(outs)
         return outs
     def prev(self, buffer, queue, pos):

@@ -11,6 +11,6 @@ class ValDeal(Base):
         data = edata.data
         if type(data)==list:
             return data[-1]
-        return data['val']
+        return data['data']
 
 pass

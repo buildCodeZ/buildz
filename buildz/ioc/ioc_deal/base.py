@@ -1,4 +1,5 @@
-#
+#coding=utf-8
+
 from ..ioc.base import Base, EncapeData
 from buildz import xf
 import os
