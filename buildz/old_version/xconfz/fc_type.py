@@ -1,7 +1,7 @@
 #coding=utf-8
-from buildz.xconfz.base import *
-from buildz.xconfz.fc_list import *
-from buildz.xconfz.fc_set import *
+from .base import *
+from .fc_list import *
+from .fc_set import *
 
 
 """

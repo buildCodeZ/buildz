@@ -41,14 +41,14 @@ builtins._list = build_list
 builtins._dict = build_dict
 g_default_import = "buildz"+".base"
 def read_confz(filepath):
-    from buildz import confz
+    from . import confz
     s = confz.fread(filepath)
     obj = confz.read(s)
     return obj
 
 pass
 def read_json(filepath):
-    from buildz import confz
+    from . import confz
     import json
     s = confz.fread(filepath)
     obj = json.loads(s)

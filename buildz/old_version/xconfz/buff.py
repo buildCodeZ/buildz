@@ -1,6 +1,6 @@
 #coding=utf-8
 
-from buildz.xconfz.base import *
+from .base import *
 
 class BufferImpl(Buffer):
     def cal_pos(self, s):

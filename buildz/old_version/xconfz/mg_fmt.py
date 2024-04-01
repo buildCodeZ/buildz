@@ -7,13 +7,13 @@ impl in class
 
 import io
 # io.StringIO("asdf")
-from buildz.xconfz.buff import *
-from buildz.xconfz.fc import *
+from .buff import *
+from .fc import *
 
-from buildz.xconfz.fmt_base import *
-from buildz.xconfz.fmt_type import *
-from buildz.xconfz.fmt_str import *
-from buildz.xconfz.mg import *
+from .fmt_base import *
+from .fmt_type import *
+from .fmt_str import *
+from .mg import *
 
 class Buildz:
     def __init__(self, bts= False):

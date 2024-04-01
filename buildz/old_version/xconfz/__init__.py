@@ -1,8 +1,8 @@
 #coding=utf-8
 
-from buildz.xconfz.mg import *
-from buildz.xconfz.mg_fmt import *
-from buildz.xconfz.file import *
+from .mg import *
+from .mg_fmt import *
+from .file import *
 
 """
 loads(string) => object

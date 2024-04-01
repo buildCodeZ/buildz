@@ -22,6 +22,14 @@
             sets: [
                 [obj, [ref, test]]
                 [obj1, [ovar, null, args]]
+                [ioc, [ioc, conf]]
+                {
+                    key: conf
+                    val: {
+                        type: ioc
+                        key: conf
+                    }
+                }
             ],
             calls: [
                 [mcall, null, run, [], {}]

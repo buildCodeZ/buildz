@@ -1,5 +1,5 @@
 #coding=utf-8
-from buildz.xconfz.base import *
+from .base import *
 
 class TypeSet:
     def __str__(self):

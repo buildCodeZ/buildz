@@ -1,7 +1,7 @@
 #coding=utf-8
-from buildz.xconfz.base import *
+from .base import *
 
-from buildz.xconfz.fmt_base import *
+from .fmt_base import *
 
 """
 去左空格

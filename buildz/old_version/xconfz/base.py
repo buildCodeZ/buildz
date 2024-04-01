@@ -1,6 +1,6 @@
 #coding=utf-8
 
-from buildz.base import Map
+from ..base import Map
 '''
 格式化报错
 '''

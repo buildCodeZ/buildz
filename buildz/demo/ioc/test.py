@@ -1,6 +1,7 @@
 #
 from buildz.ioc import build
 from buildz import xf
+from buildz import argx
 import os
 join = os.path.join
 class Test:
@@ -11,6 +12,8 @@ class Test:
     def run(self):
         print(f"get obj:{self}")
         print("get_obj.obj:", self.obj)
+        print(f"ioc: {self.ioc}")
+        print(f"ioc env: {self.ioc.get_env('path')}")
 
 pass
 fps = xf.loads("[data1.js, data2.js, data3.js]")[:2]
@@ -30,6 +33,7 @@ def test():
     print(f"obj: {obj}")
     print("DO CALLS")
     confs.get("data1.calls")
+    print("ARGS: ", argx.fetch())
 
 pass
 

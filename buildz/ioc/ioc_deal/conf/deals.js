@@ -36,6 +36,10 @@
         {
             type: calls,
             build: buildz.ioc.ioc_deal.calls.CallsDeal
+        },
+        {
+            type: ioc,
+            build: buildz.ioc.ioc_deal.ioc.IOCObjectDeal
         }
     ]
 }

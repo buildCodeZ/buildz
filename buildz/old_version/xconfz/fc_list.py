@@ -1,9 +1,9 @@
 #coding=utf-8
-from buildz.xconfz.base import *
+from .base import *
 
-from buildz.xconfz.fmt_base import *
+from .fmt_base import *
 
-class MapDeal(BaseDeal):
+class ListDeal(BaseDeal):
     def init(self, reg):
         self.k_l = reg(self.l)
         self.k_r = reg(self.r)
@@ -11,9 +11,10 @@ class MapDeal(BaseDeal):
         self.l = left
         self.r = right
     def prev(self, buff, queue):
+        #c = buff.curr()
         if self.check_curr(buff,self.l):
             if buff.remain_size()>0:
-                raise FormatExp("error string before map:", buff.pos_curr(), buff.full())
+                raise FormatExp("error string before list:", buff.pos_curr(), buff.full())
             queue.append(Item(self.k_l, buff.pos_curr()))
             buff.deal2curr(len(self.l))
             return True
@@ -39,19 +40,13 @@ class MapDeal(BaseDeal):
                 if self.k_l.equal(it_1.val):
                     find_l = True
                     break
-                val = it_1.val
-                if not KeyVal.is_inst(val):
-                    #print("it_1:", it_1)
-                    #print("queue:", queue)
-                    #print("stack:", stack)
-                    #print("map:", tmp)
-                    raise FormatExp("an not key-val item found in map:"+str(val), it_1.pos)
-                tmp.append(val)
-            tmp.reverse()
-            tmp = {k.key:k.val for k in tmp}
-            #tmp[val.key] = val.val
+                tmp.append(it_1.val)
             if not find_l:
-                raise FormatExp("can't find map left side for right side",it.pos)
+                print("queue:", queue)
+                print("stack:", stack)
+                print("list:", tmp)
+                raise FormatExp("can't  find list left side for right side",it.pos)
+            tmp.reverse()
             stack.append(Item(tmp, it_1.pos))
             rst = True
         elif self.k_l.equal(it.val):
@@ -63,23 +58,22 @@ class MapDeal(BaseDeal):
 
 pass
 
-class MapFormat(BaseFormat):
+
+class ListFormat(BaseFormat):
     def __init__(self, left, right):
         self.l = left
         self.r = right 
     def deal(self, data, fc):
-        if type(data) !=dict:
-            raise FormatExp("not dict found:"+type(data), [-1,-1])
+        if type(data) not in [list, tuple]:
+            raise FormatExp("not list found:"+type(data), [-1,-1])
         node = FormatNode().init()
         node.add(SymbolFormatNode().init().val(self.l))
         #_node = FormatNode().init()
         #node.add(_node)
         nds = []
-        for key in data:
+        for dt in data:
             nds.append(SpcFormatNode(0,1))
-            nds.append(fc(key))
-            nds.append(KVFormatNode())
-            nds.append(fc(data[key]))
+            nds.append(fc(dt))
             nds.append(SptFormatNode())
         for nd in nds[:-1]:
             node.add(nd)

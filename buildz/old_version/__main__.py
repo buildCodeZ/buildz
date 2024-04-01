@@ -1,6 +1,6 @@
 #coding=utf-8
-from buildz.build import test
-from buildz import keys
+from .build import test
+from . import keys
 import sys
 def _main():
     v = sys.argv[1]

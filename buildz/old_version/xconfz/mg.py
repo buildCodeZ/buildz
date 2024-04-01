@@ -7,9 +7,9 @@ impl in class
 
 import io
 # io.StringIO("asdf")
-from buildz.xconfz.buff import *
-from buildz.xconfz.fc import *
-from buildz.xconfz.fmt_base import *
+from .buff import *
+from .fc import *
+from .fmt_base import *
 
 class Confz:
     def fcs(self, fc, *args, **maps):
@@ -155,7 +155,7 @@ def loads(s):
 
 pass
 
-from buildz.xconfz.file import *
+from .file import *
 
 def loadfile(fp, coding = 'utf-8'):
     return loads(fread(fp, coding))
