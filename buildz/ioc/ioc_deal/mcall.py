@@ -7,15 +7,22 @@ dp = os.path.dirname(__file__)
 join = os.path.join
 class MethodCallDeal(BaseDeal):
     """
-    {
-        id: ...
-        type: mcall
-        source: 
-        method: 
-        args: []
-        maps: {}
-    }
-    [[id, mcall], source, method, args, maps]
+    对象方法调用:
+        {
+            id: id
+            type: mcall
+            source: 对象id
+            method: 调用方法
+            args: [...]
+            maps: {key:...}
+            info: item_conf，额外引用信息，默认null
+        }
+    简写:
+        [[id, mcall], source, method, args, maps, info]
+        [mcall, method]
+    
+    例:
+        [mcall, obj.test, run] // 调用
     """
     def init(self, fp_lists = None, fp_defaults = None):
         self.singles = {}
@@ -31,8 +38,13 @@ class MethodCallDeal(BaseDeal):
         src = edata.src
         source = xf.g(data, source=None)
         method = xf.g(data, method=0)
+        info = xf.g(data, info=None)
+        if info is not None:
+            info = self.get_obj(info, src = edata.src, info = edata.info)
+        else:
+            info = edata.info
         if source is not None:
-            source = conf.get(source)
+            source = conf.get_obj(source, info = info)
         if source is None:
             source = src
         if source is None:
@@ -42,8 +54,8 @@ class MethodCallDeal(BaseDeal):
         method = getattr(source, method)
         args = xf.g(data, args=[])
         maps = xf.g(data, maps ={})
-        args = [self.get_obj(v, conf, src) for v in args]
-        maps = {k:self.get_obj(maps[k], conf, src) for k in maps}
+        args = [self.get_obj(v, conf, src, edata.info) for v in args]
+        maps = {k:self.get_obj(maps[k], conf, src, edata.info) for k in maps}
         return method(*args, **maps)
 
 pass

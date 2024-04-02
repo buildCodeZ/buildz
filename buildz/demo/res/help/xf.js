@@ -6,30 +6,29 @@ r"""在json格式基础上加了些其他东西，让配置写起来更简单：
     3，分号;和逗号,和换行\n等价，等于号=和冒号:等价，括号()和中括号[]等价
     4，加了python的字符串书写方式："...", '...', r"..."，r'...', r'''...'''
     5，输出格式化
-    6，可配置化
+    6，可配置化(但没太多注释)
 
-运行以下命令会打印文件名格式化后的样式:
+运行以下命令会打印文件格式化后的样式:
     python -m buildz xf 文件名
 
 比如:
+    python -m buildz xf {default}
 
-文件test.js:
----------
-{
-    name: 测试配置
-    data: [
-        (1,.2,.03,4e-4,500)
-        {
-            // 中文当key
-            代号=嘿嘿
-            age = ???
-            # 字符串里有特殊符合，还是要用引号括起来
-            'a:b':"{c,d,e,f}"
-        }
-    ]
-}
----------
-运行:
-python -m buildz xf test.js
+"""
+text.en= 
+r"""add something base on json format, make it eaisier to write profile file:
+    1, string can write without ' or ", codes will regard item as string if not in int, float, boolean, list, map, ... format
+    2, can write note on file, support note type: //note1 #note2 /*note3*/ ###note4###, /*note*/ and ###note### support multi-line notes
+    3, ';' and '\n' used equal to ',' in json, '=' used equal to ':', '()' used equals to '[]'
+    4, string can write like python format: "string1", 'string2', r"string3", r'string4', '''multi-line string1''', r'''multi-line string2'''
+    5, codes to make format output string on data
+    6, configurable(but has few notes on code)
+
+output format string on input file:
+    python -m buildz xf filepath
+
+exp:
+    python -m buildz xf {default}
+
 """
 }

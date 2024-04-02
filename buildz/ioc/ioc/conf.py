@@ -4,6 +4,43 @@ from buildz.xf import g as xg
 import json
 from .base import Base, EncapeData
 class Conf(Base):
+    """
+        配置文件格式：
+            {
+                id: 配置文件id，默认null
+                //在配置文件配置的环境变量
+                envs: {
+                    id: val
+                    ...
+                }
+                // 数据配置项处理逻辑，一般不用管
+                deals: {
+                    {
+                        type: 要处理的数据类型
+                        build: 函数import的路径
+                        args: [] // 列表入参
+                        maps: {} // 字典入参
+                    }
+                }
+                namespace: 命名空间，默认null
+                //本地数据配置项
+                locals: [
+                    item_conf,
+                    ...
+                ]
+                //全局数据配置项
+                datas: [
+                    item_conf,
+                    ...
+                ]
+            }
+        如果只有全局数据配置项，可以只写datas里的东西:
+            [
+                //全局数据配置项
+                item_conf,
+                ...
+            ]
+    """
     def get_key(self, obj, key = 'id', index=0):
         if type(obj)==dict:
             return obj[key]
@@ -25,6 +62,8 @@ class Conf(Base):
                 default_type: default null
             }
         """
+        if type(conf)!=dict:
+            conf = {'data':conf}
         id = xf.g(conf, id=None)
         if id is None:
             id = confs.conf_id()
@@ -85,34 +124,40 @@ class Conf(Base):
         if not search_confs:
             return None
         return self.confs.get_deal(type, self.id)
-    def get_data(self, id, local = True, search_confs = True):
+    def get_data(self, id, local = True, search_confs = True, src = None, info = None):
         if id in self.datas:
             obj = self.datas[id]
-            return EncapeData(obj, self, local = False)
+            return EncapeData(obj, self, local = False, src=src, info = info)
         if not local:
             return None
         if id in self.locals:
             obj = self.locals[id]
-            return EncapeData(obj, self, local = True)
+            return EncapeData(obj, self, local = True, src=src, info = info)
         if not search_confs:
             return None
-        return self.confs.get_data(id, self.id)
+        return self.confs.get_data(id, self.id, src=src, info = info)
     def get(self, *args, **maps):
         return self.get_obj(*args, **maps)
     def default_type(self):
         if self._default_type is None:
             return self.confs.default_type
         return self._default_type
-    def get_obj(self, id):
+    def get_obj(self, id, src = None, info=None, remove = False):
         """
             根据data id获取data对象，处理逻辑：根据data id查配置，根据配置的type查deal，返回deal处理过的配置
         """
-        conf = self.get_data(id)
+        conf = self.get_data(id, src = src, info = info)
         if conf is None:
             return None
         deal = self.get_deal(conf.type)
         if deal is None:
             return None
-        return deal(conf)
+        if not remove:
+            obj = deal(conf)
+        else:
+            obj = deal.remove(conf)
+        return obj
+    def remove(self, id):
+        return self.get_obj(id, remove=True)
 
 pass

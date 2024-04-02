@@ -20,7 +20,7 @@ class EncapeData(Base):
         包含data id对应的配置，配置文件id，配置文件对象
         [object.test, call, ]
     """
-    def __init__(self, data, conf, local = False, type = None, src = None):
+    def __init__(self, data, conf, local = False, type = None, src = None, info = None):
         self.data = data
         self.sid = conf.id
         self.src = src
@@ -30,5 +30,6 @@ class EncapeData(Base):
         if type is None:
             type = conf.confs.get_data_type(data, 0, conf.default_type())
         self.type = type
+        self.info = info
 
 pass

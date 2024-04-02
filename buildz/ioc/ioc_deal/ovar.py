@@ -7,13 +7,19 @@ dp = os.path.dirname(__file__)
 join = os.path.join
 class ObjectVarDeal(BaseDeal):
     """
-    {
-        id: ...
-        type: ovar
-        source: 
-        method: 
-    }
-    [[id, type], source, method]
+        对象变量ovar:
+            {
+                id:id
+                type: ovar
+                source: string
+                key: string
+                info: null
+            }
+        简写:
+            [[id, ovar], source, key, info]
+            [ovar, source, key]
+        例:
+            [ovar, obj.test, id] //返回对象id=obj.test的变量id
     """
     def init(self, fp_lists = None, fp_defaults = None):
         self.singles = {}
@@ -28,8 +34,13 @@ class ObjectVarDeal(BaseDeal):
         src = edata.src
         source = xf.g(data, source=None)
         key = xf.g(data, key=0)
+        info = xf.g(data, info=None)
+        if info is not None:
+            info = self.get_obj(info, src = edata.src, info = edata.info)
+        else:
+            info = edata.info
         if source is not None:
-            source = conf.get(source)
+            source = conf.get_obj(source, info = info)
         if source is None:
             source = src
         if source is None:

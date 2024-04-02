@@ -6,6 +6,19 @@ import os
 dp = os.path.dirname(__file__)
 join = os.path.join
 class JoinDeal(BaseDeal):
+    """
+    文件路径合并join:
+        {
+            id:id
+            type: join
+            data: [...]
+        }
+    简写:
+        [[id, join], data]
+        [join, data]
+    例:
+        [join, [[val, home], [val, buildz]]] //返回字符串 "home/buildz"
+    """
     def init(self, fp_lists=None, fp_defaults=None):
         super().init("JoinDeal", fp_lists, fp_defaults, join(dp, "conf", "join_lists.js"), None)
     def deal(self, edata:EncapeData):
@@ -13,7 +26,7 @@ class JoinDeal(BaseDeal):
         data = self.fill(data)
         lists = xf.g(data, data=[])
         conf = edata.conf
-        rst = [self.get_obj(k, conf) for k in lists]
+        rst = [self.get_obj(k, conf, edata.src, edata.info) for k in lists]
         return join(*rst)
 
 pass

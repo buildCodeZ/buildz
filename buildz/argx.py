@@ -13,12 +13,14 @@ def fetch(argv = None):
     i = 0
     while i<len(argv):
         v = argv[i]
+        make_plus = 0
         if v in ["-", "--", "+"]or v[0] not in "+-":
             lists.append(v)
             i+=1
             continue
         if v[0] == "+":
             key = v[1:]
+            make_plus = 1
             val = 1
         else:
             if v[1]=="-":
@@ -31,16 +33,21 @@ def fetch(argv = None):
             else:
                 key = v[1]
                 if len(v)>2:
-                    val = argv[2:]
+                    val = v[2:]
                 else:
                     if i+1>=len(argv):
                         val = 1
                     else:
                         val = argv[i+1]
                         i+=1
-        if key not in maps:
-            maps[key] = []
-        maps[key].append(val)
+        if make_plus:
+            keys = key.split(",")
+        else:
+            keys = [key]
+        for key in keys:
+            if key not in maps:
+                maps[key] = []
+            maps[key].append(val)
         i+=1
     for k in maps:
         v = maps[k]
@@ -50,5 +57,14 @@ def fetch(argv = None):
 
 pass
 
+def get(maps, keys, default=None):
+    if type(keys) not in [list, tuple]:
+        keys = [keys]
+    for key in keys:
+        if key in maps:
+            return maps[key]
+    return default
+
+pass
         
 

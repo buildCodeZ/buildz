@@ -20,5 +20,6 @@
         key: method
     },
     {key: args, default: []},
-    {key: maps, default: {}}
+    {key: maps, default: {}},
+    {key: info, default: null}
 ]

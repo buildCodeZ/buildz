@@ -300,18 +300,24 @@ class Confs(Base):
         self.update_maps(self.envs, obj.envs)
     def get(self, *args, **maps):
         return self.get_obj(*args, **maps)
-    def get_obj(self, id, sid = None):
+    def remove(self, *a,**b):
+        return self.get_obj(*a, **b, remove=True)
+    def get_obj(self, id, sid = None, src = None, info = None, remove = False):
         """
             根据data id获取data对象，处理逻辑：根据data id查配置，根据配置的type查deal，返回deal处理过的配置
         """
-        conf = self.get_data(id, sid)
+        conf = self.get_data(id, sid, src=src, info = info)
         if conf is None:
             return None
         deal = self.get_deal(conf.type, sid)
         if deal is None:
             return None
         #print(f"get_obj: {id}({sid}), conf: {conf}, deal: {deal}, type: {conf.type}")
-        return deal(conf)
+        if not remove:
+            obj = deal(conf)
+        else:
+            obj = deal.remove(conf)
+        return obj
     def get_deal(self, type, sid=None):
         """
             根据type类型查处理函数deal，sid（配置文件id）不为空并且global_deal=False则先查局部
@@ -336,7 +342,7 @@ class Confs(Base):
                 break
             node = node.ids[id]
         return confs
-    def get_data(self, id, sid=None):
+    def get_data(self, id, sid=None, src = None, info = None):
         """
             根据id查对应的data配置
         """
@@ -347,7 +353,7 @@ class Confs(Base):
         for confs,i in arr:
             id = self.id(ids[i:])
             for conf in confs:
-                conf = conf.get_data(id, sid==conf.id, False)
+                conf = conf.get_data(id, sid==conf.id, False, src = src, info = info)
                 if conf is not None:
                     return conf
         return None

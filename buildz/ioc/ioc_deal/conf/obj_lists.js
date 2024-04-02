@@ -26,7 +26,7 @@
         default: []
     },
     {
-        key: calls,
-        default: []
+        key: call,
+        default: null
     }
 ]

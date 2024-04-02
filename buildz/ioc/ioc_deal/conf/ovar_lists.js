@@ -19,4 +19,5 @@
         nullable: 0,
         key: key
     }
+    {key: info, default: null}
 ]

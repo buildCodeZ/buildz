@@ -5,13 +5,13 @@
             type: join
             data: [
                 [var, buildz.demo.test.dp]
-                [val, res/help]
+                res/help
             ]
         }
         {
             id: help.default, type: object, source: buildz.demo.test.Help
             construct: {
-                args: [(ref, help.dir), (val, default.js)]
+                args: [(ref, help.dir), default.js]
             }
         }
         {
@@ -34,6 +34,10 @@
                             xf: {
                                 deal: deal.xf
                                 help: help.xf
+                            },
+                            search: {
+                                deal: deal.search
+                                help: help.search
                             }
                         }
                     }

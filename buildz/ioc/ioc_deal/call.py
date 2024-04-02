@@ -7,14 +7,22 @@ dp = os.path.dirname(__file__)
 join = os.path.join
 class CallDeal(BaseDeal):
     """
-    {
-        id: ...
-        type: call
-        method: 
-        args: []
-        maps: {}
-    }
-    [[id, type], method, args, maps]
+    函数调用call:
+        {
+            id:id
+            type:call
+            method: import路径+"."+方法名
+            args: [item_conf, ...]
+            maps: {
+                key1:item_conf,
+                ...
+            }
+        }
+    简写:
+        [[id, call], method, args, maps]
+        [call, method]
+    例:
+        [call, buildz.ioc.demo.test.test] //调用buildz.ioc.demo.test下的test方法
     """
     def init(self, fp_lists = None, fp_defaults = None):
         self.singles = {}
@@ -32,8 +40,8 @@ class CallDeal(BaseDeal):
         method = pyz.load(method)
         args = xf.g(data, args=[])
         maps = xf.g(data, maps ={})
-        args = [self.get_obj(v, conf, src) for v in args]
-        maps = {k:self.get_obj(maps[k], conf, src) for k in maps}
+        args = [self.get_obj(v, conf, src, info = edata.info) for v in args]
+        maps = {k:self.get_obj(maps[k], conf, src, info = edata.info) for k in maps}
         return method(*args, **maps)
 
 pass

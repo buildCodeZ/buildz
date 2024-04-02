@@ -7,14 +7,21 @@ dp = os.path.dirname(__file__)
 join = os.path.join
 class CallsDeal(BaseDeal):
     """
-    {
-        id: ...
-        type: calls
-        calls: [
-            ...
-        ]
-    }
-    [[id, type], calls]
+    函数调用序列calls:
+        {
+            id:id
+            type:calls
+            calls: [
+                item_conf,
+                ...
+            ]
+        }
+    简写:
+        [[id, calls], calls]
+        [calls, calls]
+    例:
+        //顺序调用buildz.pyz.pyexe()和buildz.pyz.pypkg()
+        [[main_call, calls], [[call, buildz.pyz.pyexe], [call, buildz.pyz.pypkg]]] 
     """
     def init(self, fp_lists = None, fp_defaults = None):
         self.singles = {}

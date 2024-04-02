@@ -5,7 +5,6 @@ def get(obj, key, default=None):
     return obj[key]
 
 pass
-
 def g(obj, **maps):
     rst = []
     for k in maps:
@@ -19,6 +18,44 @@ def g(obj, **maps):
 
 pass
 
+def sets(maps, keys, val):
+    if type(keys) != list:
+        keys = [keys]
+    for key in keys[:-1]:
+        if key not in maps:
+            maps[key] = {}
+        maps = maps[key]
+    maps[keys[-1]] = val
+
+pass
+def gets(maps, keys, default = None):
+    if type(keys) != list:
+        keys = [keys]
+    for key in keys:
+        if key not in maps:
+            return default
+        maps = maps[key]
+    return maps
+
+pass
+def removes(maps, keys):
+    if type(keys) != list:
+        keys = [keys]
+    arr = []
+    for key in keys:
+        if key not in maps:
+            break
+        arr.append([maps, key])
+        maps = maps[key]
+    arr.reverse()
+    first=1
+    for maps,key in arr:
+        if first or len(maps[key])==0:
+            del maps[key]
+        first=0
+    return None
+
+pass
 def l2m(arr, **maps):
     rst = {}
     i = 0

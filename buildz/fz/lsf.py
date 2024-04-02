@@ -19,16 +19,19 @@ class ListsDeal(dirz.FileDeal):
 pass
 
 class FileSearchDeal(dirz.FileDeal):
-    def init(self, pt_fp=None, pt = None):
+    def init(self, pt_fp=None, pt = None, depth = None):
         super().init()
         self.pt_fp = pt_fp
         if type(pt) == str:
             pt = pt.encode()
         self.pt = pt
         self.rst = []
+        self.depth = depth
     def result(self):
         return self.rst
     def visit(self, filepath, isdir, depth):
+        if self.depth is not None and depth > self.depth:
+            return False
         if isdir:
             return True
         if self.pt_fp is not None and len(re.findall(self.pt_fp, filepath))==0:
@@ -56,7 +59,7 @@ def lists(fp):
     return ListsDeal().dirs(fp)
 
 pass
-def search(dp, pt_fp = None, pt = None):
-    return FileSearchDeal(pt_fp, pt).dirs(dp)
+def search(dp, pt_fp = None, pt = None, depth = None):
+    return FileSearchDeal(pt_fp, pt, depth).dirs(dp)
 
 pass

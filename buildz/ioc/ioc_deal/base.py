@@ -137,14 +137,21 @@ class BaseDeal(Base):
         data = self.format.l2m(data)
         self.format.fill(data)
         return data
-    def get_obj(self, data, conf, src = None):
-        type = conf.confs.get_data_type(data, 1, conf.default_type())
-        edata = EncapeData(data, conf, local=True, type=type, src = src)
+    def get_obj(self, data, conf, src = None, info = None):
+        if type(data) not in [list, dict, tuple]:
+            i = conf.confs.data_index_type[0]
+            data = [conf.default_type(), data]
+            if i != 0:
+                data.reverse()
+        _type = conf.confs.get_data_type(data, 1, conf.default_type())
+        edata = EncapeData(data, conf, local=True, type=_type, src = src, info = info)
         deal = conf.get_deal(edata.type)
         if deal is None:
             return None
         return deal(edata)
     def deal(self, edata:EncapeData):
+        return None
+    def remove(self, edata:EncapeData):
         return None
 
 pass

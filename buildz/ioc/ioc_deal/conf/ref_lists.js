@@ -17,6 +17,10 @@
         {
             nullable: 0,
             key: key
+        },
+        {
+            nullable: 1,
+            key: info
         }
     ]
 }

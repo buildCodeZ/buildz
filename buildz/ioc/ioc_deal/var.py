@@ -7,13 +7,17 @@ dp = os.path.dirname(__file__)
 join = os.path.join
 class VarDeal(BaseDeal):
     """
-    {
-        id: ...
-        type: ovar
-        source: 
-        method: 
-    }
-    [[id, type], source, method]
+        代码变量var:
+            {
+                id:id
+                type: var
+                key: string
+            }
+        简写:
+            [[id, var], key]
+            [var, key]
+        例:
+            [var, buildz.pyz.is_windows] // 返回buildz.pyz下的is_windows
     """
     def init(self, fp_lists = None, fp_defaults = None):
         self.singles = {}
