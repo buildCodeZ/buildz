@@ -11,15 +11,36 @@ def encode(steps, as_str = False):
         步骤列表转bytes/str
     """
     rst = b""
+    # 加减的长度设置最多2**15-1，保留1位当作“加/减”，4位整数当字符串位置索引
+    max16 = 2**15-1
     for step in steps:
         if step[0] == ACT_ADD:
             bs = step[2]
             if type(bs) == str:
                 bs = bs.encode("utf-8")
-            obj = struct.pack(">BII", 1, step[1], len(bs))+bs
+            bs_arr = []
+            while len(bs)>max16:
+                cut = bs[:max16]
+                bs = bs[max16:]
+                bs_arr.append(cut)
+            if len(bs)>0:
+                bs_arr.append(bs)
+            for bs in bs_arr:
+                obj = struct.pack(">HI", len(bs)*2+1, step[1])+bs
+                rst+=obj
         else:
-            obj = struct.pack(">BII", 0, step[1], step[2])
-        rst+=obj
+            s1 = step[1]
+            s2 = step[2]
+            nexts = [s1]
+            while (s2-s1)>max16:
+                nexts.append(s1+max16)
+                s1+=max16+1
+            if s1<=s2:
+                nexts.append(s2)
+            for i in range(1,len(nexts)):
+                obj = struct.pack(">HI", (nexts[i]-nexts[i-1])*2, nexts[i-1])
+                rst+=obj
+        #rst+=obj
     if as_str:
         rst = base64.b64encode(rst).decode()
     return rst
@@ -31,19 +52,22 @@ def decode(obj):
     """
     if type(obj) == str:
         obj = base64.b64decode(obj)
-    ni = 1+4+4
+    ni = 2+4
     rst = []
     while len(obj)>0:
         bs = obj[:ni]
         obj = obj[ni:]
-        act, base, c = struct.unpack(">BII", bs)
+        v2, base = struct.unpack(">HI", bs)
+        act = v2%2
+        c = v2//2
+        #act, base, c = struct.unpack(">HI", bs)
         if act == 1:
             bs = obj[:c]
             obj = obj[c:]
             s = bs.decode("utf-8")
             tmp = [ACT_ADD, base, s]
         else:
-            tmp = [ACT_DEL, base, c]
+            tmp = [ACT_DEL, base, base+c]
         rst.append(tmp)
     return rst
 

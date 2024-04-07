@@ -19,7 +19,6 @@ class Deal:
         nspt = argx.get(maps, 'ns', 0)
         if nspt:
             spt = 0
-        print(f"SPT:{spt}")
         if opt == 'diff':
             bs1 = fz.read(fp1).decode("utf-8")
             bs2 = fz.read(fp2).decode("utf-8")
@@ -36,6 +35,7 @@ class Deal:
                 stps = "t"+xf.dumps(stps)
                 stps = stps.encode()
             fz.write(fp_step, stps)
+            print("done diff")
         elif opt == 'update':
             bs1 = fz.read(fp1).decode("utf-8")
             bs_step = fz.read(fp_step)
@@ -47,6 +47,7 @@ class Deal:
                 stps = xf.loads(bs_step.decode())
             bs2 = tz.m_update(bs1, stps,split=spt).encode("utf-8")
             fz.write(fp2, bs2)
+            print("done update")
         else:
             print(f"unexpect opt: {opt}")
     pass
