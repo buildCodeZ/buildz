@@ -117,6 +117,20 @@ def combine(steps):
     return rst
 
 pass
+def count(steps):
+    cnt = 0
+    cadd,cdel = 0,0
+    #print(f"steps: {len(steps)}")
+    for step in steps:
+        if step[0] == ACT_ADD:
+            cnt+=len(step[2])
+            cadd+=len(step[2])
+        else:
+            cnt+=1+step[2]-step[1]
+            cdel +=1+step[2]-step[1]
+    return cnt#,cadd,cdel
+
+pass
 def update(s, steps, split=1):
     """
         按照steps更新s

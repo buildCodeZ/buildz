@@ -10,7 +10,10 @@ class Deal:
         opt = args[1]
         fp1 = args[2]
         fp2 = args[3]
-        fp_step = args[4]
+        if len(args)>4:
+            fp_step = args[4]
+        else:
+            fp_step = "steps.diff"
         mark_encode = argx.get(maps, 'e', 1)
         mark_txt = argx.get(maps, 't', None)
         if mark_txt:
@@ -19,12 +22,16 @@ class Deal:
         nspt = argx.get(maps, 'ns', 0)
         if nspt:
             spt = 0
-        if opt == 'diff':
+        if opt == 'diff' or opt == 'count':
             bs1 = fz.read(fp1).decode("utf-8")
             bs2 = fz.read(fp2).decode("utf-8")
             #bs1 = b"text z xxxyzijsa"
             #bs2 = b"test xxxx afzjcovijsax"
             stps = tz.m_steps(bs1, bs2,split=spt)
+            if opt == 'count':
+                cnt = tz.m_count(stps)
+                print(f"diff from {fp1} to {fp2}: {cnt}")
+                return
             if mark_encode:
                 stps = b"e"+tz.m_encode(stps)
             else:
