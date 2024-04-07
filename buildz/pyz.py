@@ -1,4 +1,6 @@
 
+import sys
+import os
 def load(md, fc = None):
     """
         import object(whether module or others) from md(or md.fc)
@@ -26,11 +28,11 @@ def load(md, fc = None):
     return fc
 
 pass
-import sys
 def pyexe():
     return sys.executable
 
 pass
+exe=pyexe
 is_windows = sys.platform.lower()=='win32'
 def pypkg():
     """
@@ -45,3 +47,35 @@ def pypkg():
     return fpath
 
 pass
+pkg = pypkg
+pth = pypkg
+
+class Pth:
+    def __init__(self, fp = "build.pth"):
+        self.fp = os.path.join(pth(), fp)
+    def read(self):
+        fp = self.fp
+        if not os.path.isfile(fp):
+            return []
+        with open(fp, 'rb') as f:
+            s = f.read().decode()
+        return s.split("\n")
+    def add(self, path):
+        arr = self.read()
+        if path in arr:
+            print("alread add")
+            return
+        arr.append(path)
+        self.write(arr)
+    def write(self, paths = []):
+        if type(paths) not in [list, tuple]:
+            paths = [paths]
+        s = "\n".join(paths)
+        with open(self.fp, 'wb') as f:
+            f.write(s.encode())
+    def remove(self):
+        os.remove(self.fp)
+
+pass
+
+_pth = Pth()

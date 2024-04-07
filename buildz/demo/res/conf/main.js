@@ -38,6 +38,10 @@
                             search: {
                                 deal: deal.search
                                 help: help.search
+                            },
+                            myers: {
+                                deal: deal.myers
+                                help: help.myers
                             }
                         }
                     }

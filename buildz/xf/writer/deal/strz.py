@@ -23,7 +23,9 @@ class StrDeal(base.BaseDeal):
             return None
         et = self.like("\n", val)
         need_ep = 0
-        if val.find(et)>=0:
+        if len(val)==0:
+            need_ep = 1
+        elif val.find(et)>=0:
             need_ep = 1
         else:
             for pt in self.pts:

@@ -8,7 +8,7 @@ pts = [
     "null",
     "true",
     "false",
-    "[\s\S]*[\n\r\t\:\[\]\{\}][\s\S]*"
+    "[\s\S]*[\n\r\t\:\[\]\{\}\(\)\,\:\=\'\<\>\" \|\#\;\/][\s\S]*"
 ]
 def build(json_format=False):
     mgs = mg.Manager()
