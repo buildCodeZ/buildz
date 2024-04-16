@@ -21,6 +21,9 @@ def fetch(argv = None):
     raise Exception("unable to fetch params")
 
 pass
+# python -m buildz.xf {a:b}
+def test():
+    rst = fetch()
+    print(f"cmd params: {rst}")
 
-        
-
+pass

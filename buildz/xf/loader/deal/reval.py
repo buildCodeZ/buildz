@@ -4,6 +4,10 @@ from .. import exp
 from . import lr
 import re
 class ValDeal(base.BaseDeal):
+    def has_prev(self):
+        return 0
+    def has_deal(self):
+        return 1
     """
         正则表达式匹配
     """

@@ -4,6 +4,10 @@ from .. import exp
 from ... import file
 import json
 class PrevStrDeal(base.BaseDeal):
+    def has_prev(self):
+        return 1
+    def has_deal(self):
+        return 0
     def init(self, left = '"', right= '"', single_line = False, note = False, translate = False):
         self.left = left
         self.right = right
@@ -71,6 +75,7 @@ class PrevStrDeal(base.BaseDeal):
                 tmp += c
                 continue
             ctmp+=c
+        buffer.clean()
         xtmp = tmp[:-self.lr]
         if not self.note and self.single_line and xtmp.find(self.like("\n", xtmp))>=0:
             print("left:",self.left, "right:", self.right)

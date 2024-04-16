@@ -1,5 +1,9 @@
 
 class BaseDeal:
+    def has_prev(self):
+        return 1
+    def has_deal(self):
+        return 1
     def sp(self):
         return super(self.__class__, self)
     def regist(self, mgs):

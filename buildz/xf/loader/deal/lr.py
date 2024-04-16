@@ -27,6 +27,7 @@ class LRDeal(base.BaseDeal):
             if len(rm.strip())>0:
                 pos.update(rm)
                 raise exp.FormatExp(self.err("unexcept char before <lr> left symbol"), pos.get(), rm)
+            buffer.clean()
             pos.update(cl)
             queue.append(item.PrevItem(cl, pos.get(), self.id(), left = 1))
         else:

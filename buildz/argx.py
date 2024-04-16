@@ -1,5 +1,41 @@
 #coding=utf-8
 import sys
+class Fetch:
+    """
+    命令行参数读取
+    ft = Fetch("id,name,kind".split(","), {"a":"age"})
+        or
+    ft = Fetch(*xf.loads("[[id,name,kind],{a:age}]"))
+
+    ft("001 zero life -a12".split(" ")) = {'id': '001', 'name': 'zero', 'kind': 'life', 'age': '12'}
+
+    但更简单的方法是:
+    xf.args("{id:'001', name: zero, kind: life, age: 12}".split(" ")) = {'id': '001', 'name': 'zero', 'kind': 'life', 'age': 12}
+    python buildz.xf {id:'001', name: zero, kind: life, age: 12}
+    就是对引号不太适用
+    """
+    def __init__(self, args = [], maps ={}):
+        self.args = args
+        self.maps = maps
+    def __call__(self, argv = None):
+        args, maps = fetch(argv)
+        rst = {}
+        for i in range(len(args)):
+            if i >= len(self.args):
+                break
+            key = self.args[i]
+            rst[key] = args[i]
+        for key in maps:
+            rst[key] = maps[key]
+        for key in self.maps:
+            rkey = self.maps[key]
+            if key in rst:
+                val = rst[key]
+                rst[rkey] = val
+                del rst[key]
+        return rst
+
+pass
 def fetch(argv = None):
     r"""
     format: a b c -a 123 -b456 --c=789 +d  -x"??? ???" y z

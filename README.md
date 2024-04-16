@@ -15,6 +15,8 @@
 
 运行python -m buildz查看帮助
 
+PS: 对比了下json.loads（修改了下json的scanner.py，让它在纯python下运行，不然json.loads会更快）和目前的xf.loads(buildz.xf.readz.loads)的速度，xf.loads比json.loads慢7倍，可能是读字符串更频繁，方法调用更多（为了代码更结构化和容易修改），其实有一版更慢(buildz.xf.read.loads，废弃代码，后面看情况删掉)，慢100倍，因为只考虑结构化，没考虑列表增减开销
+
 1, a profile file format base on json, make it easy to write profile file, module is in buildz.xf
 2, a ioc profile file read function base on xf format, module is in buildz.ioc
 3, other tools module:
@@ -29,4 +31,6 @@ code relationship:
     buildz.demo use all other modules
 
 run python -m buildz to see help
+
+PS: testing speed on json.loads(has modified scanner.py in json module to make it purely run on Python, which make it run slower) and xf.loads(real func is buildz.xf.readz.loads), xf.loads takes 7 times longer than json.loads, it may cost by more func calls and more string cutting and reading(to make codes more structuring and easier to update)
 ```

@@ -17,7 +17,12 @@ def g(obj, **maps):
     return rst
 
 pass
+def s(obj, **maps):
+    for k in maps:
+        v = maps[k]
+        obj[k] = v
 
+pass
 def sets(maps, keys, val):
     if type(keys) != list:
         keys = [keys]

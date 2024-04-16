@@ -18,6 +18,7 @@
             # 字符串里有特殊符合，还是要用引号括起来
             # if special charater is contained  in string, use '' or "" to wrap string
             'a:b':"{c,d,e,f}"
+            <1,int>=<0,bool>
         }
     ]
 }

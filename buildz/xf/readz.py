@@ -1,21 +1,26 @@
 
-from .loader import mg, buffer, base
+from .loaderz import mg, buffer, base
 
-from .loader.deal import nextz, spt, strz, listz, spc, setz, mapz, reval, lrval
-def bl(val):
-    trues = [base.BaseDeal.like(k, val) for k in ["true", "True", "1"]]
-    trues += [1,True]
-    falses = [base.BaseDeal.like(k, val) for k in ["false", "False", "0"]]
-    falses += [0,False]
-    if val in trues:
-        return True
-    elif val in falses:
-        return False
-    else:
-        raise Exception("unknown bool val")
+from .loaderz.deal import nextz, spt, strz, listz, spc, setz, mapz, reval, lrval
+class BoolFc:
+    def __init__(self, mg):
+        trues = [mg.like(k) for k in ["true", "True", "1"]]   
+        trues += [1,True] 
+        falses = [mg.like(k) for k in ["false", "False", "0"]]
+        falses += [0,False]
+        self.trues = set(trues)
+        self.falses = set(falses)
+    def __call__(self, val):
+        if val in self.trues:
+            return True
+        elif val in self.falses:
+            return False
+        else:
+            raise Exception("unknown bool val")
 
 pass
 def build_lrval(mgs):
+    bl = BoolFc(mgs)
     fcs = lrval.Fcs()
     fcs.set("float", float)
     fcs.set("f", float)
@@ -40,7 +45,6 @@ def build_val(mgs):
 pass
 def build():
     mgs = mg.Manager()
-    mgs.add(spc.PrevSpcDeal())
     build_val(mgs)
     mgs.add(strz.PrevStrDeal("r'''","'''",0,0,0))
     mgs.add(strz.PrevStrDeal('r"""','"""',0,0,0))
@@ -56,7 +60,7 @@ def build():
     mgs.add(strz.PrevStrDeal('"','"',1,0,1))
     mgs.add(setz.SetDeal(':'))
     mgs.add(setz.SetDeal('='))
-    mgs.add(spt.PrevSptDeal(',',1))
+    mgs.add(spt.PrevSptDeal(",",1))
     mgs.add(spt.PrevSptDeal(';',1))
     mgs.add(spt.PrevSptDeal('\n'))
     build_lrval(mgs)
@@ -69,18 +73,10 @@ def build():
 pass
 def load(read):
     mgs = build()
-    return msg.load(read)
+    return msg.loads(read)
 def loads(s):
-    # lr = "{}"
-    # ls = "{[("
-    # if type(s)==bytes:
-    #     lr = lr.encode()
-    #     ls = ls.encode()
-    # x = s.strip()
-    # if len(x)>0 and x[0] not in ls:
-    #     s = lr[0]+s+lr[1]
     mgs = build()
     input = buffer.BufferInput(s)
-    return mgs.load(s)
+    return mgs.loads(s)
 
 pass
