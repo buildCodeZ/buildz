@@ -15,7 +15,7 @@ def load(md, fc = None):
         try:
             md = __import__(".".join(mds))
             break
-        except:
+        except ModuleNotFoundError as exp:
             mds = mds[:-1]
     if len(mds)==0:
         raise Exception("can't import package from "+md)

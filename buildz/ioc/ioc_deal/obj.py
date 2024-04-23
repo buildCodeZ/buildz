@@ -1,5 +1,5 @@
 #
-from ..ioc.base import Base, EncapeData
+from ..ioc.base import Base, EncapeData,IOCError
 from .base import FormatData,BaseDeal
 from buildz import xf, pyz
 import os
@@ -12,7 +12,9 @@ class ObjectDeal(BaseDeal):
                 id: id
                 type: object
                 source: 导入路径+调用方法/类
-                single: 1 //是否单例，默认是
+                single: 1 //是否单例，默认是，
+                        //这里的单例是一个id对应一个实例，
+                        //如果两个id用的同一个source，就是同一个source的两个对象
                 // 构造函数
                 construct:{
                     args: [
@@ -23,6 +25,15 @@ class ObjectDeal(BaseDeal):
                         key1: item_conf,
                         ...
                     }
+                }
+                //construct和args+maps，不能同时存在
+                args: [
+                    item_conf,
+                    ...
+                ]
+                maps: {
+                    key1: item_conf,
+                    ...
                 }
                 // sets之前调用方法
                 prev_call: item_conf
@@ -98,13 +109,18 @@ class ObjectDeal(BaseDeal):
         if ids is not None:
             obj = xf.gets(self.singles, ids)
             if obj is not None:
+                #raise IOCError(f"null for {ids}")
                 return obj
         source = xf.g(data, source=0)
         fc = xf.get(self.sources, source, None)
         if fc is None:
             fc = pyz.load(source)
             self.sources[source]=fc
-        cst = xf.g(data, construct = [])
+        cst = xf.g(data, construct = None)
+        if cst is None:
+            _args = xf.g(data, args = [])
+            _maps = xf.g(data, maps = {})
+            cst = [_args, _maps]
         cst = self.fmt_cst(cst)
         args = xf.g(cst, args=[])
         maps = xf.g(cst, maps={})

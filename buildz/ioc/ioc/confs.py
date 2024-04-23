@@ -3,7 +3,7 @@ from buildz import xf, pyz
 from buildz.xf import g as xg
 from buildz import argx
 import json
-from .base import Base, EncapeData
+from .base import Base, EncapeData,IOCError
 from .conf import Conf
 import os
 class ConfsNode(Base):
@@ -220,6 +220,13 @@ class Confs(Base):
         self.deals = {}
         self.envs = {}
         self.envs_args = None
+        self.mark_init = False
+    def do_init(self):
+        if self.mark_init:
+            return
+        self.mark_init = True
+        for id in self.confs:
+            self.confs[id].do_init()
     def get_deal_type(self, obj):
         if type(obj)==dict:
             return obj[self.deal_key_type]
@@ -306,11 +313,14 @@ class Confs(Base):
         """
             根据data id获取data对象，处理逻辑：根据data id查配置，根据配置的type查deal，返回deal处理过的配置
         """
+        self.do_init()
         conf = self.get_data(id, sid, src=src, info = info)
         if conf is None:
+            raise IOCError(f"confs: can't find conf of {id}")
             return None
         deal = self.get_deal(conf.type, sid)
         if deal is None:
+            raise IOCError(f"confs: can't find deal of {id}, type = {conf.type}")
             return None
         #print(f"get_obj: {id}({sid}), conf: {conf}, deal: {deal}, type: {conf.type}")
         if not remove:

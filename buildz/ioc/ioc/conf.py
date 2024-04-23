@@ -2,7 +2,7 @@
 from buildz import xf, pyz
 from buildz.xf import g as xg
 import json
-from .base import Base, EncapeData
+from .base import Base, EncapeData,IOCError
 class Conf(Base):
     """
         配置文件格式：
@@ -31,6 +31,12 @@ class Conf(Base):
                 //全局数据配置项
                 datas: [
                     item_conf,
+                    ...
+                ]
+                // 初始化，会一个一个get(id)
+                // 其他地方调用该conf.get的时候，会先判断有没有进行init，没有就先调init里的get
+                inits: [
+                    id,
                     ...
                 ]
             }
@@ -63,7 +69,7 @@ class Conf(Base):
             }
         """
         if type(conf)!=dict:
-            conf = {'data':conf}
+            conf = {'datas':conf}
         id = xf.g(conf, id=None)
         if id is None:
             id = confs.conf_id()
@@ -74,6 +80,7 @@ class Conf(Base):
         self.locals = self.map(xf.g(conf, locals=[]), self.confs.get_data_id)
         self.datas = self.map(xf.g(conf, datas=[]), self.confs.get_data_id)
         self.deals = self.map(xf.g(conf, deals = []), self.confs.get_deal_type)
+        self.inits = xf.g(conf, inits = [])
         self._default_type = xf.g(conf, default_type = None)
         self.envs = xf.g(conf, envs = {})
         self.confs.flush_env(self.envs)
@@ -97,6 +104,13 @@ class Conf(Base):
             aliases = xf.g(conf, aliases = [])
             for alias in aliases:
                 self.deals[alias] = deal
+        self.mark_init = False
+    def do_init(self):
+        if self.mark_init:
+            return
+        self.mark_init = True
+        for id in self.inits:
+            self.get(id)
     def get_env(self, id, search_confs = True):
         if self.confs.global_env and search_confs:
             return self.confs.get_env(id, self.id)
@@ -116,6 +130,9 @@ class Conf(Base):
         if not search_confs:
             return None
         return self.confs.get_env(id, self.id)
+    def set_deal(self, type, fc):
+        self.deals[type] = fc
+        self.confs.set_deal(type, fc)
     def get_deal(self, type, search_confs = True):
         if self.confs.global_deal and search_confs:
             return self.confs.get_deal(type, self.id)
@@ -125,6 +142,7 @@ class Conf(Base):
             return None
         return self.confs.get_deal(type, self.id)
     def get_data(self, id, local = True, search_confs = True, src = None, info = None):
+        self.do_init()
         if id in self.datas:
             obj = self.datas[id]
             return EncapeData(obj, self, local = False, src=src, info = info)
@@ -148,9 +166,11 @@ class Conf(Base):
         """
         conf = self.get_data(id, src = src, info = info)
         if conf is None:
+            raise IOCError(f"can't find conf of {id}")
             return None
         deal = self.get_deal(conf.type)
         if deal is None:
+            raise IOCError(f"can't find deal of {id}, type = {conf.type}")
             return None
         if not remove:
             obj = deal(conf)

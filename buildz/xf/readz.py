@@ -43,8 +43,8 @@ def build_val(mgs):
     mgs.add(reval.ValDeal("false", lambda x:False))
 
 pass
-def build():
-    mgs = mg.Manager()
+def build(as_bytes=False):
+    mgs = mg.Manager(as_bytes)
     build_val(mgs)
     mgs.add(strz.PrevStrDeal("r'''","'''",0,0,0))
     mgs.add(strz.PrevStrDeal('r"""','"""',0,0,0))
@@ -71,11 +71,11 @@ def build():
     return mgs
 
 pass
-def load(read):
-    mgs = build()
+def load(read, as_bytes = False):
+    mgs = build(as_bytes)
     return msg.loads(read)
 def loads(s):
-    mgs = build()
+    mgs = build(type(s)==bytes)
     input = buffer.BufferInput(s)
     return mgs.loads(s)
 

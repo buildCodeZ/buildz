@@ -9,7 +9,8 @@
         {
             type: object,
             note: 对象,
-            build: buildz.ioc.ioc_deal.obj.ObjectDeal
+            build: buildz.ioc.ioc_deal.obj.ObjectDeal,
+            aliases: [obj]
         },
         {
             type: env,
@@ -65,6 +66,17 @@
             type: join,
             note: 文件路径拼接,
             build: buildz.ioc.ioc_deal.join.JoinDeal
+        },
+        {
+            type: xfile,
+            note: xf配置文件读取,
+            build: buildz.ioc.ioc_deal.xfile.XfileDeal,
+            aliases: [xf]
+        },
+        {
+            type: deal,
+            note: 扩展的自定义deal方法,
+            build: buildz.ioc.ioc_deal.deal.DealDeal
         }
     ]
 }

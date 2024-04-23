@@ -88,7 +88,7 @@ def deep_update(target, src, replace=1):
             continue
         mval = target[k]
         if type(mval) == dict and type(val)==dict:
-            update_maps(mval, val, replace)
+            deep_update(mval, val, replace)
         else:
             if replace:
                 target[k] = val
