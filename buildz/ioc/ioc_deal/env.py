@@ -1,11 +1,11 @@
 #
 from ..ioc.base import Base, EncapeData
-from .base import FormatData,BaseDeal
+from .base import FormatData,FormatDeal
 from buildz import xf, pyz
 import os
 dp = os.path.dirname(__file__)
 join = os.path.join
-class EnvDeal(BaseDeal):
+class EnvDeal(FormatDeal):
     """
         环境变量env:
             {

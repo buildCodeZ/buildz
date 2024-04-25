@@ -82,6 +82,13 @@ class Manager:
         while self.deal(buffer, arr):
             pass
         arr = [k.val for k in arr]
+        rst = []
+        for k in arr:
+            if type(k) == self.type:
+                if len(k.strip())==0:
+                    continue
+            rst.append(k)
+        arr = rst
         if len(arr)==1:
             arr = arr[0]
         return arr

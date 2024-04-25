@@ -19,11 +19,11 @@ from buildz import xf
 import json
 import time
 
-def cost(f,*a,**b):
+def cost(n, f,*a,**b):
     c = time.time()
     r = f(*a,**b)
     d = time.time()-c
-    print(f"time cost in {f}: {d}")
+    print(f"time cost in {n}-{f}: {d}")
     return r
 
 pass
@@ -55,6 +55,7 @@ print("test E")
 json.dumps(_map)
 print("test F")
 js = json.dumps(rst)
+js = "\n\n"+js+"\n"
 #js = xf.dumps(rst, json_format=1)
 # js = r"""
 # [
@@ -62,10 +63,10 @@ js = json.dumps(rst)
 # ]
 # """
 print("start")
-jv = cost(json.loads,js)
-xv = cost(rz.loads,js)
+jv = cost("json.loads", json.loads,js)
+xv = cost("rz.loads",rz.loads,js)
 print(f"judge: {jv==xv}")
-_xv = cost(rd.loads, js)
+_xv = cost("rd.loads",rd.loads, js)
 #with open("test.json", 'w') as f:
 #    f.write(js)
 if n>3 or m>3 or l > 3:

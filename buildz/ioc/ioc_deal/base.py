@@ -117,11 +117,38 @@ class FormatData(Base):
 
 pass
 
-
 class BaseDeal(Base):
-    def init(self, name = "BaseDeal", fp_lists = None, fp_defaults = None, df_fp_lists=None, df_fp_defaults=None):
-        self.singles = {}
-        self.sources = {}
+    """
+        基础处理类，加了一些方便处理的方法，自己写的处理可以不用继承这个
+        自己实现的处理类，要实现两个方法：__call__(self, edata:EncapeData)和remove(self, edata:EncapeData)
+        其中remove可以只写个空方法
+    """
+    def get_obj(self, data, conf, src = None, info = None):
+        if type(data) not in [list, dict, tuple]:
+            i = conf.confs.data_index_type[0]
+            data = [conf.default_type(), data]
+            if i != 0:
+                data.reverse()
+        _type = conf.confs.get_data_type(data, 1, conf.default_type())
+        edata = EncapeData(data, conf, local=True, type=_type, src = src, info = info)
+        return edata()
+        deal = conf.get_deal(edata.type)
+        if deal is None:
+            return None
+        return deal(edata)
+    def deal(self, edata:EncapeData):
+        """
+        """
+        return None
+    def remove(self, edata:EncapeData):
+        return None
+
+pass
+class FormatDeal(BaseDeal):
+    """
+        格式化处理类，加了自动装填，但感觉不太好用（一方面忘记写注释，写的时间久了，不知道要怎么用了，另一方面不好扩展，再一方面自动填充要消耗时间））
+    """
+    def init(self, name = "FormatDeal", fp_lists = None, fp_defaults = None, df_fp_lists=None, df_fp_defaults=None):
         if fp_lists is None:
             fp_lists = df_fp_lists
         if fp_defaults is None:
@@ -145,13 +172,10 @@ class BaseDeal(Base):
                 data.reverse()
         _type = conf.confs.get_data_type(data, 1, conf.default_type())
         edata = EncapeData(data, conf, local=True, type=_type, src = src, info = info)
+        return edata()
         deal = conf.get_deal(edata.type)
         if deal is None:
             return None
         return deal(edata)
-    def deal(self, edata:EncapeData):
-        return None
-    def remove(self, edata:EncapeData):
-        return None
 
 pass

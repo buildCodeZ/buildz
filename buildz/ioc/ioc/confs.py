@@ -55,6 +55,7 @@ class Confs(Base):
         data = xf.args()
         env = data['env']
         self.envs_args = env
+        self.flush_env(self.envs_args)
     def build_env_args_buildz(self):
         args, maps = argx.fetch()
         e = xf.get(maps, e = [])
@@ -63,22 +64,25 @@ class Confs(Base):
         env = [k.split("=") for k in env]
         env = {k[0]:"=".join(k[1:]) for k in env}
         self.envs_args = env
+        self.flush_env(self.envs_args)
+    def build_env_args(self):
+        if self.args_type == "xf":
+            self.build_env_args_xf()
+        else:
+            self.build_env_args_buildz()
     def get_env_args(self, id, sid=None):
-        if self.envs_args is not None:
-            if self.args_type == "xf":
-                self.build_env_args_xf()
-            else:
-                self.build_env_args_buildz()
-        return xf.get(self.envs_args, id)
+        if self.envs_args is None:
+            self.build_env_args()
+        return self.get_env_maps(id, self.envs_args)
     def get_env_local(self, id, sid=None):
         if sid is not None and not self.global_env:
             val = self.confs[sid].get_env(id, False)
             if val is not None:
                 return val
         return None
-    def get_env_conf(self, id, sid=None):
+    def get_env_maps(self, id, maps):
         ids = self.env_ids(id)
-        envs = self.envs
+        envs = maps
         for id in ids:
             if type(envs)!=dict:
                 envs = None
@@ -88,6 +92,8 @@ class Confs(Base):
                 break 
             envs = envs[id]
         return envs
+    def get_env_conf(self, id, sid=None):
+        return self.get_env_maps(id, self.envs)
     def get_env(self, id, sid=None):
         for key in self.env_orders:
             fc = self.env_fcs[key]
@@ -116,6 +122,8 @@ class Confs(Base):
     def set_env(self, id, val):
         obj = {id:val}
         self.flush_env(obj)
+        self.update_maps(self.envs, obj)
+    def update_env(self, obj):
         self.update_maps(self.envs, obj)
     def set_deal(self, type, fc):
         self.deals[type] = fc
@@ -205,7 +213,7 @@ class Confs(Base):
         self.data_index_type = xf.g(conf, data_index_type = [0,1])
         self.deal_key_type = xf.g(conf, deal_key_type = 'type')
         self.deal_index_type = xf.g(conf, deal_index_type = 0)
-        self.env_orders = xf.g(conf, env_orders = ['args', 'sys', 'local', 'conf'])
+        self.env_orders = xf.g(conf, env_orders = ['sys', 'local', 'conf'])
         self.env_fcs = {
             'args': self.get_env_args,
             'sys': self.get_env_sys,
@@ -221,6 +229,8 @@ class Confs(Base):
         self.envs = {}
         self.envs_args = None
         self.mark_init = False
+        if 'args' in self.env_orders:
+            self.build_env_args()
     def do_init(self):
         if self.mark_init:
             return
@@ -239,6 +249,7 @@ class Confs(Base):
             obj = obj[self.data_index_id[1]]
         return obj
     def get_data_type(self, obj, type_first = 1, default = None):
+        self.do_init()
         if type(obj)==dict:
             if self.data_key_type not in obj:
                 return default
@@ -314,7 +325,10 @@ class Confs(Base):
             根据data id获取data对象，处理逻辑：根据data id查配置，根据配置的type查deal，返回deal处理过的配置
         """
         self.do_init()
-        conf = self.get_data(id, sid, src=src, info = info)
+        if type(id) == EncapeData:
+            conf = id
+        else:
+            conf = self.get_data(id, sid, src=src, info = info)
         if conf is None:
             raise IOCError(f"confs: can't find conf of {id}")
             return None

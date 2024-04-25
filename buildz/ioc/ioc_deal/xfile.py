@@ -1,11 +1,11 @@
 #
 from ..ioc.base import Base, EncapeData
-from .base import FormatData,BaseDeal
+from .base import FormatData,FormatDeal
 from buildz import xf, pyz
 import os
 dp = os.path.dirname(__file__)
 join = os.path.join
-class XfileDeal(BaseDeal):
+class XfileDeal(FormatDeal):
     """
     配置文件载入xfile/xf:
         {

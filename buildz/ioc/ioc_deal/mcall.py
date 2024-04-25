@@ -1,11 +1,11 @@
 #
 from ..ioc.base import Base, EncapeData
-from .base import FormatData,BaseDeal
+from .base import FormatData,FormatDeal
 from buildz import xf, pyz
 import os
 dp = os.path.dirname(__file__)
 join = os.path.join
-class MethodCallDeal(BaseDeal):
+class MethodCallDeal(FormatDeal):
     """
     对象方法调用:
         {

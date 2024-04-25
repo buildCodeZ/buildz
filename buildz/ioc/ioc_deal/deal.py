@@ -1,13 +1,55 @@
 #coding=utf-8
 from ..ioc.base import Base, EncapeData,IOCError
-from .base import FormatData,BaseDeal
+from .base import FormatData,FormatDeal
 from buildz import xf, pyz
 import os
 dp = os.path.dirname(__file__)
 join = os.path.join
-class DealDeal(BaseDeal):
+class DealDeal(FormatDeal):
     """
-        // 调用后会注册到conf的deal上，用于扩展deals配置
+        扩展的好处是自定义格式，除了id,type和parent字段，其他字段可以自己加
+        假设生成个test.Demo，构造函数只有一个字段val
+        {
+            id: test
+            type: object
+            source: test.Demo
+            construct: {
+                args: [
+                    (val, 'demo')
+                ]
+            }
+        }
+        自己写个生成特定对象的处理类:
+        配置文件1 def_demo.js:
+        {
+            datas:[
+                {
+                    id: obj.demo.deal
+                    type: object
+                    source: test.BuildDemo
+                }
+                {
+                    id: demo.deal
+                    type: deal
+                    source: obj.demo.deal
+                    target: demo.deal
+                }
+            ]
+            //inits初始化
+            inits: [
+                demo.deal
+            ]
+        }
+        配置文件2 demo.js:
+        //只有datas的时候可以简写成只写datas列表里的数据
+        [
+            {
+                id: test
+                type: demo.deal
+                val: "demo"
+            }
+        ]
+        调用后会注册到conf的deal上，用于扩展deals配置
         deal字段deal:
             {
                 id:id
@@ -34,7 +76,11 @@ class DealDeal(BaseDeal):
         obj = edata.conf.get(source)
         if obj is None:
             raise IOCError("source object not found in dealdeal")
-        edata.conf.set_deal(target, obj)
+        targets = target
+        if type(targets) != list:
+            targets = [targets]
+        for target in targets:
+            edata.conf.set_deal(target, obj)
         return None
 
 pass

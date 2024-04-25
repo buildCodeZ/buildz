@@ -1,11 +1,11 @@
 #coding=utf-8
 from ..ioc.base import Base, EncapeData
-from .base import FormatData,BaseDeal
+from .base import FormatData,FormatDeal
 from buildz import xf, pyz
 import os
 dp = os.path.dirname(__file__)
 join = os.path.join
-class RefDeal(BaseDeal):
+class RefDeal(FormatDeal):
     """
         引用ref:
             {

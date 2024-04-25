@@ -39,3 +39,9 @@ def fread_c(filepath, coding = 'utf-8'):
     return decode_c(s, coding)
 
 pass
+
+def fwrite(filepath, content, mode = 'w'):
+    with open(filepath, mode) as f:
+        f.write(content)
+
+pass

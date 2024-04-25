@@ -1,6 +1,7 @@
 
 from .writer import mg, itemz, base, conf
 from .writer.deal import listz, mapz, strz, reval, jsonval
+from . import file
 pts = [
     "[\+\-]?\d+",
     "[\+\-]?\d+\.\d+",
@@ -34,6 +35,12 @@ def dumps(obj, bytes = 0, format = 0, deep = 0, json_format= 0):
         cf.set(set=1, prev=1)
     mgs = build(json_format)
     return mgs.dump(obj, cf)
+
+pass
+
+def dumpf(filepath, obj, bytes = 0, format = 0, deep = 0, json_format= 0, mode = 'w'):
+    s = dumps(obj, bytes = bytes, format = format, deep = deep, json_format= json_format)
+    file.fwrite(filepath, s, mode)
 
 pass
 

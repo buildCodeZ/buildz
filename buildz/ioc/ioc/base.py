@@ -47,6 +47,7 @@ class EncapeData(Base):
                     raise IOCError("only dict can be a parent: "+pid)
                 data = dict(data)
                 self.update_maps(data, pdt, replace=0)
+                del data['parent']
         self.data = data
         self.sid = conf.id
         self.src = src
@@ -57,5 +58,8 @@ class EncapeData(Base):
             type = conf.confs.get_data_type(data, 0, conf.default_type())
         self.type = type
         self.info = info
+    def deal(self, remove = False):
+        return self.conf.get(self, src = self.src, info=self.info, remove = remove)
+
 
 pass

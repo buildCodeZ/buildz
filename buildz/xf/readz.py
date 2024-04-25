@@ -1,6 +1,6 @@
 
 from .loaderz import mg, buffer, base
-
+from . import file
 from .loaderz.deal import nextz, spt, strz, listz, spc, setz, mapz, reval, lrval
 class BoolFc:
     def __init__(self, mg):
@@ -76,7 +76,16 @@ def load(read, as_bytes = False):
     return msg.loads(read)
 def loads(s):
     mgs = build(type(s)==bytes)
-    input = buffer.BufferInput(s)
+    #input = buffer.BufferInput(s)
     return mgs.loads(s)
+
+pass
+
+def loadf(fp, bts = False):
+    if bts:
+        s = file.bread(fp)
+    else:
+        s = file.fread(fp)
+    return loads(s)
 
 pass

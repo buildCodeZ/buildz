@@ -2,10 +2,6 @@ from .. import base
 
 
 class PrevSpcDeal(base.BaseDeal):
-    def has_prev(self):
-        return 1
-    def has_deal(self):
-        return 0
     """
         去掉左空格
     """

@@ -3,6 +3,7 @@ from buildz import xf, pyz
 from buildz.xf import g as xg
 import json
 from .base import Base, EncapeData,IOCError
+from builtins import id as _id
 class Conf(Base):
     """
         配置文件格式：
@@ -84,6 +85,7 @@ class Conf(Base):
         self._default_type = xf.g(conf, default_type = None)
         self.envs = xf.g(conf, envs = {})
         self.confs.flush_env(self.envs)
+        self.confs.update_env(self.envs)
         for _type in list(self.deals.keys()):
             conf = self.deals[_type]
             if type(conf) in [list, tuple]:
@@ -114,17 +116,7 @@ class Conf(Base):
     def get_env(self, id, search_confs = True):
         if self.confs.global_env and search_confs:
             return self.confs.get_env(id, self.id)
-        ids = self.confs.env_ids(id)
-        envs = self.envs
-        find = None
-        for id in ids:
-            if type(envs)!=dict:
-                envs = None
-                break
-            if id not in envs:
-                envs = None
-                break
-            envs = envs[id]
+        envs = self.confs.get_env_maps(id, self.envs)
         if envs is not None:
             return envs
         if not search_confs:
@@ -145,12 +137,20 @@ class Conf(Base):
         self.do_init()
         if id in self.datas:
             obj = self.datas[id]
-            return EncapeData(obj, self, local = False, src=src, info = info)
+            edata = EncapeData(obj, self, local = False, src=src, info = info)
+            if _id(obj) != _id(edata.data):
+                # 有parent，做了填充，用填充后的替换
+                self.datas[id] = edata.data
+            return edata
         if not local:
             return None
         if id in self.locals:
             obj = self.locals[id]
-            return EncapeData(obj, self, local = True, src=src, info = info)
+            edata = EncapeData(obj, self, local = True, src=src, info = info)
+            if _id(obj) != _id(edata.data):
+                # 有parent，做了填充，用填充后的替换
+                self.locals[id] = edata.data
+            return edata
         if not search_confs:
             return None
         return self.confs.get_data(id, self.id, src=src, info = info)
@@ -164,7 +164,11 @@ class Conf(Base):
         """
             根据data id获取data对象，处理逻辑：根据data id查配置，根据配置的type查deal，返回deal处理过的配置
         """
-        conf = self.get_data(id, src = src, info = info)
+        self.do_init()
+        if type(id) == EncapeData:
+            conf = id
+        else:
+            conf = self.get_data(id, src = src, info = info)
         if conf is None:
             raise IOCError(f"can't find conf of {id}")
             return None
