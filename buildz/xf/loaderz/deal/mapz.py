@@ -8,7 +8,24 @@ class MapDeal(lr.LRDeal):
     """
     def init(self, left, right):
         super().init(left, right, "map")
-    def build(self, arr):
+    def types(self):
+        return ['']
+    def build(self, obj):
+        val = obj.val
+        if type(val)!=list:
+            obj.is_val = 1
+            return obj
+        if len(val)==0:
+            obj.val = ''
+            obj.is_val = 1
+            return obj
+        if len(val)%3!=0:
+            return None
+        opt = val[1]
+        if opt.type!='kv':
+            return None
+        return self.build_arr(val)
+    def build_arr(self, arr):
         rst = {}
         if len(arr)%3!=0:
             raise Exception(f"u f in map: {arr}")

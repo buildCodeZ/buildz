@@ -6,6 +6,7 @@ import re
 class ValDeal(base.BaseDeal):
     def prepare(self,mg):
         self.pt = mg.like(self.pt)
+        self.type = mg.type
     def types(self):
         return [""]
     """
@@ -22,6 +23,8 @@ class ValDeal(base.BaseDeal):
         self.fc = fc
     def build(self, obj):
         val = obj.val
+        if type(val) != self.type:
+            return None
         if re.match(self.pt, val) is None:
             return None
         val = self.fc(val)

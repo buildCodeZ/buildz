@@ -3,6 +3,7 @@ from . import buffer
 from . import base
 from . import pos
 from . import exp
+from . import item
 from ..stack import Stack
 class Manager:
     def __init__(self, as_bytes = False):
@@ -65,7 +66,7 @@ class Manager:
         raise Exception("unspt deal type:"+_type)
     def deal(self, buffer, arr):
         c = buffer.read()
-        if len(c)==0:
+        if len(c)==0 and buffer.size()==0:
             return False
         deals = self.get_deals(c)
         find = False
@@ -77,21 +78,35 @@ class Manager:
             if deal.deal(buffer, arr, self):
                 return True
         return False
+    def build_arr(self, _arr):
+        dts = []
+        for k in _arr:
+            _k = self.build(k)
+            if item.is_null(_k):
+                continue
+            dts.append(_k)
+        return dts
     def load(self, buffer):
         arr = []
         while self.deal(buffer, arr):
             pass
-        arr = [k.val for k in arr]
-        rst = []
-        for k in arr:
-            if type(k) == self.type:
-                if len(k.strip())==0:
-                    continue
-            rst.append(k)
-        arr = rst
-        if len(arr)==1:
-            arr = arr[0]
-        return arr
+        #arr = [k.val for k in arr]
+        #rst = []
+        # for k in arr:
+        #     if type(k) == self.type:
+        #         if len(k.strip())==0:
+        #             continue
+        #     rst.append(k)
+        arr = self.build_arr(arr)
+        obj = item.Item(arr, type = "", is_val = 0)
+        obj = self.build(obj)
+        #arr = rst
+        #if len(arr)==1:
+        #    arr = arr[0]
+        val = obj.val
+        if type(val)==list and len(val)==1:
+            val = val[0]
+        return val
     def loads(self, reader):
         if type(reader) == self.type:
             #print(f"try str, {len(reader)}")

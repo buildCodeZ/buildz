@@ -26,17 +26,26 @@ class LRDeal(base.BaseDeal):
         buffer.clean()
         if len(rm)>0:
             _arr.append(item.Item(rm ,type = '', is_val=False))
+        # dts = []
+        # for k in _arr:
+        #     _k = mg.build(k)
+        #     if item.is_null(_k):
+        #         continue
+        #     dts.append(_k)
+        #dts = [mg.build(k) for k in _arr]
+        dts = mg.build_arr(_arr)
+        obj = self.build_arr(dts)
+        rst.append(obj)
+        return True
+    def to_vals(self, _arr, mg):
         dts = []
         for k in _arr:
             _k = mg.build(k)
             if item.is_null(_k):
                 continue
             dts.append(_k)
-        #dts = [mg.build(k) for k in _arr]
-        obj = self.build(dts)
-        rst.append(obj)
-        return True
-    def build(self, obj):
+        return dts
+    def build_arr(self, obj):
         return item.Item(obj, type = self.type, is_val=True)
     """
         分隔符，有分隔符后将缓存的数据当作字符串
