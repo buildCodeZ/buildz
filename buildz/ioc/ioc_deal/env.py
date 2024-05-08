@@ -12,6 +12,7 @@ class EnvDeal(FormatDeal):
                 id: id
                 type: env
                 key: 环境变量key
+                default: item_conf //可选
             }
         简写：
             [[id, env], key]
@@ -25,6 +26,10 @@ class EnvDeal(FormatDeal):
         data = edata.data
         data = self.fill(data)
         key = data['key']
-        return edata.conf.get_env(key)
+        val = edata.conf.get_env(key)
+        default = xf.g(data, default=None)
+        if val is None and default is not None:
+            val = self.get_obj(default, edata.conf)
+        return val
 
 pass

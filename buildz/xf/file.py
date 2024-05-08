@@ -40,7 +40,7 @@ def fread_c(filepath, coding = 'utf-8'):
 
 pass
 
-def fwrite(filepath, content, mode = 'w'):
+def fwrite(content, filepath, mode = 'w'):
     with open(filepath, mode) as f:
         f.write(content)
 

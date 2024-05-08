@@ -7,11 +7,11 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'buildz',
-    version = '0.5.3',
+    version = '0.5.4',
     keywords='buildz',
     long_description=open('README.md', 'r', encoding="utf-8").read(),
     long_description_content_type='text/markdown',
-    description = "a json-base file format's read and write code by python, and codes to read and product object from configure file in such format",
+    description = "配置读写（基于json格式进行简化），以及ioc。a json-base file format's read and write code by python, and codes to read and product object from configure file in such format(ioc)",
     license = 'Apache License 2.0',
     url = 'https://github.com/buildCodeZ/buildz',
     author = 'Zzz',

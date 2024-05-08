@@ -20,13 +20,13 @@ def freads(fp, mode = 'rb', size=1024*1024):
 pass
 reads=freads
 
-def fwrite(fp, ct, mode = 'wb'):
+def fwrite(ct, fp, mode = 'wb'):
     with open(fp, mode) as f:
         f.write(ct)
 
 pass
 write = fwrite
-def fwrites(fp, cts, mode = 'wb'):
+def fwrites(cts, fp, mode = 'wb'):
     with open(fp, mode) as f:
         for ct in cts:
             f.write(ct)

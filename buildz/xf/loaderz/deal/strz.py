@@ -71,6 +71,8 @@ class PrevStrDeal(lr.LRDeal):
             if do_judge and c == self.label_et:
                 mark_et += 1
             if len(c)==0:
+                if self.single_line and self.note:
+                    break
                 raise Exception(f"unexcept string end while reading str")
             do_judge = 1
             if c == self.label_l2:

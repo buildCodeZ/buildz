@@ -14,7 +14,7 @@ class LRDeal(base.BaseDeal):
         rm = buffer.full().strip()
         buffer.clean2read(self.ll)
         if len(rm)>0:
-            arr.append(item.Item(rm, type="", is_val=False))
+            _arr.append(item.Item(rm, type="", is_val=False))
         while True:
             cr = buffer.read(self.lr)
             if cr == self.right:

@@ -38,9 +38,9 @@ def dumps(obj, bytes = 0, format = 0, deep = 0, json_format= 0):
 
 pass
 
-def dumpf(filepath, obj, bytes = 0, format = 0, deep = 0, json_format= 0, mode = 'w'):
+def dumpf(obj, filepath, bytes = 0, format = 0, deep = 0, json_format= 0, mode = 'w'):
     s = dumps(obj, bytes = bytes, format = format, deep = deep, json_format= json_format)
-    file.fwrite(filepath, s, mode)
+    file.fwrite(s, filepath, mode)
 
 pass
 

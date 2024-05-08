@@ -5,6 +5,38 @@ def get(obj, key, default=None):
     return obj[key]
 
 pass
+def getf(obj, key, fc):
+    if key not in obj:
+        return fc()
+    return obj[key]
+
+pass
+def gfn(obj, **maps):
+    rst = []
+    for k in maps:
+        if k in obj and obj[k] is not None:
+            v = obj[k]
+        else:
+            v = maps[k]()
+        rst.append(v)
+    if len(rst)==1:
+        rst = rst[0]
+    return rst
+
+pass
+def gf(obj, **maps):
+    rst = []
+    for k in maps:
+        if k in obj:
+            v = obj[k]
+        else:
+            v = maps[k]()
+        rst.append(v)
+    if len(rst)==1:
+        rst = rst[0]
+    return rst
+
+pass
 def g(obj, **maps):
     rst = []
     for k in maps:

@@ -11,8 +11,8 @@ class XfileDeal(FormatDeal):
         {
             id:id
             type:xfile
-            filepath: fp 
-            # or fp: fp
+            filepath: item_conf(fp) 
+            # or fp: item_conf(fp)
         }
     简写:
         [[id, xfile], fp]
@@ -20,6 +20,7 @@ class XfileDeal(FormatDeal):
         [xf, fp]
     例:
         [xfile, test.js]
+        [xfile, [val, test.js]]
     """
     def init(self, fp_lists = None, fp_defaults = None):
         self.singles = {}
@@ -35,6 +36,7 @@ class XfileDeal(FormatDeal):
         fp = xf.g(data, filepath=None)
         if fp is None:
             fp = xf.g(data, fp = fp)
+        fp = self.get_obj(fp, conf)
         rst = xf.loads(xf.fread(fp))
         return rst
 

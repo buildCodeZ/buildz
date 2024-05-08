@@ -41,7 +41,7 @@ class Deal:
                         stp[-1] = c.decode()
                 stps = "t"+xf.dumps(stps)
                 stps = stps.encode()
-            fz.write(fp_step, stps)
+            fz.write(stps, fp_step)
             print("done diff")
         elif opt == 'update':
             bs1 = fz.read(fp1).decode("utf-8")
@@ -53,7 +53,7 @@ class Deal:
             else:
                 stps = xf.loads(bs_step.decode())
             bs2 = tz.m_update(bs1, stps,split=spt).encode("utf-8")
-            fz.write(fp2, bs2)
+            fz.write(bs2, fp2)
             print("done update")
         else:
             print(f"unexpect opt: {opt}")
