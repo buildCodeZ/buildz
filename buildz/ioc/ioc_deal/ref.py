@@ -28,8 +28,10 @@ class RefDeal(FormatDeal):
         data = self.fill(data)
         key = data['key']
         info = xf.g(data, info=None)
-        if info is not None:
-            info = self.get_obj(info, src = edata.src)
+        if info is not None and type(info)==dict:
+            #info = {k:self.get_obj(info, edata.conf, src = edata.src) for k in info}
+            info = {'type':'map', 'data':info}
+            info = self.get_obj(info, edata.conf, src = edata.src)
         return edata.conf.get_obj(key, info = info, src = edata.src)
 
 pass

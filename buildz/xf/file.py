@@ -1,7 +1,9 @@
 #coding=utf-8
-
+import os
 coding="utf-8"
 def bread(filepath):
+    if type(filepath) not in [str, bytes, os.PathLike]:
+        raise Exception(f"error filepath: {filepath}")
     with open(filepath, 'rb') as file:
         s = file.read()
     return s

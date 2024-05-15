@@ -29,7 +29,7 @@ class MapDeal(FormatDeal):
         conf = edata.conf
         data = self.fill(data)
         maps = xf.g(data, data={})
-        rst = {k:self.get_obj(map[k], conf, edata.src, edata.info) for k in maps}
+        rst = {k:self.get_obj(maps[k], conf, edata.src, edata.info) for k in maps}
         return rst
 
 pass

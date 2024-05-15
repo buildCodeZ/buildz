@@ -77,6 +77,11 @@
             type: deal,
             note: 扩展的自定义deal方法,
             build: buildz.ioc.ioc_deal.deal.DealDeal
+        },
+        {
+            type: iocf,
+            note: 加配置文件,
+            build: buildz.ioc.ioc_deal.iocf.IOCFObjectDeal
         }
     ]
 }

@@ -63,7 +63,7 @@ class Manager:
             rst = deal.build(obj)
             if rst is not None:
                 return rst
-        raise Exception("unspt deal type:"+_type)
+        raise Exception(f"unspt deal type:[{obj}]")
     def deal(self, buffer, arr):
         c = buffer.read()
         if len(c)==0 and buffer.size()==0:

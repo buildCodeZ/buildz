@@ -52,7 +52,7 @@ class PrevStrDeal(lr.LRDeal):
             return False
         rm = buffer.full().strip()
         buffer.clean2read(self.ll)
-        if len(rm)>0 and not self.note:
+        if len(rm)>0:
             if not self.note:
                 print("left:", self.left, rm)
                 print(f"rst: [{rst}]")

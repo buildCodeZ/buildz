@@ -1,5 +1,5 @@
 #coding=utf-8
-
+import os
 """
 读写文件再简化
 """
@@ -33,3 +33,13 @@ def fwrites(cts, fp, mode = 'wb'):
 
 pass
 writes = fwrites
+
+def makefdir(fp):
+    fp = os.path.abspath(fp)
+    dp = os.path.dirname(fp)
+    if os.path.isdir(dp):
+        return
+    os.makedirs(dp)
+
+pass
+

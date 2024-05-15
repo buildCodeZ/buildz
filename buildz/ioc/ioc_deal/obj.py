@@ -102,16 +102,18 @@ class ObjectDeal(FormatDeal):
             single = 1
         ids = None
         if single or cid is not None:
-            if single:
-                ids = [sid, id]
+            if cid is not None:
+                ids = [sid, 'local_id', id, cid]
             else:
-                ids = [sid, id, cid]
+                ids = [sid, 'single', id]
         if ids is not None:
             obj = xf.gets(self.singles, ids)
             if obj is not None:
                 #raise IOCError(f"null for {ids}")
                 return obj
         source = xf.g(data, source=0)
+        if source == 0:
+            raise Exception(f"define object without 'source' key, {data}")
         fc = xf.get(self.sources, source, None)
         if fc is None:
             fc = pyz.load(source)
@@ -131,6 +133,7 @@ class ObjectDeal(FormatDeal):
             xf.sets(self.singles, ids, obj)
         prev_call = xf.g(data, prev_call=None)
         if prev_call is not None:
+            # TODO: 这边info透传好像会有问题
             self.get_obj(prev_call, conf, obj, edata.info)
         sets = xf.g(data, sets=[])
         for kv in sets:

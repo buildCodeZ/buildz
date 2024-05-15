@@ -1,6 +1,8 @@
 
-def get(obj, key, default=None):
+def get(obj, key, default=None, set = False):
     if key not in obj:
+        if set:
+            obj[key] = default
         return default
     return obj[key]
 
@@ -43,6 +45,20 @@ def g(obj, **maps):
         v = maps[k]
         if k in obj:
             v = obj[k]
+        rst.append(v)
+    if len(rst)==1:
+        rst = rst[0]
+    return rst
+
+pass
+def gs(obj, **maps):
+    rst = []
+    for k in maps:
+        v = maps[k]
+        if k in obj:
+            v = obj[k]
+        else:
+            obj[k] = v
         rst.append(v)
     if len(rst)==1:
         rst = rst[0]
@@ -110,7 +126,7 @@ pass
 def deep_update(target, src, replace=1):
     """
         dict深层更新，src[key]是dict就深入更新，否则:
-            src有而maps没有就替换，否则：
+            src有而target没有就替换，否则：
                 replace=1就替换
     """
     for k in src:
@@ -126,3 +142,4 @@ def deep_update(target, src, replace=1):
                 target[k] = val
 
 pass
+update = deep_update
