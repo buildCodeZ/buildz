@@ -32,9 +32,11 @@ class LRValDeal(lr.LRDeal):
             rst.append(_item.val)
         try:
             val = self.fc(rst[0], rst[1])
-        except Exception as exp1:
+        except Exceptin as exp1:
             print("exp:", exp1)
             raise Exception(f"error in lrval fc: {self.fc}({rst}): {exp1} ")
         return item.Item(val, type='val', is_val = 1)
+    def build_arr(self, obj):
+        return self.build(obj)
 
 pass
