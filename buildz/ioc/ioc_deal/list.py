@@ -27,7 +27,7 @@ class ListDeal(FormatDeal):
     def deal(self, edata:EncapeData):
         data = edata.data
         data = self.fill(data)
-        lists = xf.g(data, data=[])
+        lists = xf.g1(data, list = [], data=[])
         conf = edata.conf
         rst = [self.get_obj(k, conf, edata.src, edata.info) for k in lists]
         return rst

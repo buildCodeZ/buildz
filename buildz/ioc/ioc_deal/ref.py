@@ -26,7 +26,7 @@ class RefDeal(FormatDeal):
     def deal(self, edata:EncapeData):
         data = edata.data
         data = self.fill(data)
-        key = data['key']
+        key = xf.get_first(data, 'ref', 'key')
         info = xf.g(data, info=None)
         if info is not None and type(info)==dict:
             #info = {k:self.get_obj(info, edata.conf, src = edata.src) for k in info}

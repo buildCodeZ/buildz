@@ -39,6 +39,30 @@ def gf(obj, **maps):
     return rst
 
 pass
+def get_first(obj, *keys):
+    for k in keys:
+        if k in obj:
+            return obj[k]
+    raise KeyError(keys[0])
+
+pass
+def get_one(obj, keys, default = None):
+    for k in keys:
+        if k in obj:
+            return obj[k]
+    return default
+
+pass
+def g1(obj, **maps):
+    v = None
+    for k in maps:
+        v = maps[k]
+        if k in obj:
+            v = obj[k]
+            return v
+    return v
+
+pass
 def g(obj, **maps):
     rst = []
     for k in maps:

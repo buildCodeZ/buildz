@@ -34,12 +34,23 @@ def fwrites(cts, fp, mode = 'wb'):
 pass
 writes = fwrites
 
-def makefdir(fp):
-    fp = os.path.abspath(fp)
-    dp = os.path.dirname(fp)
+def makedir(dp):
     if os.path.isdir(dp):
         return
     os.makedirs(dp)
 
 pass
+def makefdir(fp):
+    fp = os.path.abspath(fp)
+    dp = os.path.dirname(fp)
+    makedir(dp)
 
+pass
+
+def dirpath(fp, n=1):
+    for i in range(n):
+        fp = os.path.dirname(fp)
+    return fp
+
+pass
+dirname = dirpath

@@ -25,7 +25,7 @@ class IOCObjectDeal(FormatDeal):
     def deal(self, edata:EncapeData):
         data = edata.data
         data = self.fill(data)
-        key = data['key']
+        key = xf.get_first(data, 'ioc', 'key')
         if not hasattr(edata, key):
             return None
         return getattr(edata, key)

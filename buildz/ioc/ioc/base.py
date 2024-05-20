@@ -37,17 +37,21 @@ class EncapeData(Base):
             info: 额外的调用信息，目前只有object会用到里面的id字段，作为单例额外输入
         """
         if typez(data)==dict:
-            pid = xf.g(data, parent=None)
+            pid = xf.g1(data, parent=None)
             if pid is not None:
-                pedt = conf.get_data(pid, local=True, search_confs = True,src = src, info = info)
-                if pedt is None:
-                    raise IOCError("unfind parend: "+pid)
-                pdt = pedt.data
-                if typez(pdt)!=dict:
-                    raise IOCError("only dict can be a parent: "+pid)
                 data = dict(data)
-                self.update_maps(data, pdt, replace=0)
                 del data['parent']
+                pids = pid
+                if typez(pids)!=list:
+                    pids = [pid]
+                for pid in pids:
+                    pedt = conf.get_data(pid, local=True, search_confs = True,src = src, info = info)
+                    if pedt is None:
+                        raise IOCError("unfind parend: "+pid)
+                    pdt = pedt.data
+                    if typez(pdt)!=dict:
+                        raise IOCError("only dict can be a parent: "+pid)
+                    self.update_maps(data, pdt, replace=0)
         self.data = data
         self.sid = conf.id
         self.src = src

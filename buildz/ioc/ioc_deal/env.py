@@ -25,7 +25,7 @@ class EnvDeal(FormatDeal):
     def deal(self, edata:EncapeData):
         data = edata.data
         data = self.fill(data)
-        key = data['key']
+        key = xf.get_first(data, 'env', 'key')
         val = edata.conf.get_env(key)
         default = xf.g(data, default=None)
         if val is None and default is not None:

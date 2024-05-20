@@ -1,6 +1,6 @@
 #
 from ..ioc.base import Base, EncapeData
-
+from buildz import xf
 class ValDeal(Base):
     """
         数据val:
@@ -24,6 +24,6 @@ class ValDeal(Base):
         data = edata.data
         if type(data)==list:
             return data[-1]
-        return data['data']
+        return xf.get_first(data, "val", "data")
 
 pass

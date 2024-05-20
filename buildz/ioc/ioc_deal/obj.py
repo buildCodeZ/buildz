@@ -136,12 +136,17 @@ class ObjectDeal(FormatDeal):
             # TODO: 这边info透传好像会有问题
             self.get_obj(prev_call, conf, obj, edata.info)
         sets = xf.g(data, sets=[])
-        for kv in sets:
-            kv = self.fmt_set(kv)
-            k = kv['key']
-            v = kv['data']
-            v = self.get_obj(v, conf, obj, edata.info)
-            setattr(obj, k, v)
+        if type(sets)==list:
+            for kv in sets:
+                kv = self.fmt_set(kv)
+                k = kv['key']
+                v = xf.get_first(kv, "val", "data")
+                v = self.get_obj(v, conf, obj, edata.info)
+                setattr(obj, k, v)
+        else:
+            for k,v in sets.items():
+                v = self.get_obj(v, conf, obj, edata.info)
+                setattr(obj, k, v)
         call = xf.g(data, call=None)
         if call is not None:
             self.get_obj(call, conf, obj, edata.info)
