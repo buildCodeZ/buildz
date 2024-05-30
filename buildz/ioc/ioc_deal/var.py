@@ -11,11 +11,11 @@ class VarDeal(FormatDeal):
             {
                 id:id
                 type: var
-                key: string
+                data: string
             }
         简写:
-            [[id, var], key]
-            [var, key]
+            [[id, var], data]
+            [var, data]
         例:
             [var, buildz.pyz.is_windows] // 返回buildz.pyz下的is_windows
     """
@@ -30,7 +30,7 @@ class VarDeal(FormatDeal):
         conf = edata.conf
         data = self.format(data)
         src = edata.src
-        key = xf.g(data, key=0)
+        key = xf.get_first(data, "var", "data")
         key = pyz.load(key)
         return key
 

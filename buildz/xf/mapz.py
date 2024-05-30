@@ -95,6 +95,16 @@ def s(obj, **maps):
         obj[k] = v
 
 pass
+def fill_fc(maps, fc):
+    for k in maps:
+        v = maps[k]
+        if type(v) == dict:
+            fill_fc(v, fc)
+            continue
+        maps[k] = fc(v)
+    return maps
+
+pass
 def sets(maps, keys, val):
     if type(keys) != list:
         keys = [keys]
@@ -167,3 +177,8 @@ def deep_update(target, src, replace=1):
 
 pass
 update = deep_update
+def deep_fill(src, target, replace=1):
+    return deep_update(target, src, replace)
+
+pass
+fill=deep_fill

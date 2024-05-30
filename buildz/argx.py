@@ -15,8 +15,24 @@ class Fetch:
     就是对引号不太适用
     """
     def __init__(self, args = [], maps ={}):
+        args = [maps[k] if k in maps else k for k in args]
         self.args = args
         self.maps = maps
+    def des(self):
+        cmd = " ".join(self.args)
+        adds = []
+        for k, val in self.maps.items():
+            tmp = f"    [-{k} param] [--{val}=param]"
+            adds.append(tmp)
+        adds = [cmd]+adds
+        rs = "\n".join(adds)
+        return rs
+    def check(self, args, ks):
+        rst = []
+        for k in ks:
+            if k not in args:
+                rst.append(k)
+        return rst
     def __call__(self, argv = None):
         args, maps = fetch(argv)
         rst = {}
@@ -34,6 +50,11 @@ class Fetch:
                 rst[rkey] = val
                 del rst[key]
         return rst
+
+pass
+class FetchX(Fetch):
+    def __init__(self, *a, **b):
+        super().__init__(a,b)
 
 pass
 def fetch(argv = None):

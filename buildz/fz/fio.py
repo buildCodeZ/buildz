@@ -53,4 +53,20 @@ def dirpath(fp, n=1):
     return fp
 
 pass
+
 dirname = dirpath
+
+def removes(fp):
+    if not os.path.exists(fp):
+        return
+    if os.path.isfile(fp):
+        #print(f"remove file '{fp}'")
+        os.remove(fp)
+        return
+    fps = os.listdir(fp)
+    fps = [os.path.join(fp, f) for f in fps]
+    [removes(f) for f in fps]
+    #print(f"removedirs '{fp}'")
+    os.rmdir(fp)
+
+pass

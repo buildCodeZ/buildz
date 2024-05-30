@@ -13,6 +13,6 @@
     },
     {
         nullable: 0,
-        key: key
+        key: data
     }
 ]

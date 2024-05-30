@@ -13,6 +13,7 @@ class ListDeal(lr.LRDeal):
     def build(self, obj):
         val = obj.val
         if type(val)!=list:
+            return None
             obj.is_val = 1
             return obj
         if len(val)==0:

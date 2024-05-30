@@ -1,7 +1,7 @@
 
 
 from buildz import xf
-a = xf.loads("1,2,3")
-b = xf.loads("{a=0,b=1}")
+a = xf.loads(r'"asdf\n\r\0x"')
 print(a)
+b = xf.loads(r"asdftest\n\r")
 print(b)

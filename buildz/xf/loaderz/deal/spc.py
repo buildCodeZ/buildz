@@ -1,6 +1,6 @@
 from .. import base
 
-
+# 未使用
 class PrevSpcDeal(base.BaseDeal):
     """
         去掉左空格

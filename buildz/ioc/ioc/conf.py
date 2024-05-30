@@ -133,8 +133,19 @@ class Conf(Base):
         if not search_confs:
             return None
         return self.confs.get_deal(type, self.id)
+    def get_data_conf(self, data, src = None, info = None):
+        if type(data) not in [list, dict, tuple]:
+            i = self.confs.data_index_type[0]
+            data = [self.default_type(), data]
+            if i != 0:
+                data.reverse()
+        _type = self.confs.get_data_type(data, 1, self.default_type())
+        edata = EncapeData(data, self, local=True, type=_type, src = src, info = info)
+        return edata
     def get_data(self, id, local = True, search_confs = True, src = None, info = None):
         self.do_init()
+        if type(id) in [list, tuple, dict]:
+            return self.get_data_conf(id, src, info)
         if id in self.datas:
             obj = self.datas[id]
             edata = EncapeData(obj, self, local = False, src=src, info = info)

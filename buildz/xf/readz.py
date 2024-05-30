@@ -46,9 +46,11 @@ pass
 def build(as_bytes=False):
     mgs = mg.Manager(as_bytes)
     build_val(mgs)
+    #1,0,0,1: 没引号当r"..."
+    #1,0,1,1: 没引导当"..."
     mgs.add(strz.PrevStrDeal("r'''","'''",0,0,0))
     mgs.add(strz.PrevStrDeal('r"""','"""',0,0,0))
-    mgs.add(strz.PrevStrDeal("r'","'",1,0,0))
+    mgs.add(strz.PrevStrDeal("r'","'",1,0,0,1))
     mgs.add(strz.PrevStrDeal('r"','"',1,0,0))
     mgs.add(strz.PrevStrDeal("###","###",0,1))
     mgs.add(strz.PrevStrDeal("/*","*/",0,1))

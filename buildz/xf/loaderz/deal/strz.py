@@ -4,7 +4,97 @@ from .. import exp
 from ... import file
 import json
 from . import lr
+
+def init():
+    cs = "abfnrtv\\'\"?0123456789xcde"
+    maps = {k:k.encode()[0] for k in cs}
+    global c2b
+    c2b = maps
+    global symbal_a
+    global a_map
+    a_map = [0]*256
+    s  = "abfnrtv\\'\"?"
+    ts = b"\a\b\f\n\r\t\v\\\'\"\?"
+    for c,t in zip(s, ts):
+        a_map[c2b[c]] = t
+    symbal_a = [False]*256
+    for c in s:
+        symbal_a[c2b[c]] = True
+    global id_0,id_a,id_x
+    id_0 = b'0'[0]
+    id_a = b'a'[0]
+    id_x = b'x'[0]
+
+pass
+
+init()
+def translate_bts(bts):
+    i = 0
+    rs = []
+    while i<len(bts):
+        c = bts[i]
+        i+=1
+        if c!=c2b['\\']:
+            rs.append(c)
+            continue
+        x0 = bts[i]
+        i+=1
+        if symbal_a[x0]:
+            rs.append(a_map[x0])
+            continue
+        v = x0-id_0
+        if v>=0 and v<=7:
+            tmp = v
+            for j in range(2):
+                if i+j+1>=len(bts):
+                    break
+                xi = bts[i+j+1]
+                vi = xi-id_0
+                if vi>=0 and vi<=7:
+                    i+=1
+                    tmp = (rs<<3)+vi
+                else:
+                    break
+            rs.append(tmp)
+            continue
+        if x0 == id_x:
+            tmp = 0
+            for j in range(2):
+                if i+j+1>=len(bts):
+                    raise Exception("\\xXX error")
+                xi = bts[i+j+1]
+                vi = xi-id_0
+                if vi<0 or vi>7:
+                    vi = xi-id_a
+                    if vi<0 or vi > 5:
+                        raise Exception("\\xXX error")
+                    vi +=10
+                tmp=(tmp<<4)+vi
+            rs.append(tmp)
+            continue
+        rs.append(c)
+        rs.append(x0)
+        #i-=1
+    return bytes(rs)
+
+pass
+
 class PrevStrDeal(lr.LRDeal):
+    def types(self):
+        if not self.deal_build:
+            return []
+        return ['']
+    def build(self, obj):
+        if type(obj.val)==list:
+            return None
+        if obj.is_val:
+            return obj
+        obj.is_val = 1
+        if self.translate:
+            val = obj.val
+            val = self.do_translate(val)
+            obj.val = val
+        return obj
     def prepare(self, mg):
         super().prepare(mg)
         self.label_l2 = mg.like("\\")
@@ -13,11 +103,12 @@ class PrevStrDeal(lr.LRDeal):
         self.label_lr = mg.like("\r")
         self.label_nl = mg.like("")
         self.et_in_right = self.right.count(self.label_et)
-    def init(self, left = '"', right= '"', single_line = False, note = False, translate = False):
+    def init(self, left = '"', right= '"', single_line = False, note = False, translate = False, deal_build = False):
         super().init(left, right, 'str')
         self.single_line = single_line
         self.note = note
         self.translate = translate
+        self.deal_build = deal_build
     def json_loads(self, s):
         x = s
         cd = None
@@ -28,6 +119,13 @@ class PrevStrDeal(lr.LRDeal):
             rs = rs.encode(cd)
         return rs
     def do_translate(self, s):
+        is_bytes = type(s)==bytes
+        if not is_bytes:
+            s = s.encode("utf-8")
+        s = translate_bts(s)
+        if not is_bytes:
+            s = s.decode("utf-8")
+        return s
         """
             取巧直接调用json
         """
@@ -54,8 +152,6 @@ class PrevStrDeal(lr.LRDeal):
         buffer.clean2read(self.ll)
         if len(rm)>0:
             if not self.note:
-                print("left:", self.left, rm)
-                print(f"rst: [{rst}]")
                 raise Exception(f"unexcept char before string: {rm}")
             else:
                 rst.append(item.Item(rm, type = "", is_val = 0))

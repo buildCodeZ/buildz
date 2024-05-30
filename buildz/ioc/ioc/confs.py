@@ -285,7 +285,11 @@ class Confs(Base):
         for fp in fps:
             self.add_fp(fp)
     def add_fp(self, fp):
-        conf = self.loads(xf.fread(fp))
+        try:
+            conf = self.loads(xf.fread(fp))
+        except:
+            print(f'error in loads: {fp}')
+            raise
         return self.add(conf)
     def adds(self, confs):
         for conf in confs:

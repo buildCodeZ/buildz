@@ -123,7 +123,18 @@ class BaseDeal(Base):
         自己实现的处理类，要实现两个方法：__call__(self, edata:EncapeData)和remove(self, edata:EncapeData)
         其中remove可以只写个空方法
     """
+    def get_data(self, data, conf, src = None, info = None):
+        if type(data) not in [list, dict, tuple]:
+            i = conf.confs.data_index_type[0]
+            data = [conf.default_type(), data]
+            if i != 0:
+                data.reverse()
+        _type = conf.confs.get_data_type(data, 1, conf.default_type())
+        edata = EncapeData(data, conf, local=True, type=_type, src = src, info = info)
+        return edata
     def get_obj(self, data, conf, src = None, info = None):
+        edata = self.get_data(data, conf, src, info)
+        return edata()
         if type(data) not in [list, dict, tuple]:
             i = conf.confs.data_index_type[0]
             data = [conf.default_type(), data]
