@@ -72,7 +72,7 @@ class Cmd:
                 print(tmp)
             except Exception as exp:
                 import traceback
-                print(f"error:{exp}")
+                print(f"[CMD] error:{exp}")
                 traceback.print_exc()
 
 pass

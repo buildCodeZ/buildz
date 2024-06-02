@@ -56,16 +56,28 @@ pass
 
 dirname = dirpath
 
-def removes(fp):
+def fcover(filepath, wsize = 1024*10):
+	st = os.stat(filepath)
+	size = st.st_size
+	bs = b'a'*wsize
+	with open(filepath, 'wb') as f:
+		for i in range(0, size, wsize):
+			f.write(bs)
+
+pass
+cover = fcover
+def removes(fp, cover = False):
     if not os.path.exists(fp):
         return
     if os.path.isfile(fp):
         #print(f"remove file '{fp}'")
+        if cover:
+            fcover(fp)
         os.remove(fp)
         return
     fps = os.listdir(fp)
     fps = [os.path.join(fp, f) for f in fps]
-    [removes(f) for f in fps]
+    [removes(f, cover) for f in fps]
     #print(f"removedirs '{fp}'")
     os.rmdir(fp)
 

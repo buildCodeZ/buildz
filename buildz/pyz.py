@@ -1,6 +1,13 @@
 
 import sys
 import os
+import hashlib
+def hashcode(s):
+    if type(s)==str:
+        s = s.encode("utf-8")
+    return hashlib.md5(s).hexdigest()
+
+pass
 def test_current(fp, up = 1):
     """
         将当前目录的上{up}层目录加入sys.path，这样可以在同层写测试代码，但是import还是要当在上{up}层做import
