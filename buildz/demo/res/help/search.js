@@ -12,6 +12,12 @@ r"""
         --output=输出文件
         -d 最深路径
         --depth=最深路径
+        -s/+s 展示内容查询
+        -p 展示查询内容前多少字
+        --prev=展示查询内容前多少字
+        -a 展示查询内容前多少字
+        --aft=展示查询内容后多少字
+        
 
 比如:
     python -m buildz search {default} -f ".*\.js" -c "ioc" -d 3

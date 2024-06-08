@@ -320,6 +320,7 @@ class Confs(Base):
         for k in obj.deals:
             self.deals[k] = obj.deals[k]
         self.update_maps(self.envs, obj.envs)
+        self.mark_init = False
     def get(self, *args, **maps):
         return self.get_obj(*args, **maps)
     def remove(self, *a,**b):
@@ -350,6 +351,7 @@ class Confs(Base):
         """
             根据type类型查处理函数deal，sid（配置文件id）不为空并且global_deal=False则先查局部
         """
+        self.do_init()
         if sid is not None and not self.global_deal:
             deal = self.confs[sid].get_deal(type, False)
             if deal is not None:

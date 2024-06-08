@@ -90,8 +90,13 @@ class ObjectDeal(FormatDeal):
         info = edata.info
         conf = edata.conf
         confs = edata.confs
+        icst = None
+        isets = None
         if type(info) == dict:
             cid = xf.g(info, id=None)
+            iargs, imaps = xf.g(info, args = None, maps = None)
+            icst = {'args':iargs, 'maps':imaps}
+            isets = xf.g(info, sets = None)
         else:
             cid = None
         id = xf.g(data, id = None)
@@ -105,6 +110,8 @@ class ObjectDeal(FormatDeal):
             if cid is not None:
                 ids = [sid, 'local_id', id, cid]
             else:
+                if icst is not None or isets is not None:
+                    raise Exception("set info.construct/info.sets while using single without info.id")
                 ids = [sid, 'single', id]
         if ids is not None:
             obj = xf.gets(self.singles, ids)
@@ -124,6 +131,8 @@ class ObjectDeal(FormatDeal):
             _maps = xf.g(data, maps = {})
             cst = [_args, _maps]
         cst = self.fmt_cst(cst)
+        if icst is not None:
+            xf.fill(icst, cst, 1)
         args = xf.g(cst, args=[])
         maps = xf.g(cst, maps={})
         args = [self.get_obj(v, conf) for v in args]
@@ -133,20 +142,30 @@ class ObjectDeal(FormatDeal):
             xf.sets(self.singles, ids, obj)
         prev_call = xf.g(data, prev_call=None)
         if prev_call is not None:
-            # TODO: 这边info透传好像会有问题
+            # TODO: 这边info透传不知道会不会有问题
             self.get_obj(prev_call, conf, obj, edata.info)
         sets = xf.g(data, sets=[])
         if type(sets)==list:
+            tmp = {}
             for kv in sets:
                 kv = self.fmt_set(kv)
                 k = kv['key']
                 v = xf.get_first(kv, "val", "data")
-                v = self.get_obj(v, conf, obj, edata.info)
-                setattr(obj, k, v)
-        else:
-            for k,v in sets.items():
-                v = self.get_obj(v, conf, obj, edata.info)
-                setattr(obj, k, v)
+                tmp[k] = v
+            sets = tmp
+        if type(isets) == list:
+            tmp = {}
+            for kv in isets:
+                kv = self.fmt_set(kv)
+                k = kv['key']
+                v = xf.get_first(kv, "val", "data")
+                tmp[k] = v
+            isets = tmp
+        if isets is not None:
+            xf.fill(isets, sets, 1)
+        for k,v in sets.items():
+            v = self.get_obj(v, conf, obj, edata.info)
+            setattr(obj, k, v)
         call = xf.g(data, call=None)
         if call is not None:
             self.get_obj(call, conf, obj, edata.info)

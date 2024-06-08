@@ -2,7 +2,7 @@ from .. import base
 from .. import item
 from .. import exp
 from ... import file
-import json
+
 from . import lr
 
 def init():
@@ -10,13 +10,12 @@ def init():
     maps = {k:k.encode()[0] for k in cs}
     global c2b
     c2b = maps
-    global symbal_a
-    global a_map
-    a_map = [0]*256
-    s  = "abfnrtv\\'\"?"
-    ts = b"\a\b\f\n\r\t\v\\\'\"\?"
+    global special_keys
+    special_keys = [-1]*256
+    s  = "abfnrtv\\'\""
+    ts = b"\a\b\f\n\r\t\v\\\'\""
     for c,t in zip(s, ts):
-        a_map[c2b[c]] = t
+        special_keys[c2b[c]] = t
     symbal_a = [False]*256
     for c in s:
         symbal_a[c2b[c]] = True
@@ -26,9 +25,8 @@ def init():
     id_x = b'x'[0]
 
 pass
-
 init()
-def translate_bts(bts):
+def translate_bts(bts, octs = None, hexs = None):
     i = 0
     rs = []
     while i<len(bts):
@@ -39,30 +37,37 @@ def translate_bts(bts):
             continue
         x0 = bts[i]
         i+=1
-        if symbal_a[x0]:
-            rs.append(a_map[x0])
+        if special_keys[x0]>=0:
+            rs.append(special_keys[x0])
             continue
         v = x0-id_0
         if v>=0 and v<=7:
             tmp = v
+            base=i
             for j in range(2):
-                if i+j+1>=len(bts):
+                if base+j>=len(bts):
                     break
-                xi = bts[i+j+1]
+                xi = bts[base+j]
                 vi = xi-id_0
                 if vi>=0 and vi<=7:
                     i+=1
-                    tmp = (rs<<3)+vi
+                    tmp = (tmp<<3)+vi
                 else:
                     break
-            rs.append(tmp)
+            if octs is not None:
+                #print(f"tmp: '{tmp}', {type(tmp)}")
+                #print(f"ocst: {octs}, {type(octs)}")
+                tmp = octs[tmp]
+            else:
+                tmp = [tmp%256]
+            rs+=tmp
             continue
         if x0 == id_x:
             tmp = 0
             for j in range(2):
-                if i+j+1>=len(bts):
+                if i+j>=len(bts):
                     raise Exception("\\xXX error")
-                xi = bts[i+j+1]
+                xi = bts[i+j]
                 vi = xi-id_0
                 if vi<0 or vi>7:
                     vi = xi-id_a
@@ -70,7 +75,12 @@ def translate_bts(bts):
                         raise Exception("\\xXX error")
                     vi +=10
                 tmp=(tmp<<4)+vi
-            rs.append(tmp)
+            i+=2
+            if hexs is not None:
+                tmp = hexs[tmp]
+            else:
+                tmp = [tmp]
+            rs+=tmp
             continue
         rs.append(c)
         rs.append(x0)
@@ -78,7 +88,23 @@ def translate_bts(bts):
     return bytes(rs)
 
 pass
+def gen_chars(code="utf-8"):
+    simple = "abfnrtv\\'\""
+    octs = [0]*512
+    hexs = [0]*256
+    for i in range(512):
+        if i<256:
+            vhex = hex(i)[2:]
+            if len(vhex)==1:
+                vhex = "0"+vhex
+            cmd = f"'\\x{vhex}'"
+            hexs[i] = list(eval(cmd).encode(code))
+        voct = oct(i)[2:]
+        cmd = f"'\\{voct}'"
+        octs[i] = list(eval(cmd).encode(code))
+    return octs, hexs
 
+pass
 class PrevStrDeal(lr.LRDeal):
     def types(self):
         if not self.deal_build:
@@ -97,6 +123,9 @@ class PrevStrDeal(lr.LRDeal):
         return obj
     def prepare(self, mg):
         super().prepare(mg)
+        self.as_bytes = mg.as_bytes
+        if not self.as_bytes:
+            self.octs,self.hexs = gen_chars()
         self.label_l2 = mg.like("\\")
         self.label_qt = mg.like('"')
         self.label_et = mg.like("\n")
@@ -109,7 +138,11 @@ class PrevStrDeal(lr.LRDeal):
         self.note = note
         self.translate = translate
         self.deal_build = deal_build
+        self.as_bytes = True
+        self.octs = None
+        self.hexs = None
     def json_loads(self, s):
+        import json
         x = s
         cd = None
         if type(x)==bytes:
@@ -119,10 +152,13 @@ class PrevStrDeal(lr.LRDeal):
             rs = rs.encode(cd)
         return rs
     def do_translate(self, s):
+        """
+            取巧用python的eval来生成字符表
+        """
         is_bytes = type(s)==bytes
         if not is_bytes:
             s = s.encode("utf-8")
-        s = translate_bts(s)
+        s = translate_bts(s, self.octs, self.hexs)
         if not is_bytes:
             s = s.decode("utf-8")
         return s
