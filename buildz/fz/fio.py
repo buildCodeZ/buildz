@@ -82,3 +82,14 @@ def removes(fp, cover = False):
     os.rmdir(fp)
 
 pass
+def decode(s, coding = 'utf-8'):
+    coding = coding.lower()
+    xcoding = 'utf-8'
+    if coding == 'utf-8':
+        xcoding = 'gbk'
+    try:
+        return s.decode(coding)
+    except:
+        return s.decode(xcoding)
+
+pass

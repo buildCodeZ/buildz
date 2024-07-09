@@ -182,3 +182,8 @@ def deep_fill(src, target, replace=1):
 
 pass
 fill=deep_fill
+
+def maps(**kv):
+    return kv
+
+pass

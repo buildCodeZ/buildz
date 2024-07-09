@@ -8,16 +8,20 @@ def hashcode(s):
     return hashlib.md5(s).hexdigest()
 
 pass
-def test_current(fp, up = 1):
+def test_current(fp, up = 1, adds = []):
     """
         将当前目录的上{up}层目录加入sys.path，这样可以在同层写测试代码，但是import还是要当在上{up}层做import
     """
+    if type(adds) not in [list, tuple]:
+        adds = [adds]
     dp = os.path.dirname(os.path.abspath(fp))
     for i in range(up):
         dp = os.path.dirname(dp)
+    dp = os.path.join(dp, *adds)
     sys.path.insert(0, dp)
 
 pass
+add_path = test_current
 def load(md, fc = None):
     """
         import object(whether module or others) from md(or md.fc)

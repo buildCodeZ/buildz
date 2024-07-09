@@ -37,7 +37,7 @@ pass
 def build_val(mgs):
     mgs.add(reval.ValDeal("[\+\-]?\d+", int))
     mgs.add(reval.ValDeal("[\+\-]?\d*\.\d+", float))
-    mgs.add(reval.ValDeal("[\+\-]?\d+e[\+\-]?\d+", float))
+    mgs.add(reval.ValDeal("[\+\-]?\d*\.\d+e[\+\-]?\d+", float))
     mgs.add(reval.ValDeal("null", lambda x:None))
     mgs.add(reval.ValDeal("true", lambda x:True))
     mgs.add(reval.ValDeal("false", lambda x:False))
@@ -45,6 +45,15 @@ def build_val(mgs):
 pass
 def build(as_bytes=False):
     mgs = mg.Manager(as_bytes)
+    mgs.add(setz.SetDeal(':'))
+    mgs.add(setz.SetDeal('='))
+    mgs.add(spt.PrevSptDeal(",",1))
+    mgs.add(spt.PrevSptDeal(';',1))
+    mgs.add(spt.PrevSptDeal('\n'))
+    build_lrval(mgs)
+    mgs.add(listz.ListDeal("(", ")"))
+    mgs.add(listz.ListDeal("[", "]"))
+    mgs.add(mapz.MapDeal("{", "}"))
     build_val(mgs)
     #1,0,0,1: 没引号当r"..."
     #1,0,1,1: 没引导当"..."
@@ -60,15 +69,6 @@ def build(as_bytes=False):
     mgs.add(strz.PrevStrDeal("//","\n",1,1))
     mgs.add(strz.PrevStrDeal("'","'",1,0,1))
     mgs.add(strz.PrevStrDeal('"','"',1,0,1))
-    mgs.add(setz.SetDeal(':'))
-    mgs.add(setz.SetDeal('='))
-    mgs.add(spt.PrevSptDeal(",",1))
-    mgs.add(spt.PrevSptDeal(';',1))
-    mgs.add(spt.PrevSptDeal('\n'))
-    build_lrval(mgs)
-    mgs.add(listz.ListDeal("(", ")"))
-    mgs.add(listz.ListDeal("[", "]"))
-    mgs.add(mapz.MapDeal("{", "}"))
     mgs.add(nextz.PrevNextDeal())
     return mgs
 

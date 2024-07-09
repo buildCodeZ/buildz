@@ -8,9 +8,11 @@
     buildz.argx: 按格式读命令行参数
     buildz.tz: 加些工具，目前只有myerse diff字符串比较算法
     buildz.demo: 使用参考，运行"python -m buildz"会用这个模块
+    buildz.db: sql集成工具，自用，里面import了其他sql库，使用运行"python -m buildz.db 配置文件路径"
 代码关系:
     buildz.xf, buildz.pyz, buildz.argx, buildz.fz, buildz.tz都是独立的模块
     buildz.ioc需要buildz.xf和buildz.pyz
+    buildz.db需要buildz.xf
     buildz.demo需要其他全部模块
 
 运行python -m buildz查看帮助

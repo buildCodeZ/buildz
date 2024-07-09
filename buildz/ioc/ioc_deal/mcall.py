@@ -41,8 +41,11 @@ class MethodCallDeal(FormatDeal):
         info = xf.g(data, info=None)
         if info is not None:
             info = self.get_obj(info, src = edata.src, info = edata.info)
-        else:
-            info = edata.info
+        einfo = edata.info
+        if type(einfo)==dict and type(info) == dict:
+            xf.fill(einfo, info, 1)
+        if info is None:
+            info = einfo
         if source is not None:
             source = conf.get_obj(source, info = info)
         if source is None:
@@ -52,10 +55,19 @@ class MethodCallDeal(FormatDeal):
         if src is None:
             src = source
         method = getattr(source, method)
+        iargs, imaps = None, None
+        if type(info) == dict:
+            iargs, imaps = xf.g(info, m_args = None, m_maps = None)
         args = xf.g(data, args=[])
         maps = xf.g(data, maps ={})
-        args = [self.get_obj(v, conf, src, edata.info) for v in args]
-        maps = {k:self.get_obj(maps[k], conf, src, edata.info) for k in maps}
+        if iargs is not None:
+            args = iargs
+        if imaps is not None:
+            xf.fill(imaps, maps, 1)
+        # args = [self.get_obj(v, conf, src, edata.info) for v in args]
+        # maps = {k:self.get_obj(maps[k], conf, src, edata.info) for k in maps}
+        args = [self.get_obj(v, conf, src) for v in args]
+        maps = {k:self.get_obj(maps[k], conf, src) for k in maps}
         return method(*args, **maps)
 
 pass

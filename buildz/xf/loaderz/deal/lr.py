@@ -2,6 +2,13 @@ from .. import base
 from .. import item
 from .. import exp
 class LRDeal(base.BaseDeal):
+    def check_right(self, obj):
+        if obj.type!='str':
+            return False
+        val = obj.val
+        if val.find(self.right)>=0:
+            raise Exception(f"unexcept right symbol {self.right}")
+        return True
     def labels(self):
         return [self.left]
     def types(self):
@@ -14,7 +21,7 @@ class LRDeal(base.BaseDeal):
         rm = buffer.full().strip()
         buffer.clean2read(self.ll)
         if len(rm)>0:
-            _arr.append(item.Item(rm, type="", is_val=False))
+            _arr.append(item.Item(rm, type="str", is_val=False))
         while True:
             cr = buffer.read(self.lr)
             if cr == self.right:
@@ -25,7 +32,7 @@ class LRDeal(base.BaseDeal):
                 raise Exception("Error lr")
         buffer.clean()
         if len(rm)>0:
-            _arr.append(item.Item(rm ,type = '', is_val=False))
+            _arr.append(item.Item(rm ,type = 'str', is_val=False))
         # dts = []
         # for k in _arr:
         #     _k = mg.build(k)
@@ -33,7 +40,10 @@ class LRDeal(base.BaseDeal):
         #         continue
         #     dts.append(_k)
         #dts = [mg.build(k) for k in _arr]
-        dts = mg.build_arr(_arr)
+        if self.mg_build:
+            dts = mg.build_arr(_arr)
+        else:
+            dts = _arr
         obj = self.build_arr(dts)
         rst.append(obj)
         return True
@@ -55,12 +65,13 @@ class LRDeal(base.BaseDeal):
         self.right = mg.like(self.right)
         self.ll = len(self.left)
         self.lr = len(self.right)
-    def init(self, left, right, name= "lr"):
+    def init(self, left, right, name= "lr", mg_build = True):
         self.left = left
         self.right = right
         self.ll = len(left)
         self.lr = len(right)
         self.name = name
+        self.mg_build = mg_build
     def err(self, s):
         return s.replace("<lr>", self.name)
 

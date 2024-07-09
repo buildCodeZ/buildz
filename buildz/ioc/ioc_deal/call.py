@@ -38,10 +38,20 @@ class CallDeal(FormatDeal):
         src = edata.src
         method = xf.g(data, method=0)
         method = pyz.load(method)
+        info = edata.info
+        iargs, imaps = None, None
+        if type(info) == dict:
+            iargs, imaps = xf.g(info, args = None, maps = None)
         args = xf.g(data, args=[])
         maps = xf.g(data, maps ={})
-        args = [self.get_obj(v, conf, src, info = edata.info) for v in args]
-        maps = {k:self.get_obj(maps[k], conf, src, info = edata.info) for k in maps}
+        if iargs is not None:
+            args = iargs
+        if imaps is not None:
+            xf.fill(imaps, maps, 1)
+        # args = [self.get_obj(v, conf, src, info = edata.info) for v in args]
+        # maps = {k:self.get_obj(maps[k], conf, src, info = edata.info) for k in maps}
+        args = [self.get_obj(v, conf, src) for v in args]
+        maps = {k:self.get_obj(maps[k], conf, src) for k in maps}
         return method(*args, **maps)
 
 pass

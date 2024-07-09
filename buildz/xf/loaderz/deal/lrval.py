@@ -20,19 +20,19 @@ class LRValDeal(lr.LRDeal):
     """
     """
     def init(self, left, right, fc):
-        super().init(left, right, 'lrval')
+        super().init(left, right, 'lrval', False)
         self.fc = fc
     def build(self, arr):
         rst = []
-        if len(arr)!=2:
+        if len(arr)!=3:
             raise Exception("error in lrval:"+arr)
-        for _item in arr:
-            if not _item.is_val:
+        for _item in arr[::2]:
+            if type(_item.val)!=str:
                 raise Exception("error in list:"+_item)
             rst.append(_item.val)
         try:
             val = self.fc(rst[0], rst[1])
-        except Exceptin as exp1:
+        except Exception as exp1:
             print("exp:", exp1)
             raise Exception(f"error in lrval fc: {self.fc}({rst}): {exp1} ")
         return item.Item(val, type='val', is_val = 1)

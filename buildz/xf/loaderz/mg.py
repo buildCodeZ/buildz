@@ -52,11 +52,11 @@ class Manager:
         self.index+=1
         return "id_"+str(id)
     def build(self, obj):
+        if obj.is_val:
+            return obj
         #print(f"[TESTZ] obj: {obj}")
         _type = obj.type
         if _type not in self.builds:
-            if obj.is_val:
-                return obj
             raise Exception("unspt type:"+_type)
         builds = self.builds[_type]
         for deal in builds:
@@ -98,7 +98,7 @@ class Manager:
         #             continue
         #     rst.append(k)
         arr = self.build_arr(arr)
-        obj = item.Item(arr, type = "", is_val = 0)
+        obj = item.Item(arr, type = "list", is_val = 0)
         obj = self.build(obj)
         #arr = rst
         #if len(arr)==1:

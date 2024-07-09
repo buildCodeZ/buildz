@@ -22,7 +22,7 @@ class PrevSptDeal(base.BaseDeal):
             if not self.allow_empty or (len(arr)>0 and arr[-1].is_val):    
                 arr.append(it)
                 return True
-        obj = item.Item(rm, type = '', is_val = 0)
+        obj = item.Item(rm, type = 'str', is_val = 0)
         arr.append(obj)
         arr.append(it)
         return True

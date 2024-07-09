@@ -8,7 +8,7 @@ class ValDeal(base.BaseDeal):
         self.pt = mg.like(self.pt)
         self.type = mg.type
     def types(self):
-        return [""]
+        return ["str"]
     """
         正则表达式匹配
     """

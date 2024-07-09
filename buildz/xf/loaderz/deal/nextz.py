@@ -16,15 +16,10 @@ class PrevNextDeal(base.BaseDeal):
             buffer.clean()
             if len(rm)==0:
                 return False
-            obj = item.Item(rm, type = '', is_val = 0)
+            obj = item.Item(rm, type = 'str', is_val = 0)
             arr.append(obj)
             # TODO return True?
             return False
         return True
-    def build(self, obj):
-        if type(obj.val)==list:
-            return None
-        obj.is_val = 1
-        return obj
 
 pass

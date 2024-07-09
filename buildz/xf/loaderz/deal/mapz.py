@@ -9,13 +9,11 @@ class MapDeal(lr.LRDeal):
     def init(self, left, right):
         super().init(left, right, "map")
     def types(self):
-        return ['']
+        return ['list','str']
     def build(self, obj):
-        val = obj.val
-        if type(val)!=list:
+        if self.check_right(obj):
             return None
-            obj.is_val = 1
-            return obj
+        val = obj.val
         if len(val)==0:
             obj.val = ''
             obj.is_val = 1

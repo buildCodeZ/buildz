@@ -2,7 +2,7 @@ from .. import base
 from .. import item
 from .. import exp
 from ... import file
-
+from ... import code as codez
 from . import lr
 
 def init():
@@ -19,13 +19,78 @@ def init():
     symbal_a = [False]*256
     for c in s:
         symbal_a[c2b[c]] = True
-    global id_0,id_a,id_x
-    id_0 = b'0'[0]
-    id_a = b'a'[0]
-    id_x = b'x'[0]
+    global id_0,id_a,id_x,id_A
+    global c2nums
+    c2nums = [-1]*256
+    id_0,id_a,id_A,id_x,id_u = b'0aAxu'
+    for i in range(128):
+        v = i-id_0
+        if v>=0 and v<=9:
+            c2nums[i] = v
+            continue
+        v = i-id_a
+        if v>=0 and v<=5:
+            c2nums[i]=v+10
+            continue
+        v = i-id_A
+        if v>=0 and v<=5:
+            c2nums[i]=v+10
 
 pass
 init()
+def cs2num(bts, base, min, max, oct = False):
+    cnt = 0
+    rst = 0
+    mv = 4
+    if oct:
+        mv = 3
+    for i in range(max):
+        if base+i>=len(bts):
+            if i<min:
+                return -1,0
+            else:
+                break
+        bt = bts[base+i]
+        v = c2nums[bt]
+        if v<0 or (oct and v>9):
+            if i<min:
+                return -1,0
+            else:
+                break
+        cnt+=1
+        rst = (rst<<mv)|v
+    return rst, cnt
+
+pass
+def decode_u(val):
+    """
+    1 byte: 7 0? 
+    2 byte: 11 110? 10?
+    3 byte: 16 1110? 10? 10?
+    4 byte: 21 11110? 10? 10? 10?
+    """
+    if val<0x80:
+        return [val]
+    elif val<0x800:
+        b0 = 0x80|(val&0x7f)
+        b1 = 0x60|(val>>6)
+        return [b1, b0]
+    elif val<0x10000:
+        b0 = 0x80|(val&0x3f)
+        val>>=6
+        b1 = 0x80|(val&0x3f)
+        b2 = 0xe0|(val>>6)
+        return [b2,b1,b0]
+    else:
+        b0 = 0x80|(val&0x3f)
+        val>>=6
+        b1 = 0x80|(val&0x3f)
+        val>>=6
+        b2 = 0x80|(val&0x3f)
+        b3 = 0xf0|(val>>6)
+        return [b3,b2,b1,b0]
+
+pass
 def translate_bts(bts, octs = None, hexs = None):
     i = 0
     rs = []
@@ -40,47 +105,33 @@ def translate_bts(bts, octs = None, hexs = None):
         if special_keys[x0]>=0:
             rs.append(special_keys[x0])
             continue
-        v = x0-id_0
-        if v>=0 and v<=7:
-            tmp = v
-            base=i
-            for j in range(2):
-                if base+j>=len(bts):
-                    break
-                xi = bts[base+j]
-                vi = xi-id_0
-                if vi>=0 and vi<=7:
-                    i+=1
-                    tmp = (tmp<<3)+vi
-                else:
-                    break
-            if octs is not None:
-                #print(f"tmp: '{tmp}', {type(tmp)}")
-                #print(f"ocst: {octs}, {type(octs)}")
-                tmp = octs[tmp]
-            else:
-                tmp = [tmp%256]
+        if x0==b'u'[0]:
+            c_val, c_cnt = cs2num(bts, i, 4,4, 0)
+            if c_cnt==0:
+                raise Exception("\\uXXXX error")
+            tmp = decode_u(c_val)
+            i+=c_cnt
             rs+=tmp
             continue
-        if x0 == id_x:
-            tmp = 0
-            for j in range(2):
-                if i+j>=len(bts):
-                    raise Exception("\\xXX error")
-                xi = bts[i+j]
-                vi = xi-id_0
-                if vi<0 or vi>7:
-                    vi = xi-id_a
-                    if vi<0 or vi > 5:
-                        raise Exception("\\xXX error")
-                    vi +=10
-                tmp=(tmp<<4)+vi
-            i+=2
+        if x0==id_x:
+            c_val, c_cnt = cs2num(bts, i, 2, 2, 0)
+            if c_cnt==0:
+                raise Exception("\\xXX error")
             if hexs is not None:
-                tmp = hexs[tmp]
+                tmp = hexs[c_val]
             else:
-                tmp = [tmp]
+                tmp = [c_val]
             rs+=tmp
+            i+=c_cnt
+            continue
+        c_val,c_cnt = cs2num(bts, i-1, 1, 3, 1)
+        if c_cnt>0:
+            if octs is not None:
+                tmp = octs[c_val]
+            else:
+                tmp = [c_val%256]
+            rs+=tmp
+            i+=c_cnt-1
             continue
         rs.append(c)
         rs.append(x0)
@@ -109,12 +160,8 @@ class PrevStrDeal(lr.LRDeal):
     def types(self):
         if not self.deal_build:
             return []
-        return ['']
+        return ['str']
     def build(self, obj):
-        if type(obj.val)==list:
-            return None
-        if obj.is_val:
-            return obj
         obj.is_val = 1
         if self.translate:
             val = obj.val
@@ -156,10 +203,16 @@ class PrevStrDeal(lr.LRDeal):
             取巧用python的eval来生成字符表
         """
         is_bytes = type(s)==bytes
+        if is_bytes:
+            return codez.ubytes(s, "utf-8")
+        else:
+            return codez.ustr(s)
         if not is_bytes:
             s = s.encode("utf-8")
+        #s = s.decode("unicode_escape")
         s = translate_bts(s, self.octs, self.hexs)
-        if not is_bytes:
+        if is_bytes:
+            #s = s.encode("utf-8")
             s = s.decode("utf-8")
         return s
         """
@@ -190,7 +243,7 @@ class PrevStrDeal(lr.LRDeal):
             if not self.note:
                 raise Exception(f"unexcept char before string: {rm}")
             else:
-                rst.append(item.Item(rm, type = "", is_val = 0))
+                rst.append(item.Item(rm, type = "str", is_val = 0))
         tmp = cl[:0]
         ctmp = tmp[:0]
         do_judge = 1

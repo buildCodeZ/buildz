@@ -164,11 +164,11 @@ class ObjectDeal(FormatDeal):
         if isets is not None:
             xf.fill(isets, sets, 1)
         for k,v in sets.items():
-            v = self.get_obj(v, conf, obj, edata.info)
+            v = self.get_obj(v, conf, obj)#, edata.info)
             setattr(obj, k, v)
         call = xf.g(data, call=None)
         if call is not None:
-            self.get_obj(call, conf, obj, edata.info)
+            self.get_obj(call, conf, obj)#, edata.info)
         return obj
     def remove(self, edata:EncapeData):
         sid = edata.sid
