@@ -4,12 +4,7 @@ maps = {
     '"': '"', '\\': '\\', '/': '/',
     'b': '\b', 'f': '\f', 'n': '\n', 'r': '\r', 't': '\t',
 }
-bmaps = {k.encode()[0]:v.encode()[0] for k,v in maps.items()}
-barr = [-1]*256
-for k,v in bmaps.items():
-    barr[k] = v
-
-pass
+bmaps = {k.encode()[0]:v.encode() for k,v in maps.items()}
 def ustr(s):
     i = 0
     l=len(s)
@@ -39,29 +34,23 @@ def ubytes(s, code = "utf-8"):
     i = 0
     l=len(s)
     rs = b""
-    rs = []
     while i<l:
         c = s[i]
         i+=1
-        if c != bl2:
-            rs.append(c)
-            continue
-        x = s[i]
-        i+=1
-        rx = barr[x]
-        if rx>=0:
-            rs.append(rx)
-            continue
-        elif x == bu:
-            v = int(s[i:i+4], 16)
-            r = chr(v).encode(code)
-            rs+=list(r)
-            i+=4
-            continue
-        rs.append(c)
-        rs.append(x)
-    #print(rs)
-    rs = bytes(rs)
+        if c == bl2:
+            x = s[i]
+            i+=1
+            if x == bu:
+                v = int(s[i:i+4], 16)
+                r = chr(v).encode(code)
+                rs+=r
+                i+=4
+                continue
+            elif x in bmaps:
+                r = bmaps[x]
+                rs+=r
+                continue
+        rs+=bytes([c])
     return rs
 
 pass

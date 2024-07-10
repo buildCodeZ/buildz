@@ -2,96 +2,33 @@ from .. import base
 from .. import item
 from .. import exp
 from ... import file
-from ... import code as codez
+import json
 from . import lr
-
+from ... import code as codez
 def init():
     cs = "abfnrtv\\'\"?0123456789xcde"
     maps = {k:k.encode()[0] for k in cs}
     global c2b
     c2b = maps
-    global special_keys
-    special_keys = [-1]*256
-    s  = "abfnrtv\\'\""
-    ts = b"\a\b\f\n\r\t\v\\\'\""
+    global symbal_a
+    global a_map
+    a_map = [0]*256
+    s  = "abfnrtv\\'\"?"
+    ts = b"\a\b\f\n\r\t\v\\\'\"\?"
     for c,t in zip(s, ts):
-        special_keys[c2b[c]] = t
+        a_map[c2b[c]] = t
     symbal_a = [False]*256
     for c in s:
         symbal_a[c2b[c]] = True
-    global id_0,id_a,id_x,id_A
-    global c2nums
-    c2nums = [-1]*256
-    id_0,id_a,id_A,id_x,id_u = b'0aAxu'
-    for i in range(128):
-        v = i-id_0
-        if v>=0 and v<=9:
-            c2nums[i] = v
-            continue
-        v = i-id_a
-        if v>=0 and v<=5:
-            c2nums[i]=v+10
-            continue
-        v = i-id_A
-        if v>=0 and v<=5:
-            c2nums[i]=v+10
+    global id_0,id_a,id_x
+    id_0 = b'0'[0]
+    id_a = b'a'[0]
+    id_x = b'x'[0]
 
 pass
+
 init()
-def cs2num(bts, base, min, max, oct = False):
-    cnt = 0
-    rst = 0
-    mv = 4
-    if oct:
-        mv = 3
-    for i in range(max):
-        if base+i>=len(bts):
-            if i<min:
-                return -1,0
-            else:
-                break
-        bt = bts[base+i]
-        v = c2nums[bt]
-        if v<0 or (oct and v>9):
-            if i<min:
-                return -1,0
-            else:
-                break
-        cnt+=1
-        rst = (rst<<mv)|v
-    return rst, cnt
-
-pass
-def decode_u(val):
-    """
-    1 byte: 7 0? 
-    2 byte: 11 110? 10?
-    3 byte: 16 1110? 10? 10?
-    4 byte: 21 11110? 10? 10? 10?
-    """
-    if val<0x80:
-        return [val]
-    elif val<0x800:
-        b0 = 0x80|(val&0x7f)
-        b1 = 0x60|(val>>6)
-        return [b1, b0]
-    elif val<0x10000:
-        b0 = 0x80|(val&0x3f)
-        val>>=6
-        b1 = 0x80|(val&0x3f)
-        b2 = 0xe0|(val>>6)
-        return [b2,b1,b0]
-    else:
-        b0 = 0x80|(val&0x3f)
-        val>>=6
-        b1 = 0x80|(val&0x3f)
-        val>>=6
-        b2 = 0x80|(val&0x3f)
-        b3 = 0xf0|(val>>6)
-        return [b3,b2,b1,b0]
-
-pass
-def translate_bts(bts, octs = None, hexs = None):
+def translate_bts(bts):
     i = 0
     rs = []
     while i<len(bts):
@@ -102,36 +39,38 @@ def translate_bts(bts, octs = None, hexs = None):
             continue
         x0 = bts[i]
         i+=1
-        if special_keys[x0]>=0:
-            rs.append(special_keys[x0])
+        if symbal_a[x0]:
+            rs.append(a_map[x0])
             continue
-        if x0==b'u'[0]:
-            c_val, c_cnt = cs2num(bts, i, 4,4, 0)
-            if c_cnt==0:
-                raise Exception("\\uXXXX error")
-            tmp = decode_u(c_val)
-            i+=c_cnt
-            rs+=tmp
+        v = x0-id_0
+        if v>=0 and v<=7:
+            tmp = v
+            for j in range(2):
+                if i+j+1>=len(bts):
+                    break
+                xi = bts[i+j+1]
+                vi = xi-id_0
+                if vi>=0 and vi<=7:
+                    i+=1
+                    tmp = (rs<<3)+vi
+                else:
+                    break
+            rs.append(tmp)
             continue
-        if x0==id_x:
-            c_val, c_cnt = cs2num(bts, i, 2, 2, 0)
-            if c_cnt==0:
-                raise Exception("\\xXX error")
-            if hexs is not None:
-                tmp = hexs[c_val]
-            else:
-                tmp = [c_val]
-            rs+=tmp
-            i+=c_cnt
-            continue
-        c_val,c_cnt = cs2num(bts, i-1, 1, 3, 1)
-        if c_cnt>0:
-            if octs is not None:
-                tmp = octs[c_val]
-            else:
-                tmp = [c_val%256]
-            rs+=tmp
-            i+=c_cnt-1
+        if x0 == id_x:
+            tmp = 0
+            for j in range(2):
+                if i+j+1>=len(bts):
+                    raise Exception("\\xXX error")
+                xi = bts[i+j+1]
+                vi = xi-id_0
+                if vi<0 or vi>7:
+                    vi = xi-id_a
+                    if vi<0 or vi > 5:
+                        raise Exception("\\xXX error")
+                    vi +=10
+                tmp=(tmp<<4)+vi
+            rs.append(tmp)
             continue
         rs.append(c)
         rs.append(x0)
@@ -139,40 +78,27 @@ def translate_bts(bts, octs = None, hexs = None):
     return bytes(rs)
 
 pass
-def gen_chars(code="utf-8"):
-    simple = "abfnrtv\\'\""
-    octs = [0]*512
-    hexs = [0]*256
-    for i in range(512):
-        if i<256:
-            vhex = hex(i)[2:]
-            if len(vhex)==1:
-                vhex = "0"+vhex
-            cmd = f"'\\x{vhex}'"
-            hexs[i] = list(eval(cmd).encode(code))
-        voct = oct(i)[2:]
-        cmd = f"'\\{voct}'"
-        octs[i] = list(eval(cmd).encode(code))
-    return octs, hexs
 
-pass
 class PrevStrDeal(lr.LRDeal):
     def types(self):
         if not self.deal_build:
             return []
         return ['str']
     def build(self, obj):
+        if type(obj.val)==list:
+            return None
+        if obj.is_val:
+            print("error str build")
+            return obj
         obj.is_val = 1
         if self.translate:
+            print("error str build tr")
             val = obj.val
             val = self.do_translate(val)
             obj.val = val
         return obj
     def prepare(self, mg):
         super().prepare(mg)
-        self.as_bytes = mg.as_bytes
-        #if not self.as_bytes:
-        #    self.octs,self.hexs = gen_chars()
         self.label_l2 = mg.like("\\")
         self.label_qt = mg.like('"')
         self.label_et = mg.like("\n")
@@ -185,11 +111,7 @@ class PrevStrDeal(lr.LRDeal):
         self.note = note
         self.translate = translate
         self.deal_build = deal_build
-        self.as_bytes = True
-        self.octs = None
-        self.hexs = None
     def json_loads(self, s):
-        import json
         x = s
         cd = None
         if type(x)==bytes:
@@ -199,21 +121,12 @@ class PrevStrDeal(lr.LRDeal):
             rs = rs.encode(cd)
         return rs
     def do_translate(self, s):
-        """
-            取巧用python的eval来生成字符表
-        """
         is_bytes = type(s)==bytes
-        if is_bytes:
-            return codez.ubytes(s, "utf-8")
-        else:
-            return codez.ub2s(s.encode("utf-8"), "utf-8")
-            return codez.ustr(s)
         if not is_bytes:
             s = s.encode("utf-8")
-        #s = s.decode("unicode_escape")
-        s = translate_bts(s, self.octs, self.hexs)
-        if is_bytes:
-            #s = s.encode("utf-8")
+        #s = translate_bts(s)
+        s = codez.ubytes(s, "utf-8")
+        if not is_bytes:
             s = s.decode("utf-8")
         return s
         """

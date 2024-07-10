@@ -43,7 +43,11 @@ def build_val(mgs):
     mgs.add(reval.ValDeal("false", lambda x:False))
 
 pass
+g_mg = None
 def build(as_bytes=False):
+    global g_mg
+    if g_mg is not None and g_mg.as_bytes == as_bytes:
+        return g_mg
     mgs = mg.Manager(as_bytes)
     mgs.add(setz.SetDeal(':'))
     mgs.add(setz.SetDeal('='))
@@ -70,6 +74,7 @@ def build(as_bytes=False):
     mgs.add(strz.PrevStrDeal("'","'",1,0,1))
     mgs.add(strz.PrevStrDeal('"','"',1,0,1))
     mgs.add(nextz.PrevNextDeal())
+    g_mg = mgs
     return mgs
 
 pass

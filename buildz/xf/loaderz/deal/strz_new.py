@@ -171,8 +171,8 @@ class PrevStrDeal(lr.LRDeal):
     def prepare(self, mg):
         super().prepare(mg)
         self.as_bytes = mg.as_bytes
-        #if not self.as_bytes:
-        #    self.octs,self.hexs = gen_chars()
+        if not self.as_bytes:
+            self.octs,self.hexs = gen_chars()
         self.label_l2 = mg.like("\\")
         self.label_qt = mg.like('"')
         self.label_et = mg.like("\n")
