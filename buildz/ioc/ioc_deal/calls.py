@@ -35,10 +35,11 @@ class CallsDeal(FormatDeal):
         conf = edata.conf
         data = self.format(data)
         src = edata.src
+        info = edata.info
         calls = xf.g1(data, calls=[], data = [])
         rst = None
         for call in calls:
-            rst = self.get_obj(call, conf, src)
+            rst = self.get_obj(call, conf, src, info=info)
         return rst
 
 pass

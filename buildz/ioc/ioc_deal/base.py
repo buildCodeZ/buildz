@@ -118,6 +118,12 @@ class FormatData(Base):
 pass
 
 class BaseDeal(Base):
+    def push_vars(self, conf, vars):
+        if vars is not None:
+            [conf.push_var(key,val) for key,val in vars.items()]
+    def pop_vars(self, conf, vars):
+        if vars is not None:
+            [conf.pop_var(key) for key in vars]
     """
         基础处理类，加了一些方便处理的方法，自己写的处理可以不用继承这个
         自己实现的处理类，要实现两个方法：__call__(self, edata:EncapeData)和remove(self, edata:EncapeData)
@@ -148,6 +154,15 @@ class BaseDeal(Base):
             return None
         return deal(edata)
     def deal(self, edata:EncapeData):
+        """
+        """
+        try:
+            return self._deal(edata)
+        except:
+            print(f"except in {self.__class__}.deal: {edata.data}")
+            raise
+        return None
+    def _deal(self, edata:EncapeData):
         """
         """
         return None

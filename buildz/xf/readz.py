@@ -37,7 +37,7 @@ pass
 def build_val(mgs):
     mgs.add(reval.ValDeal("[\+\-]?\d+", int))
     mgs.add(reval.ValDeal("[\+\-]?\d*\.\d+", float))
-    mgs.add(reval.ValDeal("[\+\-]?\d*\.\d+e[\+\-]?\d+", float))
+    mgs.add(reval.ValDeal("[\+\-]?\d*(?:\.\d+)?e[\+\-]?\d+", float))
     mgs.add(reval.ValDeal("null", lambda x:None))
     mgs.add(reval.ValDeal("true", lambda x:True))
     mgs.add(reval.ValDeal("false", lambda x:False))

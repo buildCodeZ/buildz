@@ -8,7 +8,7 @@ class Conf(Base):
     """
         配置文件格式：
             {
-                id: 配置文件id，默认null
+                _id: 配置文件id，默认null
                 //在配置文件配置的环境变量
                 envs: {
                     id: val
@@ -23,7 +23,7 @@ class Conf(Base):
                         maps: {} // 字典入参
                     }
                 }
-                namespace: 命名空间，默认null
+                id|namespace: 命名空间，默认null
                 //本地数据配置项
                 locals: [
                     item_conf,
@@ -57,13 +57,17 @@ class Conf(Base):
         return id
     def map(self, arr, fc_key):
         return {fc_key(obj): obj for obj in arr}
+    def __str__(self):
+        return f"conf<id={self.namespace}, _id={self.id}>"
+    def __repr__(self):
+        return self.__str__()
     def init(self, conf, confs):
         """
             {
                 deals:[{build: fc_path,args: [],maps: {}}]
                 envs: {id: val}
-                id: default null
-                namespace: default null
+                _id: default null
+                id|namespace: default null
                 datas: [{id:val, type: val, ...}]
                 locals: [like datas]
                 default_type: default null
@@ -71,11 +75,11 @@ class Conf(Base):
         """
         if type(conf)!=dict:
             conf = {'datas':conf}
-        id = xf.g(conf, id=None)
+        id = xf.g(conf, _id=None)
         if id is None:
             id = confs.conf_id()
         self.id = id
-        self.namespace = xf.g(conf, namespace=None)
+        self.namespace = xf.g1(conf, namespace=None, id=None)
         self.conf = conf
         self.confs = confs
         self.locals = self.map(xf.g(conf, locals=[]), self.confs.get_data_id)
@@ -164,13 +168,26 @@ class Conf(Base):
             return edata
         if not search_confs:
             return None
-        return self.confs.get_data(id, self.id, src=src, info = info)
+        gid = self.confs.gid(self.namespace, id)
+        obj = self.confs.get_data(gid, self.id, src=src, info = info)
+        if obj is not None:
+            return obj
+        obj = self.confs.get_data(id, self.id, src=src, info = info)
+        return obj
     def get(self, *args, **maps):
         return self.get_obj(*args, **maps)
     def default_type(self):
         if self._default_type is None:
             return self.confs.default_type
         return self._default_type
+    def get_var(self, key, i = -1):
+        return self.confs.get_var(key, i)
+    def push_var(self, key, val):
+        return self.confs.push_var(key,val)
+    def has_var(self, key):
+        return self.confs.has_var(key)
+    def pop_var(self, key):
+        self.confs.pop_var(key)
     def get_obj(self, id, src = None, info=None, remove = False):
         """
             根据data id获取data对象，处理逻辑：根据data id查配置，根据配置的type查deal，返回deal处理过的配置

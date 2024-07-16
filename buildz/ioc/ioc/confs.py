@@ -58,11 +58,12 @@ class Confs(Base):
         self.flush_env(self.envs_args)
     def build_env_args_buildz(self):
         args, maps = argx.fetch()
-        e = xf.get(maps, e = [])
-        env = xf.get(maps, env=[])
-        env += e
-        env = [k.split("=") for k in env]
-        env = {k[0]:"=".join(k[1:]) for k in env}
+        env = maps
+        # e = xf.get(maps, e = [])
+        # env = xf.get(maps, env=[])
+        # env += e
+        # env = [k.split("=") for k in env]
+        # env = {k[0]:"=".join(k[1:]) for k in env}
         self.envs_args = env
         self.flush_env(self.envs_args)
     def build_env_args(self):
@@ -184,10 +185,10 @@ class Confs(Base):
             data_key_type: type
             // 数据配置参数是数组的时候，数据id的位置
             // default=[0,0]
-            data_index_id: [0,0]
+            data_index_id: [0,1]
             // 数据配置参数是数组的时候，数据type的位置
             // default=[0,1]
-            data_index_type: [0,1]
+            data_index_type: [0,0]
             // 处理deal的type字段名
             // default = 'type'
             deal_key_type: type
@@ -209,8 +210,8 @@ class Confs(Base):
         self.global_deal = xf.g(conf, global_deal = True)
         self.data_key_id = xf.g(conf, data_key_id = 'id')
         self.data_key_type = xf.g(conf, data_key_type = 'type')
-        self.data_index_id = xf.g(conf, data_index_id = [0,0])
-        self.data_index_type = xf.g(conf, data_index_type = [0,1])
+        self.data_index_id = xf.g(conf, data_index_id = [0,1])
+        self.data_index_type = xf.g(conf, data_index_type = [0,0])
         self.deal_key_type = xf.g(conf, deal_key_type = 'type')
         self.deal_index_type = xf.g(conf, deal_index_type = 0)
         self.env_orders = xf.g(conf, env_orders = ['sys', 'local', 'conf'])
@@ -229,8 +230,25 @@ class Confs(Base):
         self.envs = {}
         self.envs_args = None
         self.mark_init = False
+        self.vars = {}
         if 'args' in self.env_orders:
             self.build_env_args()
+    def get_var(self, key, i=-1):
+        if not self.has_var(key):
+            return None, False
+        return self.vars[key][i], True
+    def push_var(self, key, val):
+        if key not in self.vars:
+            self.vars[key] =  []
+        self.vars[key].append(val)
+    def has_var(self, key):
+        if key not in self.vars:
+            return False
+        return len(self.vars[key])>0
+    def pop_var(self, key):
+        if not self.has_var(key):
+            return
+        self.vars[key].pop(-1)
     def do_init(self):
         if self.mark_init:
             return
@@ -267,6 +285,10 @@ class Confs(Base):
         id = self._conf_id
         self._conf_id+=1
         return id
+    def gid(self, cid, id):
+        cids = self.ids(cid)
+        ids = self.ids(id)
+        return self.id(cids+ids)
     def ids(self, id):
         if id is None:
             return []
@@ -308,7 +330,7 @@ class Confs(Base):
         if type(conf) in [bytes, str]:
             conf = self.loads(conf)
         obj = Conf(conf, self)
-        id = xf.g(conf, namespace=None)
+        id = xf.g1(conf, id=None, namespace=None)
         ids = self.ids(id)
         node = self.node
         for id in ids:
@@ -383,9 +405,11 @@ class Confs(Base):
         for confs,i in arr:
             id = self.id(ids[i:])
             for conf in confs:
-                conf = conf.get_data(id, sid==conf.id, False, src = src, info = info)
-                if conf is not None:
-                    return conf
+                if sid == conf.id:
+                    continue
+                _conf = conf.get_data(id, sid==conf.id, False, src = src, info = info)
+                if _conf is not None:
+                    return _conf
         return None
 
 pass

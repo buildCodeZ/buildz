@@ -11,7 +11,7 @@ class RefDeal(FormatDeal):
             {
                 id: id
                 type: ref
-                key: 引导数据id
+                ref|key: 引导数据id
                 info: item_conf, 额外的引用信息, 默认null
             }
         简写:
@@ -31,7 +31,10 @@ class RefDeal(FormatDeal):
         if info is not None and type(info)==dict:
             #info = {k:self.get_obj(info, edata.conf, src = edata.src) for k in info}
             info = {'type':'map', 'data':info}
-            info = self.get_obj(info, edata.conf, src = edata.src)
+            info = self.get_obj(info, edata.conf, src = edata.src) 
+        var, exist = edata.conf.get_var(key)
+        if exist:
+            return var
         return edata.conf.get_obj(key, info = info, src = edata.src)
 
 pass

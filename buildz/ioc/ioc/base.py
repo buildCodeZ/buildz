@@ -19,6 +19,7 @@ class Base:
     def __call__(self, *args, **maps):
         return self.deal(*args, **maps)
     def deal(self, *args, **maps):
+        raise Exception("unexcept touch")
         return None
 
 pass

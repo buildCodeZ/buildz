@@ -50,8 +50,7 @@ class ObjectDeal(FormatDeal):
                 after_remove: item_conf
             }
         简写：
-            [[id, object, single], source, construct, sets, calls] 
-                construct: [args, maps]
+            [[id, object, single], source, args, maps, sets, calls] 
                 sets: [[key1, item_conf], ...]
         极简:
             [object, source]
@@ -83,7 +82,7 @@ class ObjectDeal(FormatDeal):
         if sid not in maps:
             maps[sid] = {}
         maps[sid][id] = obj
-    def deal(self, edata:EncapeData):
+    def _deal(self, edata:EncapeData):
         sid = edata.sid
         data = edata.data
         data = self.format(data)
@@ -92,11 +91,13 @@ class ObjectDeal(FormatDeal):
         confs = edata.confs
         icst = None
         isets = None
+        ivars = None
         if type(info) == dict:
             cid = xf.g(info, id=None)
             iargs, imaps = xf.g(info, args = None, maps = None)
             icst = {'args':iargs, 'maps':imaps}
             isets = xf.g(info, sets = None)
+            ivars = xf.g(info, vars=None)
         else:
             cid = None
         id = xf.g(data, id = None)
@@ -113,15 +114,21 @@ class ObjectDeal(FormatDeal):
                 if icst is not None or isets is not None:
                     raise Exception("set info.construct/info.sets while using single without info.id")
                 ids = [sid, 'single', id]
+        #print(f"obj.deal ids: {ids} for {data}")
         if ids is not None:
             obj = xf.gets(self.singles, ids)
             if obj is not None:
                 #raise IOCError(f"null for {ids}")
                 return obj
-        source = xf.g(data, source=0)
+        #source = xf.g(data, source=0)
+        source = xf.g1(data, source=0, src=0)
         if source == 0:
             raise Exception(f"define object without 'source' key, {data}")
-        fc = xf.get(self.sources, source, None)
+        source = self.get_obj(source, conf)
+        if type(source)==str:
+            fc = xf.get(self.sources, source, None)
+        else:
+            fc = source
         if fc is None:
             fc = pyz.load(source)
             self.sources[source]=fc
@@ -137,6 +144,7 @@ class ObjectDeal(FormatDeal):
         maps = xf.g(cst, maps={})
         args = [self.get_obj(v, conf) for v in args]
         maps = {k:self.get_obj(maps[k], conf) for k in maps}
+        self.push_vars(conf, ivars)
         obj = fc(*args, **maps)
         if ids is not None:
             xf.sets(self.singles, ids, obj)
@@ -169,6 +177,8 @@ class ObjectDeal(FormatDeal):
         call = xf.g(data, call=None)
         if call is not None:
             self.get_obj(call, conf, obj)#, edata.info)
+        self.pop_vars(conf, ivars)
+        #print(f"obj.deal ids: {ids} for {data}, rst: {obj}")
         return obj
     def remove(self, edata:EncapeData):
         sid = edata.sid

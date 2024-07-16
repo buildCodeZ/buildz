@@ -11,7 +11,7 @@ class VarDeal(FormatDeal):
             {
                 id:id
                 type: var
-                data: string
+                var|data: string
             }
         简写:
             [[id, var], data]

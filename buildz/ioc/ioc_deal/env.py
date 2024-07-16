@@ -11,11 +11,12 @@ class EnvDeal(FormatDeal):
             {
                 id: id
                 type: env
-                key: 环境变量key
+                env|key: 环境变量key
                 default: item_conf //可选
             }
         简写：
-            [[id, env], key]
+            [[id, env], key, default]
+            [env, key, default]
             [env, key]
         例:
             [env, path] //读取环境变量path

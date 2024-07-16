@@ -8,7 +8,7 @@ class ValDeal(Base):
                 // 查找id，可选
                 id: id
                 type: val
-                data: 任何数据
+                val|data: 任何数据
             }
         简写:
             [[id, val], data]

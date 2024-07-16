@@ -12,7 +12,7 @@ class ObjectVarDeal(FormatDeal):
                 id:id
                 type: ovar
                 source: string
-                key: string
+                ovar|key: string
                 info: null
             }
         简写:
@@ -32,8 +32,9 @@ class ObjectVarDeal(FormatDeal):
         conf = edata.conf
         data = self.format(data)
         src = edata.src
-        source = xf.g(data, source=None)
-        key = xf.g(data, key=0)
+        source = xf.g1(data, source=None, src=None)
+        #key = xf.g(data, key=0)
+        key = xf.get_first(data, "ovar", "key")
         info = xf.g(data, info=None)
         if info is not None:
             info = self.get_obj(info, src = edata.src, info = edata.info)

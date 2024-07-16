@@ -11,7 +11,7 @@ class MapDeal(FormatDeal):
         {
             id:id
             type:map
-            data: {
+            map|data: {
                 key1: item_conf,
                 ...
             }
