@@ -405,8 +405,6 @@ class Confs(Base):
         for confs,i in arr:
             id = self.id(ids[i:])
             for conf in confs:
-                if sid == conf.id:
-                    continue
                 _conf = conf.get_data(id, sid==conf.id, False, src = src, info = info)
                 if _conf is not None:
                     return _conf
