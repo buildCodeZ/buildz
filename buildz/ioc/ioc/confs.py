@@ -309,10 +309,11 @@ class Confs(Base):
     def add_fp(self, fp):
         try:
             conf = self.loads(xf.fread(fp))
+            return self.add(conf)
         except:
             print(f'error in loads: {fp}')
             raise
-        return self.add(conf)
+        #return self.add(conf)
     def adds(self, confs):
         for conf in confs:
             self.add(conf)

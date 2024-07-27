@@ -129,21 +129,25 @@ class SearchDeal(dirz.FileDeal):
                 else:
                     try:
                         s = s.decode(code)
-                        pt = self.pts[mark].decode(code)
+                        pt = self.pts[mark]#.decode(code)
+                        if type(pt)==bytes:
+                            pt = pt.decode(code)
                         finds = re.findall(pt, s)
                     except Exception as exp:
-                        print(f"error in decode {filepath}, {pts[mark]} with '{code}': {exp}")
+                        print(f"error in decode {filepath}, {self.pts[mark]} with '{code}': {exp}")
                 for bs_find in finds:
                     if type(bs_find)==[list, tuple]:
                         bs_find = bs_find[0]
                     if type(self.pt)==str:
-                        bs_find = bs_find.encode(code)
+                        if type(bs_find)==bytes:
+                            bs_find = bs_find.decode(code)
                     #bs_find = b">>>>>>>\n"+bs_find+b"\n<<<<<<\n"
                     #bs_find += b"\n"+bld+b"\n"
                     arr.append(bs_find)
                     arr.append(bldi)
                 arr.append(blda)
                 arr.append(b"")
+                arr =[k if type(k)==bytes else k.encode(code) for k in arr]
                 arr = b"\n".join(arr)
                 try:
                     arr = decode(arr)

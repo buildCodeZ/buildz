@@ -93,3 +93,18 @@ def decode(s, coding = 'utf-8'):
         return s.decode(xcoding)
 
 pass
+
+def sread(fp, code='utf-8', mode='r'):
+    if mode.find("b")<0:
+        mode+="b"
+    return decode(read(fp, mode), code)
+
+pass
+def swrite(dt, fp, code="utf-8", mode = "w"):
+    if mode.find("b")<0:
+        mode+="b"
+    if type(dt)!=bytes:
+        dt = dt.encode(code)
+    write(dt, fp, mode)
+
+pass
