@@ -60,9 +60,9 @@ class CallDeal(FormatDeal):
             xf.fill(imaps, maps, 1)
         # args = [self.get_obj(v, conf, src, info = edata.info) for v in args]
         # maps = {k:self.get_obj(maps[k], conf, src, info = edata.info) for k in maps}
+        self.push_vars(conf, ivars)
         args = [self.get_obj(v, conf, src) for v in args]
         maps = {k:self.get_obj(maps[k], conf, src) for k in maps}
-        self.push_vars(conf, ivars)
         rst = method(*args, **maps)
         self.pop_vars(conf, ivars)
         return rst

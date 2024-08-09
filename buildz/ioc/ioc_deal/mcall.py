@@ -62,7 +62,7 @@ class MethodCallDeal(FormatDeal):
         iargs, imaps = None, None
         ivars = None
         if type(info) == dict:
-            iargs, imaps = xf.g(info, m_args = None, m_maps = None, vars=None)
+            iargs, imaps, ivars = xf.g(info, m_args = None, m_maps = None, vars=None)
         args = xf.g(data, args=[])
         maps = xf.g(data, maps ={})
         vars = xf.g(data, vars={})
@@ -76,9 +76,9 @@ class MethodCallDeal(FormatDeal):
             xf.fill(imaps, maps, 1)
         # args = [self.get_obj(v, conf, src, edata.info) for v in args]
         # maps = {k:self.get_obj(maps[k], conf, src, edata.info) for k in maps}
+        self.push_vars(conf, ivars)
         args = [self.get_obj(v, conf, src) for v in args]
         maps = {k:self.get_obj(maps[k], conf, src) for k in maps}
-        self.push_vars(conf, ivars)
         rst = method(*args, **maps)
         self.pop_vars(conf, ivars)
         return rst

@@ -67,6 +67,7 @@ class DealDeal(FormatDeal):
         super().init("DealDeal", fp_lists, fp_defaults, join(dp, "conf", "deal_lists.js"), None)
     def deal(self, edata:EncapeData):
         data = edata.data
+        data = self.fill(data)
         source = xf.g(data, source=None)
         if source is None:
             raise IOCError("not source in dealdeal")

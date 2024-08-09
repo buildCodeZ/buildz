@@ -24,8 +24,6 @@ class CallsDeal(FormatDeal):
         [[main_call, calls], [[call, buildz.pyz.pyexe], [call, buildz.pyz.pypkg]]] 
     """
     def init(self, fp_lists = None, fp_defaults = None):
-        self.singles = {}
-        self.sources = {}
         super().init("CallsDeal", fp_lists, fp_defaults, 
             join(dp, "conf", "calls_lists.js"),
             join(dp, "conf", "calls_defaults.js"))

@@ -25,7 +25,7 @@ class Single(Base):
         data = edata.data
         info = edata.info
         if type(info) == dict:
-            cid = xf.get(info, self.cid, None)
+            cid = xf.get(info, self.k_cid, None)
         else:
             cid = None
         id = xf.g(data, id = None)
@@ -52,5 +52,10 @@ class Single(Base):
         if ids is None:
             return
         xf.sets(self.singles, ids, obj)
+    def remove(self,edata:EncapeData):
+        ids = self.get_ids(edata)
+        if ids is None:
+            return
+        xf.removes(self.singles, ids)
 
 pass

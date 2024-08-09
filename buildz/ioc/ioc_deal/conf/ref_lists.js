@@ -19,6 +19,10 @@
             key: key
         },
         {
+            nullable:1
+            key:default
+        }
+        {
             nullable: 1,
             key: info
             conf: {

@@ -30,7 +30,7 @@ class VarDeal(FormatDeal):
         conf = edata.conf
         data = self.format(data)
         src = edata.src
-        key = xf.get_first(data, "var", "data")
+        key = xf.get_first(data, "var", "key", "data")
         key = pyz.load(key)
         return key
 

@@ -3,7 +3,7 @@ from buildz import xf, pyz
 from buildz.xf import g as xg
 from buildz import argx
 import json
-from .base import Base, EncapeData,IOCError
+from .base import Base, EncapeData,IOCError, IdNotFoundError
 from .conf import Conf
 import os
 class ConfsNode(Base):
@@ -237,6 +237,13 @@ class Confs(Base):
         if not self.has_var(key):
             return None, False
         return self.vars[key][i], True
+    def push_vars(self, vars):
+        if vars is not None:
+            [self.push_var(key,val) for key,val in vars.items()]
+        return pyz.with_out(lambda :self.pop_vars(vars))
+    def pop_vars(self, vars):
+        if vars is not None:
+            [self.pop_var(key) for key in vars]
     def push_var(self, key, val):
         if key not in self.vars:
             self.vars[key] =  []
@@ -331,7 +338,8 @@ class Confs(Base):
         if type(conf) in [bytes, str]:
             conf = self.loads(conf)
         obj = Conf(conf, self)
-        id = xf.g1(conf, id=None, namespace=None)
+        id = obj.namespace
+        #id = xf.g1(conf, id=None, namespace=None)
         ids = self.ids(id)
         node = self.node
         for id in ids:
@@ -358,7 +366,7 @@ class Confs(Base):
         else:
             conf = self.get_data(id, sid, src=src, info = info)
         if conf is None:
-            raise IOCError(f"confs: can't find conf of {id}")
+            raise IdNotFoundError(f"confs: can't find conf of {id}")
             return None
         deal = self.get_deal(conf.type, sid)
         if deal is None:

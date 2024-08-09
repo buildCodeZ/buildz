@@ -9,6 +9,8 @@ class IOCError(Exception):
         super().__init__(msg)
 
 pass
+class IdNotFoundError(IOCError):
+    pass
 class Base:
     def update_maps(self, maps, src, replace=1):
         xf.deep_update(maps, src, replace)

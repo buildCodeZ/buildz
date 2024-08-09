@@ -1,5 +1,5 @@
 #coding=utf-8
-from ..ioc.base import Base, EncapeData
+from ..ioc.base import Base, EncapeData, IdNotFoundError
 from .base import FormatData,FormatDeal
 from buildz import xf, pyz
 import os
@@ -31,10 +31,20 @@ class RefDeal(FormatDeal):
         if info is not None and type(info)==dict:
             #info = {k:self.get_obj(info, edata.conf, src = edata.src) for k in info}
             info = {'type':'map', 'data':info}
-            info = self.get_obj(info, edata.conf, src = edata.src) 
+            info = self.get_obj(info, edata.conf, src = edata.src)
+        else:
+            info = {}
+        _info = edata.info
+        if type(_info)==dict:
+            xf.deep_update(info, _info, 1)
         var, exist = edata.conf.get_var(key)
         if exist:
             return var
-        return edata.conf.get_obj(key, info = info, src = edata.src)
+        try:
+            return edata.conf.get_obj(key, info = info, src = edata.src)
+        except IdNotFoundError as exp:
+            if "default" in data:
+                return data['default']
+            raise exp
 
 pass

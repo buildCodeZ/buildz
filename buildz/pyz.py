@@ -2,6 +2,29 @@
 import sys
 import os
 import hashlib
+class With:
+    def __init__(self, fc_in, fc_out, args = False):
+        self.fc_in = fc_in
+        self.fc_out = fc_out
+        self.args = args
+    def __enter__(self):
+        if self.fc_in is not None:
+            self.fc_in()
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        rst = False
+        if self.fc_out is not None:
+            if self.args:
+                rst = self.fc_out(exc_type, exc_val, exc_tb)
+            else:
+                rst = self.fc_out()
+        return rst
+
+pass
+def with_out(fc, args = False):
+    return With(None, fc, args)
+
+pass
 def hashcode(s):
     if type(s)==str:
         s = s.encode("utf-8")
@@ -10,7 +33,7 @@ def hashcode(s):
 pass
 def test_current(fp, up = 1, adds = []):
     """
-        将当前目录的上{up}层目录加入sys.path，这样可以在同层写测试代码，但是import还是要当在上{up}层做import
+        将当前目录的上{up}层目录加入sys.path，这样可以在同层写测试代码，但是写import的时候还是要当作是在上{up}层做import
     """
     if type(adds) not in [list, tuple]:
         adds = [adds]
@@ -22,6 +45,8 @@ def test_current(fp, up = 1, adds = []):
 
 pass
 add_path = test_current
+add_current = test_current
+add = test_current
 def load(md, fc = None):
     """
         import object(whether module or others) from md(or md.fc)

@@ -34,7 +34,7 @@ class ObjectVarDeal(FormatDeal):
         src = edata.src
         source = xf.g1(data, source=None, src=None)
         #key = xf.g(data, key=0)
-        key = xf.get_first(data, "ovar", "key")
+        key = xf.get_first(data, "ovar", "key", "data")
         info = xf.g(data, info=None)
         if info is not None:
             info = self.get_obj(info, src = edata.src, info = edata.info)

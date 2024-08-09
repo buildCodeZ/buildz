@@ -53,7 +53,7 @@ class IOCFObjectDeal(FormatDeal):
         if len(fps)==0:
             return None
         edata.conf.confs.add_fps(fps)
-        self.fps.update(fp)
+        self.fps.update(fps)
         return None
 
 pass

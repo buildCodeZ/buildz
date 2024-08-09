@@ -2,7 +2,7 @@
 from buildz import xf, pyz
 from buildz.xf import g as xg
 import json
-from .base import Base, EncapeData,IOCError
+from .base import Base, EncapeData,IOCError, IdNotFoundError
 from builtins import id as _id
 class Conf(Base):
     """
@@ -198,7 +198,7 @@ class Conf(Base):
         else:
             conf = self.get_data(id, src = src, info = info)
         if conf is None:
-            raise IOCError(f"can't find conf of {id}")
+            raise IdNotFoundError(f"can't find conf of {id}")
             return None
         deal = self.get_deal(conf.type)
         if deal is None:

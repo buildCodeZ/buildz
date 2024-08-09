@@ -96,6 +96,8 @@ class ObjectDeal(FormatDeal):
             cid = xf.g(info, id=None)
             iargs, imaps = xf.g(info, args = None, maps = None)
             icst = {'args':iargs, 'maps':imaps}
+            if iargs is None and imaps is None:
+                icst = None
             isets = xf.g(info, sets = None)
             ivars = xf.g(info, vars=None)
         else:
@@ -141,10 +143,11 @@ class ObjectDeal(FormatDeal):
         if icst is not None:
             xf.fill(icst, cst, 1)
         args = xf.g(cst, args=[])
+        args = xf.im2l(args)
         maps = xf.g(cst, maps={})
+        self.push_vars(conf, ivars)
         args = [self.get_obj(v, conf) for v in args]
         maps = {k:self.get_obj(maps[k], conf) for k in maps}
-        self.push_vars(conf, ivars)
         obj = fc(*args, **maps)
         if ids is not None:
             xf.sets(self.singles, ids, obj)

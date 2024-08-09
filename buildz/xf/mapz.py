@@ -105,6 +105,23 @@ def fill_fc(maps, fc):
     return maps
 
 pass
+def im2l(maps):
+    if type(maps)!=dict:
+        return maps
+    mx = 0
+    for k in maps:
+        if type(k)==str:
+            k = int(k)
+        if type(k)!=int or k<0:
+            raise Exception(f"args key only can be int and bigger than 0, but {type(k)}:{k} found")
+        mx = max(k+1, mx)
+    arr = [None]*mx
+    for k, v in maps.items():
+        arr[k] = v
+    return arr
+
+pass
+    
 def sets(maps, keys, val):
     if type(keys) != list:
         keys = [keys]

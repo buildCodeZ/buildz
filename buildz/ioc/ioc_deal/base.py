@@ -96,8 +96,9 @@ class FormatData(Base):
                 null = xf.g(obj, nullable=1)
                 if not null:
                     raise Exception(f"error format in {self.name}, not default value for index {i}, key {key}")
-                default = xf.g(obj, default=None)
-                maps[key] = default
+                if "default" in obj:
+                    default = xf.g(obj, default=None)
+                    maps[key] = default
                 cnt +=1
                 continue
             next_conf = xf.g(obj, conf = None)
@@ -138,6 +139,12 @@ class BaseDeal(Base):
         _type = conf.confs.get_data_type(data, 1, conf.default_type())
         edata = EncapeData(data, conf, local=True, type=_type, src = src, info = info)
         return edata
+    def fill_objs(self, data, conf, src = None, info = None):
+        if type(data)==list:
+            data = [get_obj(k, conf, src, info) for k in data]
+        else:
+            data = {k:get_obj(v, conf, src, info) for k,v in data.items()}
+        return data
     def get_obj(self, data, conf, src = None, info = None):
         edata = self.get_data(data, conf, src, info)
         return edata()
@@ -149,10 +156,10 @@ class BaseDeal(Base):
         _type = conf.confs.get_data_type(data, 1, conf.default_type())
         edata = EncapeData(data, conf, local=True, type=_type, src = src, info = info)
         return edata()
-        deal = conf.get_deal(edata.type)
-        if deal is None:
-            return None
-        return deal(edata)
+        # deal = conf.get_deal(edata.type)
+        # if deal is None:
+        #     return None
+        # return deal(edata)
     def deal(self, edata:EncapeData):
         """
         """
@@ -190,18 +197,18 @@ class FormatDeal(BaseDeal):
         data = self.format.l2m(data)
         self.format.fill(data)
         return data
-    def get_obj(self, data, conf, src = None, info = None):
-        if type(data) not in [list, dict, tuple]:
-            i = conf.confs.data_index_type[0]
-            data = [conf.default_type(), data]
-            if i != 0:
-                data.reverse()
-        _type = conf.confs.get_data_type(data, 1, conf.default_type())
-        edata = EncapeData(data, conf, local=True, type=_type, src = src, info = info)
-        return edata()
-        deal = conf.get_deal(edata.type)
-        if deal is None:
-            return None
-        return deal(edata)
+    # def get_obj(self, data, conf, src = None, info = None):
+    #     if type(data) not in [list, dict, tuple]:
+    #         i = conf.confs.data_index_type[0]
+    #         data = [conf.default_type(), data]
+    #         if i != 0:
+    #             data.reverse()
+    #     _type = conf.confs.get_data_type(data, 1, conf.default_type())
+    #     edata = EncapeData(data, conf, local=True, type=_type, src = src, info = info)
+    #     return edata()
+    #     deal = conf.get_deal(edata.type)
+    #     if deal is None:
+    #         return None
+    #     return deal(edata)
 
 pass
