@@ -7,13 +7,14 @@ remain和type？
 '''
 class Item:
     def __str__(self):
-        return f"<Item val={self.val}, type = {self.type}, is_val = {self.is_val}>"
+        return f"<Item val={self.val}, type = {self.type}, is_val = {self.is_val}, others={self.others}>"
     def __repr__(self):
         return str(self)
-    def __init__(self, val, type = None, is_val=False):
+    def __init__(self, val, type = None, is_val=False, others = None):
         self.val= val
         self.is_val= is_val
         self.type = type
+        self.others=others
 
 pass
 class NoneItem:

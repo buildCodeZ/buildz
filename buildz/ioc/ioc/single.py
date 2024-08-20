@@ -41,21 +41,27 @@ class Single(Base):
             else:
                 ids = [sid, 'single', id]
         return ids
-    def get(self, edata:EncapeData):
-        ids = self.get_ids(edata)
+    def get_by_ids(self, ids):
         if ids is None:
             return None
         obj = xf.gets(self.singles, ids)
         return obj
-    def set(self, obj, edata:EncapeData):
+    def get(self, edata:EncapeData):
         ids = self.get_ids(edata)
+        return self.get_by_ids(ids)
+    def set_by_ids(self, ids, obj):
         if ids is None:
             return
         xf.sets(self.singles, ids, obj)
-    def remove(self,edata:EncapeData):
+    def set(self, obj, edata:EncapeData):
         ids = self.get_ids(edata)
+        self.set_by_ids(ids, obj)
+    def rm_by_ids(self, idsj):
         if ids is None:
             return
         xf.removes(self.singles, ids)
+    def remove(self,edata:EncapeData):
+        ids = self.get_ids(edata)
+        self.rm_by_ids(ids)
 
 pass

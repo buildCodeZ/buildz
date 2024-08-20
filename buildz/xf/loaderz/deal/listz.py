@@ -9,13 +9,14 @@ class ListDeal(lr.LRDeal):
     def init(self, left, right):
         super().init(left, right, 'list')
     def types(self):
-        return ['str','list']
+        return ['list']
     def build(self, obj):
-        if self.check_right(obj):
-            return None
+        #print(f"list build: {obj}")
+        #if self.check_right(obj):
+        #    return None
         val = obj.val
         if len(val)==0:
-            obj.val = ''
+            obj.val = []
             obj.is_val = 1
             return obj
         if len(val)>1:

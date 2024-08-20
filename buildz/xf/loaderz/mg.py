@@ -97,13 +97,18 @@ class Manager:
         #         if len(k.strip())==0:
         #             continue
         #     rst.append(k)
+        #print(f"mg arr: {arr}")
         arr = self.build_arr(arr)
+        #print(f"mg arr: {arr}")
         obj = item.Item(arr, type = "list", is_val = 0)
         obj = self.build(obj)
         #arr = rst
         #if len(arr)==1:
         #    arr = arr[0]
         val = obj.val
+        #print(f"mg val:{val}")
+        if type(val) in [list,map] and len(val)==0:
+            val = ""
         if type(val)==list and len(val)==1:
             val = val[0]
         return val

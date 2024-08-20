@@ -200,6 +200,10 @@ class Conf(Base):
         if conf is None:
             raise IdNotFoundError(f"can't find conf of {id}")
             return None
+        if conf.conf is None:
+            if remove:
+                return None
+            return conf.data()
         deal = self.get_deal(conf.type)
         if deal is None:
             raise IOCError(f"can't find deal of {id}, type = {conf.type}")

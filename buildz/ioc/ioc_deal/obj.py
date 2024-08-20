@@ -1,5 +1,6 @@
 #
 from ..ioc.base import Base, EncapeData,IOCError
+from ..ioc.single import Single
 from .base import FormatData,FormatDeal
 from buildz import xf, pyz
 import os
@@ -59,6 +60,7 @@ class ObjectDeal(FormatDeal):
     """
     def init(self, fp_lists = None, fp_defaults = None, fp_cst = None, fp_set = None):
         self.singles = {}
+        self.single = Single("single", "id", 1)
         self.sources = {}
         super().init("ObjectDeal", fp_lists, fp_defaults, 
             join(dp, "conf", "obj_lists.js"),
@@ -100,28 +102,13 @@ class ObjectDeal(FormatDeal):
                 icst = None
             isets = xf.g(info, sets = None)
             ivars = xf.g(info, vars=None)
-        else:
-            cid = None
+        ids = self.single.get_ids(edata)
         id = xf.g(data, id = None)
-        single = xf.g(data, single=None)
-        if id is None:
-            single = 0
-        if single is None:
-            single = 1
-        ids = None
-        if single or cid is not None:
-            if cid is not None:
-                ids = [sid, 'local_id', id, cid]
-            else:
-                if icst is not None or isets is not None:
-                    raise Exception("set info.construct/info.sets while using single without info.id")
-                ids = [sid, 'single', id]
         #print(f"obj.deal ids: {ids} for {data}")
-        if ids is not None:
-            obj = xf.gets(self.singles, ids)
-            if obj is not None:
-                #raise IOCError(f"null for {ids}")
-                return obj
+        obj = self.single.get_by_ids(ids)
+        if obj is not None:
+            #raise IOCError(f"null for {ids}")
+            return obj
         #source = xf.g(data, source=0)
         source = xf.g1(data, source=0, src=0)
         if source == 0:
@@ -148,9 +135,11 @@ class ObjectDeal(FormatDeal):
         self.push_vars(conf, ivars)
         args = [self.get_obj(v, conf) for v in args]
         maps = {k:self.get_obj(maps[k], conf) for k in maps}
+        obj = self.single.get_by_ids(ids)
+        if obj is not None:
+            return obj
         obj = fc(*args, **maps)
-        if ids is not None:
-            xf.sets(self.singles, ids, obj)
+        self.single.set_by_ids(ids, obj)
         prev_call = xf.g(data, prev_call=None)
         if prev_call is not None:
             # TODO: 这边info透传不知道会不会有问题
@@ -190,23 +179,8 @@ class ObjectDeal(FormatDeal):
         info = edata.info
         conf = edata.conf
         confs = edata.confs
-        if type(info) == dict:
-            cid = xf.g(info, id=None)
-        else:
-            cid = None
-        id = xf.g(data, id = None)
-        single = xf.g(data, single=None)
-        if id is None:
-            single = 0
-        ids = None
-        if single or cid is not None:
-            if single:
-                ids = [sid, id]
-            else:
-                ids = [sid, id, cid]
-        if ids is None:
-            return None
-        obj = xf.gets(self.singles, ids)
+        ids = self.single.get_ids(edata)
+        obj = self.single.get_by_ids(ids)
         if obj is None:
             return None
         call = xf.g(data, remove=None)

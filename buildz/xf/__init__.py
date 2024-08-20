@@ -1,5 +1,5 @@
 
-from .readz import loads, load, loadf
+from .readz import loads, load, loadf, loads_args, loadx, is_args
 from .write import dumps, dump, dumpf
 from .file import *
 from .mapz import *

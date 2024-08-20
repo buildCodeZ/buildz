@@ -30,7 +30,7 @@ class EncapeData(Base):
         包含data id对应的配置，配置文件id，配置文件对象
         [object.test, call, ]
     """
-    def __init__(self, data, conf, local = False, type = None, src = None, info = None):
+    def __init__(self, data, conf=None, local = False, type = None, src = None, info = None, confs = None):
         """
             data: 配置数据
             conf: 配置数据对应的配置文件的管理器
@@ -56,16 +56,21 @@ class EncapeData(Base):
                         raise IOCError("only dict can be a parent: "+pid)
                     self.update_maps(data, pdt, replace=0)
         self.data = data
-        self.sid = conf.id
+        if conf is not None:
+            self.sid = conf.id
+            if type is None:
+                type = conf.confs.get_data_type(data, 0, conf.default_type())
+            if confs is None:
+                confs = conf.confs
         self.src = src
         self.conf = conf
-        self.confs = conf.confs
+        self.confs = confs
         self.local = local
-        if type is None:
-            type = conf.confs.get_data_type(data, 0, conf.default_type())
         self.type = type
         self.info = info
     def deal(self, remove = False):
+        if self.conf is None:
+            return self.confs.get(self, src = self.src, info=self.info, remove = remove)
         return self.conf.get(self, src = self.src, info=self.info, remove = remove)
 
 

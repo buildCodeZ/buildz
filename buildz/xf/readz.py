@@ -1,7 +1,7 @@
 
 from .loaderz import mg, buffer, base
 from . import file
-from .loaderz.deal import nextz, spt, strz, listz, spc, setz, mapz, reval, lrval
+from .loaderz.deal import nextz, spt, strz, listz, spc, setz, mapz, reval, lrval, listmapz
 class BoolFc:
     def __init__(self, mg):
         trues = [mg.like(k) for k in ["true", "True", "1"]]   
@@ -78,9 +78,72 @@ def build(as_bytes=False):
     return mgs
 
 pass
+g_mgx = None
+def build_args(as_bytes=False):
+    global g_mgx
+    if g_mgx is not None and g_mgx.as_bytes == as_bytes:
+        return g_mgx
+    mgs = mg.Manager(as_bytes)
+    mgs.add(setz.SetDeal(':'))
+    mgs.add(setz.SetDeal('='))
+    mgs.add(spt.PrevSptDeal(",",1))
+    mgs.add(spt.PrevSptDeal(';',1))
+    mgs.add(spt.PrevSptDeal('\n'))
+    mgs.add(spt.PrevSptDeal(' '))
+    build_lrval(mgs)
+    # mgs.add(listz.ListDeal("(", ")"))
+    # mgs.add(listz.ListDeal("[", "]"))
+    # mgs.add(mapz.MapDeal("{", "}"))
+    mgs.add(listmapz.ListMapDeal("(", ")"))
+    mgs.add(listmapz.ListMapDeal("[", "]"))
+    mgs.add(listmapz.ListMapDeal("{", "}"))
+    build_val(mgs)
+    #1,0,0,1: 没引号当r"..."
+    #1,0,1,1: 没引导当"..."
+    mgs.add(strz.PrevStrDeal("r'''","'''",0,0,0))
+    mgs.add(strz.PrevStrDeal('r"""','"""',0,0,0))
+    mgs.add(strz.PrevStrDeal("r'","'",1,0,0,1))
+    mgs.add(strz.PrevStrDeal('r"','"',1,0,0))
+    mgs.add(strz.PrevStrDeal("###","###",0,1))
+    mgs.add(strz.PrevStrDeal("/*","*/",0,1))
+    mgs.add(strz.PrevStrDeal("'''","'''",0,0,1))
+    mgs.add(strz.PrevStrDeal('"""','"""',0,0,1))
+    mgs.add(strz.PrevStrDeal("#","\n",1,1))
+    mgs.add(strz.PrevStrDeal("//","\n",1,1))
+    mgs.add(strz.PrevStrDeal("'","'",1,0,1))
+    mgs.add(strz.PrevStrDeal('"','"',1,0,1))
+    mgs.add(nextz.PrevNextDeal())
+    g_mgx = mgs
+    return mgs
+
+pass
 def load(read, as_bytes = False):
     mgs = build(as_bytes)
     return msg.loads(read)
+
+pass
+def is_args(obj):
+    return type(obj)==listmapz.Args
+
+pass
+def loads_args(s, as_args = False, as_bytes = False):
+    mgs = build_args(type(s)==bytes)
+    #input = buffer.BufferInput(s)
+    rst = mgs.loads(s)
+    if not as_args:
+        return rst
+    if is_args(rst):
+        return rst
+    if type(rst) not in [list, dict]:
+        rst = [rst]
+    if type(rst)==list:
+        rst = [rst, {}]
+    else:
+        rst = [[], rst]
+    return listmapz.Args(*rst)
+
+pass
+loadx = loads_args
 def loads(s):
     mgs = build(type(s)==bytes)
     #input = buffer.BufferInput(s)

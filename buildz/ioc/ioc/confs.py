@@ -231,8 +231,15 @@ class Confs(Base):
         self.envs_args = None
         self.mark_init = False
         self.vars = {}
+        self.fcs = {}
         if 'args' in self.env_orders:
             self.build_env_args()
+    def set_fc(self, key, fc):
+        self.fcs[key] = fc
+    def get_fc(self, key):
+        if key not in self.fcs:
+            return None
+        return self.fcs[key]
     def get_var(self, key, i=-1):
         if not self.has_var(key):
             return None, False
@@ -368,6 +375,10 @@ class Confs(Base):
         if conf is None:
             raise IdNotFoundError(f"confs: can't find conf of {id}")
             return None
+        if conf.conf is None:
+            if remove:
+                return None
+            return conf.data()
         deal = self.get_deal(conf.type, sid)
         if deal is None:
             raise IOCError(f"confs: can't find deal of {id}, type = {conf.type}")
@@ -417,6 +428,9 @@ class Confs(Base):
                 _conf = conf.get_data(id, sid==conf.id, False, src = src, info = info)
                 if _conf is not None:
                     return _conf
-        return None
+        fc = self.get_fc(id)
+        if fc is None:
+            return None
+        return EncapeData(fc, confs=self)
 
 pass

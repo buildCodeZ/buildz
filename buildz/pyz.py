@@ -2,6 +2,8 @@
 import sys
 import os
 import hashlib
+import inspect
+from .base import Base
 class With:
     def __init__(self, fc_in, fc_out, args = False):
         self.fc_in = fc_in
@@ -125,3 +127,23 @@ class Pth:
 pass
 
 _pth = Pth()
+def main(name, fc, *args, **maps):
+    if name=="__main__":
+        fc(*args, **maps)
+
+pass
+
+def bylocals(mlocals, fc, *args, **maps):
+    if mlocals['__name__']=="__main__":
+        fc(*args, **maps)
+
+pass
+
+def mainerr(fc, *args, **maps):
+    st = inspect.stack()[1]
+    if st.filename == '<stdin>':
+        fc(*args, **maps)
+    else:
+        print("not main:", st.filename)
+
+pass
