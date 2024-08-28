@@ -40,10 +40,12 @@ class EncapeData(Base):
             info: 额外的调用信息，目前只有object会用到里面的id字段，作为单例额外输入
         """
         if typez(data)==dict:
-            pid = xf.g1(data, parent=None)
+            pid = xf.g1(data, parent=None, template=None, temp=None)
             if pid is not None:
                 data = dict(data)
-                del data['parent']
+                for pkey in "parent,temp,template".split(","):
+                    if pkey in data:
+                        del data[pkey]
                 pids = pid
                 if typez(pids)!=list:
                     pids = [pid]

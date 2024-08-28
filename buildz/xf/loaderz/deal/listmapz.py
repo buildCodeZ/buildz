@@ -15,8 +15,9 @@ class ListMapDeal(lr.LRDeal):
     """
         分隔符，有分隔符后将缓存的数据当作字符串
     """
-    def init(self, left, right):
+    def init(self, left, right, as_map = False):
         super().init(left, right, "listmap")
+        self.as_map = as_map
     def types(self):
         return ['list']
     def build(self, obj):
@@ -48,6 +49,11 @@ class ListMapDeal(lr.LRDeal):
                 lst.append(obj.val)
                 i+=1
         if len(mp)==0:
+            if self.as_map:
+                if len(lst)==0:
+                    return item.Item(mp, type="map", is_val=1)
+                else:
+                    return item.Item(Args(lst, mp), type='args', is_val=1)
             return item.Item(lst, type="list", is_val=1)
         elif len(lst)==0:
             return item.Item(mp, type="map", is_val=1)

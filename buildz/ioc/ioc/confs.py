@@ -53,7 +53,9 @@ class Confs(Base):
         return sysdt
     def build_env_args_xf(self):
         data = xf.args()
-        env = data['env']
+        if xf.is_args(data):
+            data = data.maps
+        env = xf.g(data, env={})
         self.envs_args = env
         self.flush_env(self.envs_args)
     def build_env_args_buildz(self):

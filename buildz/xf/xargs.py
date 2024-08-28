@@ -1,5 +1,6 @@
 #coding=utf-8
-from .read import loads
+#from .read import loads
+from .readz import loads, loadx
 import sys
 def fetch(argv = None):
     if argv is None:
@@ -7,6 +8,7 @@ def fetch(argv = None):
     argv = [str(k) for k in argv]
     s = " ".join(argv)
     s = s.strip()
+    return loadx(s, True)
     lrs = [["",""]]
     if len(s)==0:
         return None

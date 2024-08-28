@@ -3,7 +3,7 @@ import sys
 import os
 import hashlib
 import inspect
-from .base import Base
+#from .base import Base, WBase
 class With:
     def __init__(self, fc_in, fc_out, args = False):
         self.fc_in = fc_in

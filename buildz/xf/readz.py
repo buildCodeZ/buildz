@@ -96,7 +96,7 @@ def build_args(as_bytes=False):
     # mgs.add(mapz.MapDeal("{", "}"))
     mgs.add(listmapz.ListMapDeal("(", ")"))
     mgs.add(listmapz.ListMapDeal("[", "]"))
-    mgs.add(listmapz.ListMapDeal("{", "}"))
+    mgs.add(listmapz.ListMapDeal("{", "}", True))
     build_val(mgs)
     #1,0,0,1: 没引号当r"..."
     #1,0,1,1: 没引导当"..."
