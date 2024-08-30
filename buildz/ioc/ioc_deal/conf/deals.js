@@ -82,6 +82,11 @@
             type: iocf,
             note: 加配置文件,
             build: buildz.ioc.ioc_deal.iocf.IOCFObjectDeal
+        },
+        {
+            type: branch,
+            note: 条件配置,
+            build: buildz.ioc.ioc_deal.branch.BranchDeal
         }
     ]
 }

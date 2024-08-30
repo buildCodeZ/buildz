@@ -85,6 +85,7 @@ class Confs(Base):
         return None
     def get_env_maps(self, id, maps):
         ids = self.env_ids(id)
+        #print(f"[TZBZ] get_env_maps({id})[{ids}] in {maps}")
         envs = maps
         for id in ids:
             if type(envs)!=dict:
@@ -97,10 +98,23 @@ class Confs(Base):
         return envs
     def get_env_conf(self, id, sid=None):
         return self.get_env_maps(id, self.envs)
+    def enable_args(self, enable = True):
+        key = "args"
+        if enable:
+            if key in self.env_orders:
+                return
+            self.env_orders = [key]+self.env_orders
+        else:
+            if key not in self.env_orders:
+                return
+            self.env_orders.remove(key)
+    def set_args_type(self, args_type):
+        self.args_type = args_type
     def get_env(self, id, sid=None):
         for key in self.env_orders:
             fc = self.env_fcs[key]
             obj = fc(id, sid)
+            #print(f"[TZBZ] get_env.{key}.{fc}({id}, {sid}): {obj}")
             if obj is not None:
                 return obj
         return None
@@ -122,6 +136,9 @@ class Confs(Base):
                 break 
             envs = envs[id]
         return envs
+    def set_envs(self, maps):
+        self.flush_env(maps)
+        self.update_env(maps)
     def set_env(self, id, val):
         obj = {id:val}
         self.flush_env(obj)
