@@ -64,6 +64,8 @@ class EncapeData(Base):
                 type = conf.confs.get_data_type(data, 0, conf.default_type())
             if confs is None:
                 confs = conf.confs
+        else:
+            self.sid = None
         self.src = src
         self.conf = conf
         self.confs = confs

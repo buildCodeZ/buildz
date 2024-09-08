@@ -23,6 +23,11 @@
             build: buildz.ioc.ioc_deal.ref.RefDeal
         },
         {
+            type: refs,
+            note: 正则匹配查引用列表,
+            build: buildz.ioc.ioc_deal.refs.RefsDeal
+        },
+        {
             type: mcall,
             note: 对象方法调用,
             build: buildz.ioc.ioc_deal.mcall.MethodCallDeal

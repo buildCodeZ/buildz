@@ -12,10 +12,11 @@ class RefDeal(FormatDeal):
                 id: id
                 type: ref
                 ref|key: 引导数据id
+                default: 默认值
                 info: item_conf, 额外的引用信息, 默认null
             }
         简写:
-            [[id, ref], key, info]
+            [[id, ref], key, default, info]
         极简:
             [ref, key]
         例:

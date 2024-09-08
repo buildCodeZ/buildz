@@ -2,6 +2,7 @@
 
 from ..ioc.base import Base, EncapeData
 from buildz import xf
+from ..ioc.decorator import decorator
 import os
 dp = os.path.dirname(__file__)
 join = os.path.join
@@ -212,3 +213,17 @@ class FormatDeal(BaseDeal):
     #     return deal(edata)
 
 pass
+
+class Order(Base):
+    def init(self, *fcs, reverse=False):
+        self.fcs = fcs
+        if reverse:
+            self.fcs.reverse()
+        self.reverse = reverse
+    def deal(self, cls):
+        for fc in self.fcs:
+            cls = fc(cls)
+        return cls
+
+pass
+decorator.regist("orders", Order)

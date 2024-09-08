@@ -19,6 +19,11 @@
 
 持续更新中。。。
 
+2024/09/09
+ioc:
+    加修饰器
+    加配置refs
+
 PS: 对比了下json.loads（修改了下json的scanner.py，让它在纯python下运行，不然json.loads会更快）和目前的xf.loads(buildz.xf.readz.loads)的速度，xf.loads比json.loads慢7倍，可能是读字符串更频繁，方法调用更多（为了代码更结构化和容易修改），其实有一版更慢(buildz.xf.read.loads，废弃代码，后面看情况删掉)，慢100倍，因为只考虑结构化，没考虑列表增减开销
 
 1, a profile file format base on json, make it easy to write profile file, module is in buildz.xf

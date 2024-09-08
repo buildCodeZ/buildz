@@ -174,6 +174,17 @@ class Conf(Base):
             return obj
         obj = self.confs.get_data(id, self.id, src=src, info = info)
         return obj
+    def full_ids(self, local = True):
+        rst = []
+        arr = [self.datas]
+        if local:
+            arr.append(self.locals)
+        for datas in arr:
+            for id in datas:
+                gid = self.confs.gid(self.namespace, id)
+                item = [gid, id, self]
+                rst.append(item)
+        return rst
     def get(self, *args, **maps):
         return self.get_obj(*args, **maps)
     def default_type(self):
@@ -182,6 +193,8 @@ class Conf(Base):
         return self._default_type
     def get_var(self, key, i = -1):
         return self.confs.get_var(key, i)
+    def var_keys(self):
+        return self.confs.var_keys()
     def push_var(self, key, val):
         return self.confs.push_var(key,val)
     def has_var(self, key):

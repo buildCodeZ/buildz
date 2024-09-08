@@ -1,5 +1,6 @@
 #coding=utf-8
 from buildz import xf, pyz
+from .decorator import decorator
 from buildz.xf import g as xg
 from buildz import argx
 import json
@@ -253,12 +254,16 @@ class Confs(Base):
         self.fcs = {}
         if 'args' in self.env_orders:
             self.build_env_args()
+        _id = self.add({})
+        self.empty = self.confs[_id]
     def set_fc(self, key, fc):
         self.fcs[key] = fc
     def get_fc(self, key):
         if key not in self.fcs:
             return None
         return self.fcs[key]
+    def var_keys(self):
+        return self.vars.keys()
     def get_var(self, key, i=-1):
         if not self.has_var(key):
             return None, False
@@ -282,6 +287,8 @@ class Confs(Base):
         if not self.has_var(key):
             return
         self.vars[key].pop(-1)
+        if len(self.vars[key])==0:
+            del self.vars[key]
     def do_init(self):
         if self.mark_init:
             return
@@ -347,6 +354,12 @@ class Confs(Base):
             print(f'error in loads: {fp}')
             raise
         #return self.add(conf)
+    def add_decorator(self):
+        conf = decorator()
+        #print(f"[TESTZ] CONFS add decorator(): {conf}")
+        return self.add(conf)
+    def add_wrap(self):
+        return self.add_decorator()
     def adds(self, confs):
         for conf in confs:
             self.add(conf)
@@ -378,6 +391,7 @@ class Confs(Base):
             self.deals[k] = obj.deals[k]
         self.update_maps(self.envs, obj.envs)
         self.mark_init = False
+        return obj.id
     def get(self, *args, **maps):
         return self.get_obj(*args, **maps)
     def remove(self, *a,**b):
@@ -389,15 +403,18 @@ class Confs(Base):
         self.do_init()
         if type(id) == EncapeData:
             conf = id
+        elif type(id) in [list, dict]:
+            conf = EncapeData(id, conf=self.empty, confs=self, info=info, src=src, type= self.get_data_type(id))
         else:
             conf = self.get_data(id, sid, src=src, info = info)
         if conf is None:
             raise IdNotFoundError(f"confs: can't find conf of {id}")
             return None
-        if conf.conf is None:
-            if remove:
-                return None
-            return conf.data()
+        #print(f"[TESTZ] confs.get: {conf.data}, conf: {conf.conf}, type: {conf.type}")
+        # if conf.conf is None:
+        #     if remove:
+        #         return None
+        #     return conf()
         deal = self.get_deal(conf.type, sid)
         if deal is None:
             raise IOCError(f"confs: can't find deal of {id}, type = {conf.type}")
@@ -420,6 +437,14 @@ class Confs(Base):
         if type in self.deals:
             return self.deals[type]
         return None
+    def full_ids(self, src=None):
+        sid = None
+        if src is not None:
+            sid = src.id
+        rst = []
+        for _id, conf in self.confs.items():
+            rst+=conf.full_ids(sid==conf.id)
+        return rst
     def get_confs(self, ids):
         """
             根据ids查所有对应的配置文件列表

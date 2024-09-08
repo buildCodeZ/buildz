@@ -1,8 +1,10 @@
 #
 from ..ioc.base import Base, EncapeData,IOCError
 from ..ioc.single import Single
+from ..ioc.decorator import decorator
 from .base import FormatData,FormatDeal
 from buildz import xf, pyz
+from buildz import Base as Basez
 import os
 dp = os.path.dirname(__file__)
 join = os.path.join
@@ -193,3 +195,147 @@ class ObjectDeal(FormatDeal):
         return None
 
 pass
+def update_set(maps):
+    rst = {}
+    for k,v in maps.items():
+        if type(v)==str:
+            v = xf.loads(v)
+        rst[k] = v
+    return rst
+
+pass
+def update_list(arr):
+    rst = []
+    for v in arr:
+        if type(v)==str:
+            v = xf.loads(v)
+        rst.append(v)
+    return rst
+
+pass
+
+class IOCObjectAdd_(Basez):
+    def init(self, key, *arr):
+        _arr = update_list(arr)
+        self.key = key
+        self._arr = _arr
+    def call(self, cls):
+        rst = {}
+        if hasattr(cls, "_buildz_ioc_conf"):
+            rst = cls._buildz_ioc_conf
+        _arr = []
+        if self.key in rst:
+            _arr = rst[self.key]
+        _arr+=self._arr
+        rst[self.key] = _arr
+        cls._buildz_ioc_conf = rst
+        return cls
+
+pass
+class IOCObjectArgs(IOCObjectAdd_):
+    def init(self, *arr):
+        super().init("args", *arr)
+
+pass
+class IOCObjectMCall(IOCObjectAdd_):
+    def init(self, *arr):
+        # function, args, maps
+        ks = "mcall,args,maps".split(",")
+        _arr = []
+        for item in arr:
+            if type(item)==str:
+                item = xf.loads(item)
+            if type(item)==list:
+                item = update_list(item)
+                l = min(len(ks), len(item))
+                _tmp = {}
+                for i in range(l):
+                    _tmp[ks[i]] = item[i]
+                item = _tmp
+            else:
+                item = update_set(item)
+            item['source'] = None
+            item['type'] = "mcall"
+            _arr.append(item)
+        super().init("mcalls", *_arr)
+
+pass
+class IOCObjectSet_(Basez):
+    def init(self, key, **maps):
+        _maps = update_set(maps)
+        self._maps = {key:_maps}
+    def call(self, cls):
+        rst = {}
+        if hasattr(cls, "_buildz_ioc_conf"):
+            rst = cls._buildz_ioc_conf
+        xf.fill(self._maps, rst)
+        cls._buildz_ioc_conf = rst
+        return cls
+
+pass
+class IOCObjectSet(IOCObjectSet_):
+    def init(self, **maps):
+        super().init("sets", **maps)
+
+pass
+class IOCObjectMap(IOCObjectSet_):
+    def init(self, **maps):
+        super().init("maps", **maps)
+
+pass
+class IOCObject(Basez):
+    KEYS = "id,args,maps,call,prev_call,single,remove,sets,after_remove".split(",")
+    SET_KEYS = "maps,sets".split(",")
+    def init(self, **maps):
+        rst = update_set(maps)
+        for key in self.SET_KEYS:
+            if key not in maps:
+                continue
+            val = maps[key]
+            for _k, _v in val.items():
+                if type(_v)==str:
+                    _v = xf.loads(_v)
+                val[_k] = _v
+        self._maps = rst
+    def _set(self, key, **maps):
+        sets = {}
+        if key in self._maps:
+            sets = self._maps[key]
+        rst = update_set(maps)
+        xf.fill(sets, rst)
+        self._maps[key] = rst
+        return self
+    def map(self, **maps):
+        return self._set("maps", **maps)
+    def maps(self, **maps):
+        return self.map(**maps)
+    def set(self, **maps):
+        return self._set("sets", **maps)
+    def sets(self, **maps):
+        return self.set(**maps)
+    def call(self, cls):
+        src = cls.__module__+"."+cls.__name__
+        conf = {}
+        if hasattr(cls, "_buildz_ioc_conf"):
+            conf = cls._buildz_ioc_conf
+        xf.fill(self._maps, conf)
+        conf['source'] = src
+        conf['type'] = 'object'
+        if 'mcalls' in conf and 'call' not in conf:
+            conf['call'] = {'type': "calls", 'calls': conf['mcalls']}
+        cls._buildz_ioc_conf = conf
+        decorator.add_datas(conf)
+        return cls
+
+pass
+
+#decorator.regist("IOCObject", IOCObject)
+decorator.regist("obj", IOCObject)
+decorator.regist("object", IOCObject)
+decorator.regist("obj_set", IOCObjectSet)
+decorator.regist("obj_map", IOCObjectMap)
+decorator.regist("obj_arg", IOCObjectArgs)
+decorator.regist("obj_mcall", IOCObjectMCall)
+decorator.regist("obj_sets", IOCObjectSet)
+decorator.regist("obj_maps", IOCObjectMap)
+decorator.regist("obj_args", IOCObjectArgs)

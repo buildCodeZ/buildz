@@ -1,0 +1,26 @@
+#
+from .ioc.decorator import decorator
+from .ioc_deal import init
+locals().update(decorator.fcs)
+from buildz import fz
+import os
+def pkg(fp):
+    r = fp.rfind(".")
+    if r>0:
+        fp = fp[:r]
+    fp = fp.replace("\\", "/")
+    fp = fp.replace("//", "/")
+    fp = fp.replace("/", ".")
+    while len(fp)>0 and fp[0]==".":
+        fp = fp[1:]
+    __import__(fp)
+
+pass
+def imports(dp, pts, pfx=""):
+    dp = os.path.abspath(dp)
+    fps = fz.search(dp, pts)
+    fps = [pfx+"/"+fp[len(dp):] for fp in fps]
+    for fp in fps:
+        pkg(fp)
+
+pass
