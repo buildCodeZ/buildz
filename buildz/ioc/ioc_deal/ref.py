@@ -28,6 +28,7 @@ class RefDeal(FormatDeal):
         data = edata.data
         data = self.fill(data)
         key = xf.get_first(data, 'ref', 'key')
+        key = self.get_obj(key, edata.conf, src = edata.src)
         info = xf.g(data, info=None)
         if info is not None and type(info)==dict:
             #info = {k:self.get_obj(info, edata.conf, src = edata.src) for k in info}
@@ -45,7 +46,8 @@ class RefDeal(FormatDeal):
             return edata.conf.get_obj(key, info = info, src = edata.src)
         except IdNotFoundError as exp:
             if "default" in data:
-                return data['default']
+                key = data['default']
+                return self.get_obj(key, edata.conf, src=edata.src)
             raise exp
 
 pass

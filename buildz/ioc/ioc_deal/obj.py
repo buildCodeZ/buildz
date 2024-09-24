@@ -6,6 +6,7 @@ from .base import FormatData,FormatDeal
 from buildz import xf, pyz
 from buildz import Base as Basez
 import os
+g_obj_cid = '_buildz_ioc_conf_index'
 dp = os.path.dirname(__file__)
 join = os.path.join
 class ObjectDeal(FormatDeal):
@@ -323,8 +324,8 @@ class IOCObject(Basez):
         conf['type'] = 'object'
         if 'mcalls' in conf and 'call' not in conf:
             conf['call'] = {'type': "calls", 'calls': conf['mcalls']}
+        conf[g_obj_cid] = decorator.add_datas(conf)
         cls._buildz_ioc_conf = conf
-        decorator.add_datas(conf)
         return cls
 
 pass

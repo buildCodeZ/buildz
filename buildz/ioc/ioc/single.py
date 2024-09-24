@@ -53,7 +53,9 @@ class Single(Base):
         if ids is None:
             return
         xf.sets(self.singles, ids, obj)
-    def set(self, obj, edata:EncapeData):
+    def set(self, edata:EncapeData, obj):
+        if not isinstance(edata, EncapeData) and isinstance(obj, EncapeData):
+            edata, obj = obj, edata
         ids = self.get_ids(edata)
         self.set_by_ids(ids, obj)
     def rm_by_ids(self, idsj):

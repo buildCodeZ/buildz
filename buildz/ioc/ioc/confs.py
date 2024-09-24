@@ -478,3 +478,25 @@ class Confs(Base):
         return EncapeData(fc, confs=self)
 
 pass
+
+class ConfsList(Base):
+    def init(self, mgs):
+        self.mgs = mgs
+    def get(self, conf):
+        _exp = None
+        for mg in self.mgs:
+            try:
+                obj = mg.get(conf)
+                return obj
+            except IdNotFoundError as exp:
+                _exp = exp
+        raise _exp
+    def push_vars(self, vars):
+        [mg.push_vars(vars) for mg in self.mgs]
+        return pyz.with_out(lambda :self.pop_vars(vars))
+    def pop_vars(self, vars):
+        [mg.pop_vars(vars) for mg in self.mgs]
+
+pass
+
+

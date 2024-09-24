@@ -1,6 +1,7 @@
 #
 from .ioc.decorator import decorator
 from .ioc_deal import init
+#print(f"decorator.fcs: {decorator.fcs}")
 locals().update(decorator.fcs)
 from buildz import fz
 import os
@@ -17,6 +18,13 @@ def pkg(fp):
 
 pass
 def imports(dp, pts, pfx=""):
+    """
+    find filepath by dirpath(dp) and pattern(pts), 
+    import:
+    filepath = ".".join(filepath.split(".")[:-1])
+    filepath = filepath[len(dp):]
+    package = pfx+"." if pfx!="" else "")+(filepath.replace("/", "."))
+    """
     dp = os.path.abspath(dp)
     fps = fz.search(dp, pts)
     fps = [pfx+"/"+fp[len(dp):] for fp in fps]

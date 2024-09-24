@@ -1,7 +1,9 @@
 #
 from ..ioc.base import Base, EncapeData
 from .base import FormatData,FormatDeal
+from ..ioc.decorator import decorator
 from buildz import xf, pyz
+from buildz import Base as Basez
 import os
 dp = os.path.dirname(__file__)
 join = os.path.join
@@ -35,3 +37,18 @@ class VarDeal(FormatDeal):
         return key
 
 pass
+
+class IOCVar(Basez):
+    def init(self, id):
+        self.id = id
+    def call(self, cls):
+        src = cls.__module__+"."+cls.__name__
+        conf = {}
+        conf['id'] = self.id
+        conf['type'] = 'var'
+        conf['var'] = src
+        decorator.add_datas(conf)
+        return cls
+
+pass
+decorator.regist("var", IOCVar)

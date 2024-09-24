@@ -1,6 +1,6 @@
 #coding=utf-8
 
-from ..ioc.base import Base, EncapeData
+from ..ioc.base import Base, EncapeData, IdNotFoundError
 from buildz import xf
 from ..ioc.decorator import decorator
 import os
@@ -166,8 +166,9 @@ class BaseDeal(Base):
         """
         try:
             return self._deal(edata)
-        except:
-            print(f"except in {self.__class__}.deal: {edata.data}")
+        except Exception as exp:
+            if not isinstance(exp, IdNotFoundError):
+                print(f"except in {self.__class__}.deal({edata.data}): {exp}")
             raise
         return None
     def _deal(self, edata:EncapeData):

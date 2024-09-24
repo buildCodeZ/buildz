@@ -140,6 +140,8 @@ def bylocals(mlocals, fc, *args, **maps):
 pass
 #lcmain=bylocals
 lc_main=bylocals
+lc = bylocals
+local = bylocals
 def mainerr(fc, *args, **maps):
     st = inspect.stack()[1]
     if st.filename == '<stdin>':
