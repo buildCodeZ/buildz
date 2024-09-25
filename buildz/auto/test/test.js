@@ -23,4 +23,5 @@ datas: [
     }
     // 或者配置所在的文件
     item1.js
+    item2.js
 ]

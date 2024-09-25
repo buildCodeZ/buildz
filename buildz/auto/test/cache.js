@@ -1,4 +1,5 @@
 {
+    host: www.baidu.com,
     test: {
         url: tmpurl,
         val: 1,
@@ -6,5 +7,10 @@
     },
     result: {
         code: 1.99
+    },
+    test2: {
+        headers: {
+            content_type: "text/html"
+        }
     }
 }

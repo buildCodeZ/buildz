@@ -5,5 +5,6 @@ log: %Y%m%d_log.txt
 def.deal: {
     types: {
         http.get: [request, verify, save]
+        get: [request.get, verify, save]
     }
 }

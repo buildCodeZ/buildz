@@ -56,8 +56,8 @@ class Save(Base):
         self.log = log
     def call(self, maps, fp):
         fp = xf.get(maps, "cache.save", None)
-        self.log.debug(f"try save cache to '{fp}'")
         if fp is None:
+            self.log.warn(f"cache not save cause 'cache.save' is None")
             return
         fz.makefdir(fp)
         rst  = self.cache.data
