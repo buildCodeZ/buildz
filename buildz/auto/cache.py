@@ -67,7 +67,7 @@ class Save(Base):
 
 pass
 @wrap.obj(id="cache")
-@wrap.obj_args("ref, log")
+@wrap.obj_args("ref, log", "env, cache.rfp.current.first, false")
 class Cache(Base):
     def get(self, key):
         ks = key.split(".")
@@ -76,16 +76,49 @@ class Cache(Base):
         xf.sets(self.data, key.split("."), val)
     def remove(self, key):
         xf.removes(self.data, key.split("."))
-    def init(self, log):
+    def init(self, log, current_first=False):
+        self.current_first = current_first
         self.log = log
         self.data = {}
+    def set_current(self, dp):
+        if type(dp)!=list:
+            dp = [dp]
+        self.set("cache.path.current", dp)
+    def add_current(self, dp):
+        dps = self.get_current()
+        if dps is None:
+            dps = []
+        if dp in dps:
+            return
+        dps.append(dp)
+        self.set_current(dps)
+    def get_current(self):
+        dps = self.get("cache.path.current")
+        if type(dps)!=list:
+            dps = [dps]
+        return dps
+    def rfp(self, fp):
+        dps = [None,"."]
+        cfps = self.get_current()
+        if cfps is not None:
+            if self.current_first:
+                dps = cfps+dps
+            else:
+                dps = dps+cfps
+        for dp in dps:
+            _fp = fp
+            if dp is not None:
+                _fp = os.path.join(dp, fp)
+            if os.path.isfile(_fp):
+                return _fp
+        return fp
     def call(self, maps, fp):
         fp = xf.g(maps, cache="cache.js")
         data = {}
         if os.path.isfile(fp):
             self.log.info(f"load cache from {fp}")
             data = xf.flush_maps(xf.loadf(fp),visit_list=False)
-        self.data.update(data)
+        xf.fill(data, self.data, replace=0)
         return True
 
 pass

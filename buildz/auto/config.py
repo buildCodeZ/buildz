@@ -5,12 +5,14 @@ from ..base import Base
 from ..ioc import wrap
 import os
 @wrap.obj(id="buildz.auto.config.load")
+@wrap.obj_set(cache="ref, cache")
 class Config(Base):
     def call(self, maps, fp):
         configs = xf.g(maps, configs=[])
         if type(configs)!=list:
             configs = [configs]
         for cfp in configs:
+            cfp = self.cache.rfp(cfp)
             if not os.path.isfile(cfp):
                 self.log.error(f"config file not exist: {cfp}")
                 return False

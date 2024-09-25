@@ -4,11 +4,15 @@ from .. import ioc
 from ..base import Base
 from ..ioc import wrap
 class DealType(Base):
-    def init(self, deals = {}):
+    def init(self, deals = {}, cache = None):
         self.deals = deals
+        self.cache = cache
     def call(self, data):
         if type(data)==str:
-            data = xf.loadf(data)
+            fp = data
+            if self.cache is not None:
+                fp = self.cache.rfp(fp)
+            data = xf.loadf(fp)
         _type = xf.g(data, type = None)
         return self.deals[_type](data)
 
@@ -27,7 +31,7 @@ class DefDeal(Base):
         rst = {}
         for _type, calls in data.items():
             rst[_type] = factory(calls)
-        obj = DealType(rst)
+        obj = DealType(rst, self.mg.get("cache"))
         maps['deal_obj'] = obj
         return True
 

@@ -1,4 +1,4 @@
-configs: config.js
+configs: config/config.js
 datas: [
     //写一个配置
     {

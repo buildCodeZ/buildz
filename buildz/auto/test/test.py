@@ -16,8 +16,9 @@ class Req(Base):
 
 pass
 from buildz.auto import Run
+import sys
 def test():
-    Run()("test.js")
+    Run()("data/test")
 
 pass
 pyz.lc(locals(), test)

@@ -20,6 +20,7 @@
 持续更新中。。。
 2024/09/25:
 修复bug，增强html的搜索功能，增强auto配置功能
+auto里加了个request的demo，里面用的requests库，可以直接配置来进行http调用
 2024/09/24:
 增加模块html:html页面解析
 增加模块auto:自动化调用

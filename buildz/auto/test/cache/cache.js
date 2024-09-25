@@ -10,7 +10,7 @@
     },
     test2: {
         headers: {
-            content_type: "text/html"
+            content_type: "text/html; charset=utf-8"
         }
     }
 }
