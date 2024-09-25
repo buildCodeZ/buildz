@@ -1,14 +1,8 @@
-calls: [log, cache, def.deal.type, list, cache.save]
-cache: tmp.js
-cache.save: tmp.js
-log: log.txt
-def.deal: {
-    types: {
-        http.get: [request, verify, save]
-    }
-}
+configs: config.js
 datas: [
+    //写一个配置
     {
+        note: test
         url: test
         type: http.get
         data: {
@@ -18,10 +12,15 @@ datas: [
             test.url: data.url
         }
         result: {
-            code: 0.99
+            code: 1.99
         }
         verify: [
-            [code, [">", 1]]
+            "result.code, [>, 1]"
         ]
+        save: {
+            result.code: result.code
+        }
     }
+    // 或者配置所在的文件
+    item1.js
 ]

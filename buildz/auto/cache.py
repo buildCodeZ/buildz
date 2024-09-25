@@ -6,7 +6,7 @@ from ..base import Base
 from ..ioc import wrap
 import os,re
 
-@wrap.obj(id="cache_modify")
+@wrap.obj(id="cache.modify")
 @wrap.obj_args("ref, cache", "ref, log")
 class Update(Base):
     """
@@ -38,7 +38,10 @@ class Update(Base):
                 err = f"'{key}' not found in cache"
                 self.log.error(err)
                 raise Exception(err)
-            s = s.replace(match, val)
+            if s == match:
+                s = val
+            else:
+                s = s.replace(match, str(val))
         return s
 
 pass
@@ -81,7 +84,7 @@ class Cache(Base):
         data = {}
         if os.path.isfile(fp):
             self.log.info(f"load cache from {fp}")
-            data = xf.loadf(fp)
+            data = xf.flush_maps(xf.loadf(fp),visit_list=False)
         self.data.update(data)
         return True
 

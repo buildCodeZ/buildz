@@ -2,7 +2,7 @@
 from buildz.tools import *
 from buildz.ioc import wrap
 @wrap.obj(id="request")
-@wrap.obj_args("ref, log", "ref, cache_modify")
+@wrap.obj_args("ref, log", "ref, cache.modify")
 class Req(Base):
     def init(self, log, upd):
         self.upd = upd

@@ -126,8 +126,11 @@ def sets(maps, keys, val):
     if type(keys) != list:
         keys = [keys]
     for key in keys[:-1]:
-        if key not in maps:
-            maps[key] = {}
+        if type(maps)==dict:
+            if key not in maps:
+                maps[key] = {}
+        else:
+            key = int(key)
         maps = maps[key]
     maps[keys[-1]] = val
 
@@ -136,8 +139,13 @@ def gets(maps, keys, default = None):
     if type(keys) != list:
         keys = [keys]
     for key in keys:
-        if key not in maps:
-            return default
+        if type(maps)==dict:
+            if key not in maps:
+                return default
+        else:
+            key = int(key)
+            if key>=len(maps):
+                return default
         maps = maps[key]
     return maps
 
@@ -202,5 +210,22 @@ fill=deep_fill
 
 def maps(**kv):
     return kv
+
+pass
+
+def flush_maps(maps, fc_key = lambda x:x.split(".") if type(x)==str else [x], visit_list=False):
+    if type(maps)==list:
+        if not visit_list:
+            return maps
+        rst = [flush_maps(it, fc_key, visit_list) for it in maps]
+        return rst
+    if type(maps)!=dict:
+        return maps
+    rst = {}
+    for k,v in maps.items():
+        ks = fc_key(k)
+        v = flush_maps(v, fc_key, visit_list)
+        sets(rst, ks, v)
+    return rst
 
 pass

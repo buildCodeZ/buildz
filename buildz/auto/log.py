@@ -23,6 +23,8 @@ class Log(Base):
             fz.write(msg.encode("utf-8"), fp, 'ab')
     def info(self, *args):
         self.log("INFO", *args)
+    def warn(self, *args):
+        self.log("WARN", *args)
     def debug(self, *args):
         self.log("DEBUG", *args)
     def error(self, *args):

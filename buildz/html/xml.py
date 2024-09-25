@@ -1,16 +1,47 @@
 from html.parser import HTMLParser
 from .. import xf
+from ..base import Base
 import re
+class SearchResult(Base):
+    def str(self):
+        return str(self.arr)
+    def init(self, arr):
+        self.arr = arr
+        self.size = len(arr)
+    def run(self, fc_name, *a, **b):
+        rst = []
+        for it in self.arr:
+            fc = getattr(it, fc_name)
+            rst+=fc(*a,**b).data()
+        return SearchResult(rst)
+    def searchs(self, *args, **maps):
+        return self.run("searchs", *args, **maps)
+    def finds(self, s):
+        return self.run("finds", s)
+    def tags(self, _tag):
+        return self.searchs(tag=_tag)
+    def call(self):
+        return self.data()
+    def data(self):
+        return self.arr
+
+pass
 class HtmlTag:
+    def data(self):
+        return self.to_maps()
     def to_maps(self):
         nodes = [n.to_maps() for n in self.nodes]
-        rst = {'tag': self.tag, 'attrs': self.attrs, 'texts': self.texts, 'text': self.text, 'childs': nodes}
+        rst = {'tag': self.tag, 'attrs': self.attrs, 'texts': self.texts, 'text': self.text, 'nodes': nodes}
         return rst
     def __str__(self):
         return xf.dumps(self.to_maps())
     def __repr__(self):
         return self.__str__()
     def match(self, val, pt):
+        tag = self.tag
+        text = self.text
+        texts = self.texts
+        attrs = self.attrs
         if type(pt)==list:
             tp = pt[0]
             v = pt[1]
@@ -28,20 +59,24 @@ class HtmlTag:
         elif tp=="<=":
             return val<=v
         elif tp == "re":
-            return (re.findall(v, val))>0
-        elif tp == 'sh':
-            #v.replace("${it}", val)
+            return len(re.findall(v, val))>0
+        elif tp == 'eval':
             return eval(v)
         else:
             raise Exception(f"not impl match type: '{tp}'")
-    def check(self, maps):
+    def check(self, args, maps):
         #print(f"[TESTZ] check: {maps}, attrs: {self.attrs}")
-        for k,v in maps.items():
+        arr = args+list(maps.items())
+        for k,v in arr:
             if k == 'tag':
                 if not self.match(self.tag, v):
                     return False
+            elif k == 'text':
+                if not self.match(self.text, v):
+                    return False
             elif k == "$":
-                return self.match(None, ["sh", v])
+                if not self.match(None, ["eval", v]):
+                    return False
             else:
                 if k not in self.attrs or not self.match(self.attrs[k], v):
                     return False
@@ -54,22 +89,35 @@ class HtmlTag:
         self.nodes = []
         self.text = None
         self.texts = []
-    def _search(self, rst, maps):
-        if self.check(maps):
+    def _search(self, rst, args, maps):
+        if self.check(args, maps):
             rst.append(self)
         for n in self.nodes:
-            n._search(rst, maps)
-    def searchs(self, **maps):
+            n._search(rst, args, maps)
+    def searchs(self, *args, **maps):
+        tmp = []
+        for k in args:
+            if type(k)!=list:
+                k = xf.loads(k)
+            tmp.append(k)
         rst = []
-        self._search(rst, maps)
-        return rst
+        self._search(rst, tmp, maps)
+        return SearchResult(rst)
     def tags(self, _tag):
-        return self.searchs(tag = _tag)
+        return SearchResult(self.searchs(tag = _tag))
     def finds(self, s):
         rst = []
-        maps = xf.loads(s)
-        self._search(rst, maps)
-        return rst
+        args = []
+        maps = {}
+        dt = xf.loads(s)
+        if type(dt)==list:
+            args = dt
+        else:
+            maps = dt
+        if len(args)==2 and type(args[0])!=list:
+            args = [args]
+        self._search(rst, args, maps)
+        return SearchResult(rst)
     def add_node(self, node):
         self.nodes.append(node)
     def add_text(self, text):

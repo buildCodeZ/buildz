@@ -5,9 +5,10 @@ from ..base import Base
 from ..ioc import wrap
 class DealType(Base):
     def init(self, deals = {}):
-        print(f"deals: {deals}")
         self.deals = deals
     def call(self, data):
+        if type(data)==str:
+            data = xf.loadf(data)
         _type = xf.g(data, type = None)
         return self.deals[_type](data)
 

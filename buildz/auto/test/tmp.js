@@ -1,5 +1,0 @@
-{
-    test: {
-        url: tmpurl
-    }
-}
