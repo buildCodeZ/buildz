@@ -24,6 +24,20 @@ class SearchResult(Base):
         return self.data()
     def data(self):
         return self.arr
+    def text(self):
+        return [it.text for it in self.arr]
+    def texts(self):
+        return [it.texts for it in self.arr]
+    def tag(self):
+        return [it.tag for it in self.arr]
+    def gkey(self, attrs, k):
+        if k is None:
+            return attrs
+        if k in attrs:
+            return attrs[k]
+        return None
+    def attrs(self, k=None):
+        return [self.gkey(it.attrs,k) for it in self.arr]
 
 pass
 class HtmlTag:
@@ -69,21 +83,34 @@ class HtmlTag:
             return self.val
         else:
             raise Exception(f"not impl match type: '{tp}'")
+    def get(self, key):
+        ks = key.split(".")
+        v = ks[0]
+        if not hasattr(self, v):
+            return None
+        obj = getattr(self, v)
+        for k in ks[1:]:
+            if type(obj)==dict:
+                if k not in obj:
+                    return None
+                obj = obj[k]
+            elif type(obj)==list:
+                k = int(k)
+                if k>=len(obj):
+                    return None
+                obj = obj[k]
+            else:
+                return None
+        return obj
     def check(self, args, maps):
-        #print(f"[TESTZ] check: {maps}, attrs: {self.attrs}")
         arr = args+list(maps.items())
         for k,v in arr:
-            if k == 'tag':
-                if not self.match(self.tag, v):
-                    return False
-            elif k == 'text':
-                if not self.match(self.text, v):
-                    return False
-            elif k == "$":
+            if k == "$":
                 if not self.match(None, ["eval", v]):
                     return False
             else:
-                if k not in self.attrs or not self.match(self.attrs[k], v):
+                val = self.get(k)
+                if not self.match(val, v):
                     return False
         return True
     def __init__(self, tag, attrs=None):

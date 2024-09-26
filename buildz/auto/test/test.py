@@ -18,12 +18,8 @@ pass
 from buildz.auto import Run
 import sys
 def test():
-    rst = Run(init=xf.maps(env_from_args=True))("data/test")
+    rst = Run()("data/test")
     print(f"rst: {rst}")
 
 pass
 pyz.lc(locals(), test)
-
-"""
-python test.py env={debug=true}
-"""
