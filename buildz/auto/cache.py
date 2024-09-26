@@ -61,8 +61,8 @@ class Save(Base):
             return
         fz.makefdir(fp)
         rst  = self.cache.data
-        rs = xf.dumps(rst, format=True)
-        fz.write(rs, fp, 'w')
+        rs = xf.dumps(rst, format=True).encode("utf-8")
+        fz.write(rs, fp, 'wb')
         return True
 
 pass
@@ -117,7 +117,7 @@ class Cache(Base):
         data = {}
         if os.path.isfile(fp):
             self.log.info(f"load cache from {fp}")
-            data = xf.flush_maps(xf.loadf(fp),visit_list=False)
+            data = xf.flush_maps(xf.loadf(fp),visit_list=True)
         xf.fill(data, self.data, replace=0)
         return True
 

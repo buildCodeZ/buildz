@@ -1,7 +1,6 @@
 
 from buildz.html import parse
 from buildz.tools import *
-#demo.html太大，已经删除
 fp = "demo.html"
 s = fz.read(fp, "rb").decode("utf-8")
 

@@ -13,14 +13,16 @@ except:
 
 pass
 class Request(Base):
-    def init(self, http_type, use_session, log, upd):
+    def init(self, http_type, use_session, log, upd, cache=None, debug=False):
         self.type = http_type
+        self.cache = cache
         self.use_session = use_session
         self.log = log
         self.upd = upd
         self.fc = None
         self.fcs = None
         self.key_data = None
+        self.debug = debug
         self.build()
     def build(self):
         fcs = {}
@@ -54,9 +56,14 @@ class Request(Base):
         url = xf.g(data, url=None)
         xf.s(data, status_code = rp.status_code)
         xf.s(data, result_code = rp.status_code)
+        if self.debug:
+            self.log.debug(f"request url '{url}' return code: {rp.status_code}")
         try:
             xf.s(data, result_content=rp.content)
+            debug_ct = rp.content
             s = xf.decode(rp.content, "utf-8")
+            if self.debug:
+                self.log.debug(f"request url '{url}' return msg:{s}")
             xf.s(data, result_text=s)
         except Exception as exp:
             self.log.warn(f"exp in deal response on '{url}': {exp}")
@@ -79,13 +86,20 @@ class Request(Base):
         if self.fc is None:
             self.log.error("install requests to use this(pip install requests)")
             return False
+        if self.cache is not None:
+            debug = self.cache.get("request.debug")
+            if debug is not None:
+                self.debug = debug
         if self.upd is not None:
             data = self.upd(data)
         url = xf.g(data, url=None)
+        #self.log.debug(f"request.debug: {self.debug}")
+        if self.debug:
+            self.log.debug(f"try request url '{url}' with type {self.type}")
         try:
             rp = self.req(data)
         except Exception as exp:
-            self.log.error("error in request '{url}' with method {self.type}: {exp}")
+            self.log.error(f"error in request '{url}' with method {self.type}: {exp}")
             return False
         self.rsp(rp, data)
         if fc is None:
@@ -96,35 +110,35 @@ pass
 
 
 @wrap.obj(id="request.post")
-@wrap.obj_args("post", "env, request.session, false", "ref, log", "ref, cache.modify")
+@wrap.obj_args("post", "env, request.session, false", "ref, log", "ref, cache.modify", "ref, cache", "env, debug, false")
 class Post(Request):
     pass
 
 pass
 
 @wrap.obj(id="request.json")
-@wrap.obj_args("json", "env, request.session, false", "ref, log", "ref, cache.modify")
+@wrap.obj_args("json", "env, request.session, false", "ref, log", "ref, cache.modify", "ref, cache", "env, debug, false")
 class Json(Request):
     pass
 
 pass
 
 @wrap.obj(id="request.get")
-@wrap.obj_args("get", "env, request.session, false", "ref, log", "ref, cache.modify")
+@wrap.obj_args("get", "env, request.session, false", "ref, log", "ref, cache.modify", "ref, cache", "env, debug, false")
 class Get(Request):
     pass
 
 pass
 
 @wrap.obj(id="request.put")
-@wrap.obj_args("put", "env, request.session, false", "ref, log", "ref, cache.modify")
+@wrap.obj_args("put", "env, request.session, false", "ref, log", "ref, cache.modify", "ref, cache", "env, debug, false")
 class Put(Request):
     pass
 
 pass
 
 @wrap.obj(id="request.delete")
-@wrap.obj_args("delete", "env, request.session, false", "ref, log", "ref, cache.modify")
+@wrap.obj_args("delete", "env, request.session, false", "ref, log", "ref, cache.modify", "ref, cache", "env, debug, false")
 class Delete(Request):
     pass
 

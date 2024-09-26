@@ -192,6 +192,7 @@ class Confs(Base):
             //     -e a=b --env=a=b --env=c=d
             //     env: {a=b, c=d}
             env_orders: [args, sys, local, conf]
+            env_from_args: false
             // 命令行读取方式：默认xf(xf.args),可选: buildz(buidlz.argx)
             args_type: 'xf'
             // true=类型处理函数deal都是全局的（全局查找），否则优先每个配置文件里查处理函数，查不到才查全局
@@ -234,7 +235,12 @@ class Confs(Base):
         self.data_index_type = xf.g(conf, data_index_type = [0,0])
         self.deal_key_type = xf.g(conf, deal_key_type = 'type')
         self.deal_index_type = xf.g(conf, deal_index_type = 0)
-        self.env_orders = xf.g(conf, env_orders = ['sys', 'local', 'conf'])
+        self.env_orders = xf.g(conf, env_orders = None)
+        self.env_from_args = xf.g(conf, env_from_args = False)
+        if self.env_orders is None:
+            self.env_orders = ['sys', 'local', 'conf']
+            if self.env_from_args:
+                self.env_orders = ['args', 'sys', 'local', 'conf']
         self.env_fcs = {
             'args': self.get_env_args,
             'sys': self.get_env_sys,

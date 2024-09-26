@@ -48,6 +48,8 @@ class HtmlTag:
         else:
             tp = "="
             v = pt
+        if val is None and tp not in ["eval", "exec"]:
+            return False
         if tp == '>':
             return val>v
         elif tp == "<":
@@ -62,6 +64,9 @@ class HtmlTag:
             return len(re.findall(v, val))>0
         elif tp == 'eval':
             return eval(v)
+        elif tp == 'exec':
+            exec(v)
+            return self.val
         else:
             raise Exception(f"not impl match type: '{tp}'")
     def check(self, args, maps):

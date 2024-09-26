@@ -11,6 +11,7 @@ import time, sys
 class Log(Base):
     def init(self):
         self.fp = None
+        self.show=[]
     def log(self, level, *args):
         args = [str(k) for k in args]
         msg = " ".join(args)
@@ -22,16 +23,28 @@ class Log(Base):
             fz.makefdir(fp)
             fz.write(msg.encode("utf-8"), fp, 'ab')
     def info(self, *args):
+        if "info" not in self.shows:
+            return
         self.log("INFO", *args)
     def warn(self, *args):
+        if "warn" not in self.shows:
+            return
         self.log("WARN", *args)
     def debug(self, *args):
+        if "debug" not in self.shows:
+            return
         self.log("DEBUG", *args)
     def error(self, *args):
+        if "error" not in self.shows:
+            return
         self.log("ERROR", *args)
     def call(self, maps, fp):
         fp = xf.g(maps, log = None)
         self.fp = fp
+        shows = xf.get(maps, "log.shows")
+        if shows is None:
+            shows = ["info", "warn", "error"]
+        self.shows = shows
         return True
 
 pass

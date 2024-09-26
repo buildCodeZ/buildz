@@ -1,4 +1,15 @@
 {
+    cache: {
+        path: {
+            current: [
+                null,
+                "D:\\rootz\\python\\gits\\buildz_upd\\buildz\\auto\\test\\data"
+            ]
+        }
+    },
+    request: {
+        debug: false
+    },
     host: www.baidu.com,
     test: {
         url: tmpurl,

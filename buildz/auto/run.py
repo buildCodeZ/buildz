@@ -4,8 +4,8 @@ from ..base import Base
 from . import init
 import os
 class Run(Base):
-    def init(self, fps=None):
-        mg = ioc.build()
+    def init(self, fps=None, init=None):
+        mg = ioc.build(init)
         if fps is not None:
             mg.add_fps(fps)
         self.mg = mg
