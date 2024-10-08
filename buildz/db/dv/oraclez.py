@@ -54,6 +54,8 @@ def build(argv, conf):
     init_path(dp)
     #print(f"oracle lib: {dp}")
     dv = Db(*fetch(argv))
-    return CMD(dv)
+    return dv
+def buildbk(argv, conf):
+    return CMD(make(argv, conf))
 
 pass

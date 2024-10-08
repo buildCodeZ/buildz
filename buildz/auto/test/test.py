@@ -16,8 +16,10 @@ class Req(Base):
 
 pass
 from buildz.auto import Run
+from buildz.ioc.wrap import decorator
 import sys
 def test():
+    print(f"wrap: {xf.dumps(decorator(),format=1,deep=1)}")
     rst = Run()("data/test")
     print(f"rst: {rst}")
 

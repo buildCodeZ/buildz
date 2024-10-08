@@ -9,6 +9,9 @@
     buildz.tz: 加些工具，目前只有myerse diff字符串比较算法
     buildz.demo: 使用参考，运行"python -m buildz"会用这个模块
     buildz.db: sql集成工具，自用，里面import了其他sql库，使用运行"python -m buildz.db 配置文件路径"
+    buildz.base: 封装了一个基础类，继承它可以少写一些代码
+    buildz.html: xml（html）内容读取和解析
+    buildz.auto: 自动化操作（主要是做自动化测试方便些，如果不怕写一堆配置文件的话）
 代码关系:
     buildz.xf, buildz.pyz, buildz.argx, buildz.fz, buildz.tz都是独立的模块
     buildz.ioc需要buildz.xf和buildz.pyz
@@ -18,6 +21,8 @@
 运行python -m buildz查看帮助
 
 持续更新中。。。
+2024/10/08:
+增强auto配置功能，在auto增加数据库使用的封装，后续考虑出文档。。。如果有时间
 2024/09/25:
 修复bug，增强html的搜索功能，增强auto配置功能
 auto里加了个request的demo，里面用的requests库，可以直接配置来进行http调用
@@ -30,7 +35,7 @@ ioc:
     加修饰器
     加配置refs
 
-PS: 对比了下json.loads（修改了下json的scanner.py，让它在纯python下运行，不然json.loads会更快）和目前的xf.loads(buildz.xf.readz.loads)的速度，xf.loads比json.loads慢7倍，可能是读字符串更频繁，方法调用更多（为了代码更结构化和容易修改），其实有一版更慢(buildz.xf.read.loads，废弃代码，后面看情况删掉)，慢100倍，因为只考虑结构化，没考虑列表增减开销
+PS: 对比了下json.loads（修改了下json的scanner.py，让它在纯python下运行，不然json.loads会更快）和目前的xf.loads(buildz.xf.readz.loads)的速度，xf.loads比json.loads慢7倍，可能是读字符串更频繁，方法调用更多（为了代码更结构化和容易修改），其实有一版更慢(buildz.xf.read.loads，废弃代码，后面看情况删掉)，慢100倍，因为只考虑结构化，没考虑列表增减开销（获得的经验教训是别直接用python的列表list当堆栈做append和pop，特别慢！）
 
 1, a profile file format base on json, make it easy to write profile file, module is in buildz.xf
 2, a ioc profile file read function base on xf format, module is in buildz.ioc

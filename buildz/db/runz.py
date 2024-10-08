@@ -15,6 +15,7 @@ def test(fp):
     obj = xf.loads(xf.fread(fp))
     dv = obj['dv']
     if __name__ == "__main__":
+        from db.basez import CMD
         if dv == 'mysql':
             from dv.mysqlz import build
         elif dv == 'oracle':
@@ -22,6 +23,7 @@ def test(fp):
         elif dv == 'clickhouse':
             from dv.clickhousez import build
     else:
+        from .db.basez import CMD
         if dv == 'mysql':
             from .dv.mysqlz import build
         elif dv == 'oracle':
@@ -47,7 +49,7 @@ def test(fp):
     sqls = "\n".join(sqls)
     sqls = sqls.split(";")
     print(f"[TESTZ] sqls:{sqls}")
-    cmd = build([db_url, user, pwd], obj)
+    cmd = CMD(build([db_url, user, pwd], obj))
     cmd.dv.begin()
     print("[TESTZ] A")
     with open(out, 'wb') as f:

@@ -26,6 +26,5 @@ datas: [
     item2.js
     {
         type: list
-        file: fp.js
     }
 ]

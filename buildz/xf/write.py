@@ -28,7 +28,7 @@ def build(json_format=False):
 pass
 def dumps(obj, bytes = 0, format = 0, deep = 0, json_format= 0):
     cf = conf.Conf()
-    cf.set(bytes=0, format=format, deep=deep)
+    cf.set(bytes=bytes, format=format, deep=deep)
     if format:
         cf.set(set=1, prev=1,line=4, spc=' ')
     else:

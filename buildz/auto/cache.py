@@ -49,13 +49,14 @@ pass
 
 
 @wrap.obj(id="cache.save")
-@wrap.obj_args("ref, cache", "ref, log")
+@wrap.obj_args("ref, cache.file", "ref, log")
 class Save(Base):
-    def init(self, cache, log):
+    def init(self, cache, log, fkey = "cache.save"):
+        self.fkey = fkey
         self.cache = cache
         self.log = log
     def call(self, maps, fp):
-        fp = xf.get(maps, "cache.save", None)
+        fp = xf.get(maps, self.fkey, None)
         if fp is None:
             self.log.warn(f"cache not save cause 'cache.save' is None")
             return
@@ -66,7 +67,7 @@ class Save(Base):
         return True
 
 pass
-@wrap.obj(id="cache")
+@wrap.obj(id="cache.file")
 @wrap.obj_args("ref, log", "env, cache.rfp.current.first, false")
 class Cache(Base):
     def get(self, key):
@@ -76,7 +77,8 @@ class Cache(Base):
         xf.sets(self.data, key.split("."), val)
     def remove(self, key):
         xf.removes(self.data, key.split("."))
-    def init(self, log, current_first=False):
+    def init(self, log, current_first=False, fkey = "cache"):
+        self.fkey = fkey
         self.current_first = current_first
         self.log = log
         self.data = {}
@@ -113,12 +115,60 @@ class Cache(Base):
                 return _fp
         return fp
     def call(self, maps, fp):
-        fp = xf.g(maps, cache="cache.js")
+        fp = xf.get(maps, self.fkey, "cache.js")
+        if type(fp)!=list:
+            fp = [fp]
+        fps=fp
         data = {}
-        if os.path.isfile(fp):
-            self.log.info(f"load cache from {fp}")
-            data = xf.flush_maps(xf.loadf(fp),visit_list=True)
+        for fp in fps:
+            fp = self.rfp(fp)
+            if os.path.isfile(fp):
+                self.log.info(f"load cache from {fp}")
+                xdata = xf.flush_maps(xf.loadf(fp),visit_list=True)
+                xf.fill(xdata, data, replace=1)
         xf.fill(data, self.data, replace=0)
         return True
+
+pass
+
+@wrap.obj(id="cache.mem")
+@wrap.obj_args("ref, log")
+class Mem(Cache):
+    def init(self, log, current_first=False, fkey = "mem"):
+        super().init(log)
+
+pass
+@wrap.obj(id="cache")
+@wrap.obj_args("ref, cache.file", "ref, cache.mem")
+class Caches(Base):
+    def init(self, cache, mem):
+        self.cache = cache
+        self.mem = mem
+        self.caches = [cache, mem]
+        self.set = cache.set
+        self.remove = cache.remove
+        self.call=cache.call
+        self.rfp = cache.rfp
+        self.get_current = cache.get_current
+        self.add_current = cache.add_current
+        self.set_current = cache.set_current
+    def get_file(self, key):
+        return self.cache.get(key)
+    def get_mem(self, key):
+        return self.mem.get(key)
+    def set_file(self, key, val):
+        self.cache.set(key,val)
+    def set_mem(self, key, val):
+        self.mem.set(key, val)
+    def remove_file(self, key):
+        self.cache.remove(key)
+    def remove_mem(self, key):
+        self.mem.remove(key)
+    def get(self, key):
+        for cache in self.caches:
+            v = cache.get(key)
+            if v is not None:
+                return v
+        return None
 
 pass

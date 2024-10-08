@@ -1,6 +1,7 @@
 #coding=utf-8
 from buildz import xf, pyz
 from buildz.xf import g as xg
+from buildz.base import Base as BzBase
 import json
 import builtins
 typez = builtins.type
@@ -11,7 +12,7 @@ class IOCError(Exception):
 pass
 class IdNotFoundError(IOCError):
     pass
-class Base:
+class Base(BzBase):
     def update_maps(self, maps, src, replace=1):
         xf.deep_update(maps, src, replace)
     def __init__(self, *args, **maps):
@@ -26,6 +27,8 @@ class Base:
 
 pass
 class EncapeData(Base):
+    def str(self):
+        return f"EncapeData(data={self.data}, type = {self.type})"
     """
         包含data id对应的配置，配置文件id，配置文件对象
         [object.test, call, ]

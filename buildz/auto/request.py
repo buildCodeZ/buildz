@@ -58,10 +58,13 @@ class Request(Base):
         xf.s(data, result_code = rp.status_code)
         if self.debug:
             self.log.debug(f"request url '{url}' return code: {rp.status_code}")
+        show_obj = None
         try:
+            show_obj = rp.content
             xf.s(data, result_content=rp.content)
             debug_ct = rp.content
             s = xf.decode(rp.content, "utf-8")
+            show_obj = s
             if self.debug:
                 self.log.debug(f"request url '{url}' return msg:{s}")
             xf.s(data, result_text=s)
@@ -69,10 +72,13 @@ class Request(Base):
             self.log.warn(f"exp in deal response on '{url}': {exp}")
         try:
             obj = json.loads(s)
+            show_obj = xf.dumps(obj,format=1,deepp=1)
             xf.s(data, result=obj)
         except Exception as exp:
             #self.log.warn(f"exp in deal response on '{url}': {exp}")
             pass
+        if self.debug:
+            self.log.debug(f"request '{url}' response: {show_obj}")
         try:
             xf.s(data, result_cookies=dict(rp.cookies))
         except Exception as exp:

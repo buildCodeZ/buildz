@@ -29,6 +29,8 @@ class Db(SimpleDv):
 pass
 def build(argv, conf):
     dv = Db(*fetch(argv))
-    return CMD(dv)
+    return dv
+def buildbk(argv, conf):
+    return CMD(make(argv, conf))
 
 pass

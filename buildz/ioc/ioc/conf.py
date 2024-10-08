@@ -56,7 +56,7 @@ class Conf(Base):
             return id[0]
         return id
     def map(self, arr, fc_key):
-        return {fc_key(obj): obj for obj in arr}
+        return {fc_key(obj): obj for obj in arr if fc_key(obj) is not None}
     def __str__(self):
         return f"conf<id={self.namespace}, _id={self.id}>"
     def __repr__(self):

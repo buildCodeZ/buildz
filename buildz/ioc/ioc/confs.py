@@ -307,7 +307,8 @@ class Confs(Base):
         return obj[self.deal_index_type]
     def get_data_id(self, obj):
         if type(obj)==dict:
-            return obj[self.data_key_id]
+            return xf.get(obj, self.data_key_id, None)
+            #return obj[self.data_key_id]
         obj = obj[self.data_index_id[0]]
         if type(obj) in [list, tuple]:
             obj = obj[self.data_index_id[1]]

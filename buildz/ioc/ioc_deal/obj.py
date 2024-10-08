@@ -214,7 +214,26 @@ def update_list(arr):
     return rst
 
 pass
+ioc_conf_key = "_buildz_ioc_conf"
+class IOCConf(Basez):
+    def init(self, key = "_buildz_ioc_conf", ckey = "_buildz_ioc_conf_cls"):
+        self.key = key
+        self.ckey = ckey
+    def get(self, cls, default):
+        if not hasattr(cls, self.ckey):
+            return default
+        prv = getattr(cls, self.ckey)
+        if prv!=cls:
+            return default
+        if hasattr(cls, self.key):
+            return getattr(cls, self.key)
+        return default
+    def set(self, cls, dt):
+        setattr(cls, self.key, dt)
+        setattr(cls, self.ckey, cls)
 
+pass
+g_ioc_conf = IOCConf()
 class IOCObjectAdd_(Basez):
     def init(self, key, *arr):
         _arr = update_list(arr)
@@ -222,14 +241,13 @@ class IOCObjectAdd_(Basez):
         self._arr = _arr
     def call(self, cls):
         rst = {}
-        if hasattr(cls, "_buildz_ioc_conf"):
-            rst = cls._buildz_ioc_conf
+        rst = g_ioc_conf.get(cls, rst)
         _arr = []
         if self.key in rst:
             _arr = rst[self.key]
         _arr+=self._arr
         rst[self.key] = _arr
-        cls._buildz_ioc_conf = rst
+        g_ioc_conf.set(cls, rst)
         return cls
 
 pass
@@ -267,10 +285,9 @@ class IOCObjectSet_(Basez):
         self._maps = {key:_maps}
     def call(self, cls):
         rst = {}
-        if hasattr(cls, "_buildz_ioc_conf"):
-            rst = cls._buildz_ioc_conf
+        rst = g_ioc_conf.get(cls, rst)
         xf.fill(self._maps, rst)
-        cls._buildz_ioc_conf = rst
+        g_ioc_conf.set(cls, rst)
         return cls
 
 pass
@@ -317,15 +334,14 @@ class IOCObject(Basez):
     def call(self, cls):
         src = cls.__module__+"."+cls.__name__
         conf = {}
-        if hasattr(cls, "_buildz_ioc_conf"):
-            conf = cls._buildz_ioc_conf
+        conf = g_ioc_conf.get(cls, conf)
         xf.fill(self._maps, conf)
         conf['source'] = src
         conf['type'] = 'object'
         if 'mcalls' in conf and 'call' not in conf:
             conf['call'] = {'type': "calls", 'calls': conf['mcalls']}
         conf[g_obj_cid] = decorator.add_datas(conf)
-        cls._buildz_ioc_conf = conf
+        g_ioc_conf.set(cls, conf)
         return cls
 
 pass

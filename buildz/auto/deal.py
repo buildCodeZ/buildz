@@ -9,7 +9,10 @@ from ..ioc import wrap
 class List(Base):
     def init(self, deal, mg):
         self.deal = deal
+        self.curr_deal = deal
         self.mg = mg
+    def curr(self):
+        return self.curr_deal
     def call(self, maps, fp):
         datas = xf.g(maps, datas = [])
         sdeal = xf.g(maps, deal = None)
@@ -19,6 +22,7 @@ class List(Base):
             deal = deal_obj
         elif sdeal is not None:
             deal = self.mg.get(sdeal)
+        self.curr_deal = deal
         for data in datas:
             if not deal(data):
                 return False

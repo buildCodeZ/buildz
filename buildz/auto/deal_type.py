@@ -20,6 +20,7 @@ pass
 
 @wrap.obj(id = "def.deal.type")
 @wrap.obj_args("ioc, confs")
+@wrap.obj_set(cache="ref, cache")
 class DefDeal(Base):
     def init(self, mg):
         self.mg = mg
@@ -30,7 +31,7 @@ class DefDeal(Base):
         data = xf.g(conf, types={})
         rst = {}
         for _type, calls in data.items():
-            rst[_type] = factory(calls)
+            rst[_type] = factory(calls, True)
         obj = DealType(rst, self.mg.get("cache"))
         maps['deal_obj'] = obj
         return True

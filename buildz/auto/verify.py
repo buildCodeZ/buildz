@@ -75,4 +75,3 @@ class Verify(Base):
         return fc(data)
 
 pass
-            
