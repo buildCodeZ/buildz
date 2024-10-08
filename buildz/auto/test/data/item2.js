@@ -16,3 +16,6 @@ verify: [
 save: {
     test2.headers.content_type: result_headers.Content-Type
 }
+save.mem: {
+    test2.headers.content_type: result_headers.Content-Type
+}
