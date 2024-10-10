@@ -6,7 +6,7 @@ from buildz.ioc import wrap
 class Defs(Base):
     def init(self, cache, log, upd):
         self.cache = cache
-        self.log = log
+        self.log = log.tag("Defs")
         self.upd = upd
     def update(self, s, defs, ignore=None):
         if type(s)==dict:

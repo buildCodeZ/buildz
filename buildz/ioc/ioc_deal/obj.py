@@ -340,7 +340,7 @@ class IOCObject(Basez):
         conf['type'] = 'object'
         if 'mcalls' in conf and 'call' not in conf:
             conf['call'] = {'type': "calls", 'calls': conf['mcalls']}
-        conf[g_obj_cid] = decorator.add_datas(conf)
+        conf[g_obj_cid] = decorator.add_datas(conf, self)
         g_ioc_conf.set(cls, conf)
         return cls
 

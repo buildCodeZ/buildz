@@ -1,5 +1,5 @@
 #
-from .ioc.decorator import decorator
+from .ioc.decorator import decorator, ns
 from .ioc_deal import init
 #print(f"decorator.fcs: {decorator.fcs}")
 locals().update(decorator.fcs)

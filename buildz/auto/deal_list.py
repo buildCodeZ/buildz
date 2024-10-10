@@ -7,7 +7,7 @@ import os
 class List(Base):
     def init(self, cache, log, upd, lst):
         self.cache = cache
-        self.log = log
+        self.log = log.tag("List")
         self.upd = upd
         self.lst = lst
     def call(self, data, fc):
@@ -21,9 +21,10 @@ class List(Base):
         if type(datas)==dict:
             datas = xf.g(datas, datas=[])
         deal = self.lst.curr()
-        print(f"List.datas: {xf.dumps(datas,format=1,deep=1)}")
+        #print(f"List.datas: {xf.dumps(datas,format=1,deep=1)}")
         for data in datas:
             if not deal(data):
+                self.log.error(f"failed in data: {data}")
                 return False
         return True
 

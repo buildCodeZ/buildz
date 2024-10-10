@@ -108,3 +108,19 @@ def swrite(dt, fp, code="utf-8", mode = "w"):
     write(dt, fp, mode)
 
 pass
+
+def is_abs(fp):
+    if fp is None:
+        return False
+    if fp.strip()=="":
+        return False
+    fp = fp.strip().replace("\\", "/")
+    if fp[0]=="/":
+        return True
+    arr = fp.split("/")
+    if arr[0].find(":")>=0:
+        return True
+    return False
+
+pass
+    

@@ -1,14 +1,17 @@
 #
 from ..tools import *
 from buildz.ioc import wrap
+#print(f"warp.obj_sets: {wrap.obj_sets}")
+#raise Exception("test")
 @wrap.obj(id="save")
 @wrap.obj_args("ref, cache", "ref, log", "ref, cache.modify")
+@wrap.obj_sets(cache_save = "ref, cache.save")
 class Save(Base):
     def init(self, cache, log, upd):
         self.cache = cache
-        self.log = log
+        self.log = log.tag("Save")
         self.upd = upd
-    def call(self, data, fc=None):
+    def call(self, data, next_fc=None):
         data = self.upd(data)
         save = xf.g(data, save={})
         fsave = xf.get(data, "save.file", {})
@@ -31,7 +34,11 @@ class Save(Base):
                 else:
                     val = xf.gets(data, v)
                 fc(k, val)
-        return True
+        save = saves[0]
+        if len(save)+len(fsave)>0:
+            sv = self.cache_save.save()
+            self.log.debug(f"cache_save in save: {sv}")
+        return next_fc(data)
 
 pass
 

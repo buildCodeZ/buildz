@@ -6,7 +6,7 @@ from buildz.ioc import wrap
 @wrap.obj_args("ref, log", "ref, cache.modify")
 class Verify(Base):
     def init(self, log, upd):
-        self.log = log
+        self.log = log.tag("Verify")
         self.upd = upd
         self.opts = {}
         self.opts[">"] = self.make_val_cmp(lambda val,v:val>v)

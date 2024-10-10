@@ -14,7 +14,7 @@ class Update(Base):
     """
     def init(self, cache, log, pt = "(#\{([^\{\}]*)\})"):
         self.cache = cache
-        self.log = log
+        self.log = log.tag("Cache.Update")
         self.pt = pt
     def call(self, s):
         if type(s)==dict:
@@ -51,24 +51,30 @@ pass
 @wrap.obj(id="cache.save")
 @wrap.obj_args("ref, cache.file", "ref, log")
 class Save(Base):
-    def init(self, cache, log, fkey = "cache.save"):
+    def init(self, cache, log, fkey = "cache.save", fp = None):
         self.fkey = fkey
         self.cache = cache
-        self.log = log
-    def call(self, maps, fp):
-        fp = xf.get(maps, self.fkey, None)
+        self.log = log.tag("Cache.Save")
+        self.fp = fp
+    def save(self):
+        fp = self.fp
         if fp is None:
             self.log.warn(f"cache not save cause 'cache.save' is None")
-            return
+            return False
         fz.makefdir(fp)
         rst  = self.cache.data
         rs = xf.dumps(rst, format=True).encode("utf-8")
         fz.write(rs, fp, 'wb')
         return True
+    def call(self, maps, fp):
+        fp = xf.get(maps, self.fkey, None)
+        fp = self.cache.rfp(fp)
+        self.fp = fp
+        return self.save()
 
 pass
 @wrap.obj(id="cache.file")
-@wrap.obj_args("ref, log", "env, cache.rfp.current.first, false")
+@wrap.obj_args("mcall, log, tag, [Cache.File]", "env, cache.rfp.current.first, false")
 class Cache(Base):
     def get(self, key):
         ks = key.split(".")
@@ -96,10 +102,18 @@ class Cache(Base):
         self.set_current(dps)
     def get_current(self):
         dps = self.get("cache.path.current")
+        if dps is None:
+            dps = []
         if type(dps)!=list:
             dps = [dps]
         return dps
+    def set_basedir(self, dp):
+        self.set("cache.path.base", dp)
+    def get_basedir(self):
+        return self.get("cache.path.base")
     def rfp(self, fp):
+        if fz.is_abs(fp):
+            return fp
         dps = [None,"."]
         cfps = self.get_current()
         if cfps is not None:
@@ -107,12 +121,18 @@ class Cache(Base):
                 dps = cfps+dps
             else:
                 dps = dps+cfps
+        basedir = self.get_basedir()
+        if basedir is not None:
+            dps = [basedir]+dps
         for dp in dps:
             _fp = fp
             if dp is not None:
                 _fp = os.path.join(dp, fp)
             if os.path.isfile(_fp):
                 return _fp
+        basedir = self.get_basedir()
+        if basedir is not None:
+            fp = os.path.join(basedir, fp)
         return fp
     def call(self, maps, fp):
         fp = xf.get(maps, self.fkey, "cache.js")
@@ -132,7 +152,7 @@ class Cache(Base):
 pass
 
 @wrap.obj(id="cache.mem")
-@wrap.obj_args("ref, log")
+@wrap.obj_args("mcall, log, tag, [Cache.Mem]")
 class Mem(Cache):
     def init(self, log, current_first=False, fkey = "mem"):
         super().init(log)
@@ -152,6 +172,8 @@ class Caches(Base):
         self.get_current = cache.get_current
         self.add_current = cache.add_current
         self.set_current = cache.set_current
+        self.set_basedir = cache.set_basedir
+        self.get_basedir = cache.get_basedir
     def get_file(self, key):
         return self.cache.get(key)
     def get_mem(self, key):

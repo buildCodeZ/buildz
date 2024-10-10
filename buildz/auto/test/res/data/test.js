@@ -1,5 +1,15 @@
-configs: config/config.js
+configs: [config/base.js, config/config.js]
 datas: [
+    {
+        note: empty
+        type: test
+        data: {
+            a:b
+        }
+        save: {
+            curr1010: data.a
+        }
+    }
     //写一个配置
     {
         note: test

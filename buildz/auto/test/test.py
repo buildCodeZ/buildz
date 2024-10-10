@@ -6,7 +6,7 @@ from buildz.ioc import wrap
 class Req(Base):
     def init(self, log, upd):
         self.upd = upd
-        self.log = log
+        self.log = log.tag("Test.Req")
     def call(self, data, fc=None):
         data = self.upd(data)
         self.log.debug(f"test data: {data}")
@@ -19,8 +19,8 @@ from buildz.auto import Run
 from buildz.ioc.wrap import decorator
 import sys
 def test():
-    print(f"wrap: {xf.dumps(decorator(),format=1,deep=1)}")
-    rst = Run()("data/test")
+    #print(f"wrap: {xf.dumps(decorator(),format=1,deep=1)}")
+    rst = Run(basedir="res")("data/test")
     print(f"rst: {rst}")
 
 pass

@@ -25,6 +25,10 @@ class Fill(Base):
     def init(self, mg):
         self.mg = mg
     def call(self, orders, default=None):
+        if type(orders)==str:
+            orders = xf.loads(orders)
+        if type(orders)==str:
+            orders = [orders]
         fcs = [self.mg.get(id) for id in orders]
         return DeepFc(fcs,default)
 

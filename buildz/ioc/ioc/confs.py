@@ -362,6 +362,8 @@ class Confs(Base):
             raise
         #return self.add(conf)
     def add_decorator(self):
+        confs = decorator.all()
+        return self.adds(confs)
         conf = decorator()
         #print(f"[TESTZ] CONFS add decorator(): {conf}")
         return self.add(conf)

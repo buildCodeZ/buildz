@@ -11,13 +11,15 @@ class Config(Base):
         configs = xf.g(maps, configs=[])
         if type(configs)!=list:
             configs = [configs]
+        dts = {}
         for cfp in configs:
             cfp = self.cache.rfp(cfp)
             if not os.path.isfile(cfp):
                 self.log.error(f"config file not exist: {cfp}")
                 return False
             dt = xf.loadf(cfp)
-            xf.fill(dt, maps, replace=0)
+            xf.fill(dt, dts, replace=1)
+        xf.fill(dts, maps, replace=0)
         return True
 
 pass

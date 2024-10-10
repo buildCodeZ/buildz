@@ -17,7 +17,7 @@ class Request(Base):
         self.type = http_type
         self.cache = cache
         self.use_session = use_session
-        self.log = log
+        self.log = log.tag("Request")
         self.upd = upd
         self.fc = None
         self.fcs = None
