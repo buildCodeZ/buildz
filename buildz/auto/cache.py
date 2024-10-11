@@ -33,8 +33,9 @@ class Update(Base):
             return s
         rst = re.findall(self.pt, s)
         for match, key in rst:
+            has = self.cache.has(key)
             val = self.cache.get(key)
-            if val is None:
+            if not has:
                 err = f"'{key}' not found in cache"
                 self.log.error(err)
                 raise Exception(err)
@@ -76,6 +77,9 @@ pass
 @wrap.obj(id="cache.file")
 @wrap.obj_args("mcall, log, tag, [Cache.File]", "env, cache.rfp.current.first, false")
 class Cache(Base):
+    def has(self, key):
+        ks = key.split(".")
+        return xf.has(self.data, ks)
     def get(self, key):
         ks = key.split(".")
         return xf.gets(self.data, ks)
@@ -174,6 +178,8 @@ class Caches(Base):
         self.set_current = cache.set_current
         self.set_basedir = cache.set_basedir
         self.get_basedir = cache.get_basedir
+        self.has_file = cache.has
+        self.has_mem = mem.has
     def get_file(self, key):
         return self.cache.get(key)
     def get_mem(self, key):
@@ -192,5 +198,10 @@ class Caches(Base):
             if v is not None:
                 return v
         return None
+    def has(self, key):
+        for cache in self.caches:
+            if cache.has(key):
+                return True
+        return False
 
 pass

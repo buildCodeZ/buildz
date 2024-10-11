@@ -135,6 +135,22 @@ def sets(maps, keys, val):
     maps[keys[-1]] = val
 
 pass
+def has(maps, keys):
+    if type(keys) != list:
+        keys = [keys]
+    for key in keys:
+        if type(maps)==dict:
+            if key not in maps:
+                return False
+        else:
+            key = int(key)
+            if key>=len(maps):
+                return default
+        maps = maps[key]
+    return True
+
+pass
+
 def gets(maps, keys, default = None):
     if type(keys) != list:
         keys = [keys]
