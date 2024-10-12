@@ -62,10 +62,18 @@ pass
 
 # user|pwd@host:port/db
 def fetch(args):
+    """
+        host[:port][/db][ user][ pwd]
+        host:port/db user pwd
+    """
     if type(args) == str:
         args = args.split(" ")
     url = args[0].strip()
-    url, db = url.split("/")
+    tmp = url.split("/")
+    url = tmp[0]
+    db = None
+    if len(tmp)>1:
+        db = tmp[1]
     tmp = url.split(":")
     if len(tmp)==2:
         host, port = tmp
@@ -73,8 +81,16 @@ def fetch(args):
     else:
         host = tmp[0]
         port = None
-    user = args[1].strip()
-    pwd = args[2].strip()
+    user = None
+    if len(args)>1:
+        user = args[1]
+        if user is not None:
+            user = user.strip()
+    pwd = None
+    if len(args)>2:
+        pwd = args[2]
+        if pwd is not None:
+            pwd = pwd.strip()
     return host, port, user, pwd, db
 
 pass

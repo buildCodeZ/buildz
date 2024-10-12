@@ -11,25 +11,15 @@ def find(arr, k, base = 0):
     return -1
 
 pass
+if __name__ == "__main__":
+    from dv import build
+    from dv.structz import CMD
+else:
+    from .dv import build
+    from .dv.structz import CMD
 def test(fp):
     obj = xf.loads(xf.fread(fp))
     dv = obj['dv']
-    if __name__ == "__main__":
-        from dv.structz import CMD
-        if dv == 'mysql':
-            from dv.mysqlz import build
-        elif dv == 'oracle':
-            from dv.oraclez import build
-        elif dv == 'clickhouse':
-            from dv.clickhousez import build
-    else:
-        from .dv.structz import CMD
-        if dv == 'mysql':
-            from .dv.mysqlz import build
-        elif dv == 'oracle':
-            from .dv.oraclez import build
-        elif dv == 'clickhouse':
-            from .dv.clickhousez import build
     db_url = obj['db']
     db_url = obj[db_url]
     user = obj['user']
@@ -49,7 +39,7 @@ def test(fp):
     sqls = "\n".join(sqls)
     sqls = sqls.split(";")
     print(f"[TESTZ] sqls:{sqls}")
-    cmd = CMD(build([db_url, user, pwd], obj))
+    cmd = CMD(build(dv, [db_url, user, pwd], obj))
     cmd.dv.begin()
     print("[TESTZ] A")
     with open(out, 'wb') as f:
