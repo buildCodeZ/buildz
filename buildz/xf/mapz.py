@@ -75,6 +75,15 @@ def g(obj, **maps):
     return rst
 
 pass
+def c(obj, **maps):
+    for k in maps:
+        v = maps[k]
+        if k not in obj:
+            return False
+        vo = obj[k]
+        if vo!=v:
+            return False
+    return True
 def gs(obj, **maps):
     rst = []
     for k in maps:
@@ -221,6 +230,19 @@ update = deep_update
 def deep_fill(src, target, replace=1):
     return deep_update(target, src, replace)
 
+pass
+def deep_clone(obj):
+    if type(obj)==list:
+        rst = []
+        for it in obj:
+            rst.append(deep_clone(it))
+    elif type(obj)==dict:
+        rst = {}
+        for k,v in obj.items():
+            rst[k] = deep_clone(v)
+    else:
+        rst = obj
+    return rst
 pass
 fill=deep_fill
 
