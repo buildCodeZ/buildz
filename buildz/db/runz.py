@@ -17,13 +17,28 @@ if __name__ == "__main__":
 else:
     from .dv import build
     from .dv.structz import CMD
+
+pass
+def cmd(conf):
+    obj = conf
+    dv = obj['dv']
+    db_url = obj['db']
+    db_url = obj[db_url]
+    user = xf.g(obj,user=None)
+    pwd = xf.g(obj,pwd=None)
+    src = obj['src']
+    out = obj['out']
+    cmd = CMD(build(dv, [db_url, user, pwd], obj))
+    return cmd
+
+pass
 def test(fp):
     obj = xf.loads(xf.fread(fp))
     dv = obj['dv']
     db_url = obj['db']
     db_url = obj[db_url]
-    user = obj['user']
-    pwd = obj['pwd']
+    user = xf.g(obj,user=None)
+    pwd = xf.g(obj,pwd=None)
     src = obj['src']
     out = obj['out']
     sqls = xf.fread(src)
@@ -43,15 +58,22 @@ def test(fp):
     cmd.dv.begin()
     print("[TESTZ] A")
     with open(out, 'wb') as f:
-        for sql in sqls:
-            if sql.strip()=="":
-                continue
-            if sql.strip() == "exit":
-                break
-            print("[TESTZ] B")
-            rst = cmd.single(sql)
-            print("[TESTZ] C")
+        f.write(b"[START SQL]\n\n")
+    for sql in sqls:
+        if sql.strip()=="":
+            continue
+        if sql.strip() == "exit":
+            break
+        print("[TESTZ] B")
+        curr=time.time()
+        rst = cmd.single(sql)
+        cost = time.time()-curr
+        print(f"[TESTZ] Cost: {cost} sec")
+        rst += f"time cost: {cost} sec\n"
+        with open(out, 'ab') as f:
             f.write(rst.encode("utf-8"))
+    with open(out, 'ab') as f:
+        f.write(b"\n[DONE SQL]")
     cmd.close()
 
 pass

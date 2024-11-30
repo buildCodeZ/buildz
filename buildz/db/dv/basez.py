@@ -51,7 +51,7 @@ class SimpleDv(ItDv):
     def query(self, sql, vals=()):
         # return list, first row is key
         tmp = self.cursor.execute(sql, vals)
-        print("[TESTZ] exe:",tmp)
+        #print("[TESTZ] exe:",tmp)
         rst = self.cursor.fetchall()
         return self.to_list(rst)
     def execute(self, sql, vals=()):

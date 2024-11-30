@@ -125,13 +125,18 @@ class CMD:
             with open(fp, 'rb') as f:
                 s = f.read().decode(cd)
             arr = s.split(";")
+            n = len(arr)
+            print(f"[TESTZ] done fread {fp}: {len(arr)}")
+            i=0
             for sql in arr:
-                if sql.strip() == "":
+                if sql.strip() == "" or sql.strip()[:2]=="--":
                     continue
                 _sql = sql+";"
-                self.s_print("sql:", _sql)
+                #self.s_print("sql:", _sql)
+                #print(f"[TESTZ] sql: {_sql}")
                 tmp = self.execute(_sql)
-                self.s_print(tmp)
+                #self.s_print(tmp)
+                i+=1
             self.s_print("done source", fp)
         elif s.split(" ")[0] == "export":
             # export filepath encoding sql;
