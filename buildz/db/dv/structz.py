@@ -118,7 +118,7 @@ class CMD:
         elif s.split(" ")[0] == "source":
             # source filepath [encoding]
             arr = s.split(" ")
-            fp =arr[1].strip()
+            fp =arr[1].strip().split(";")[0]
             cd = "utf-8"
             if len(arr)>2:
                 cd = arr[2].strip().lower()
@@ -129,11 +129,14 @@ class CMD:
             print(f"[TESTZ] done fread {fp}: {len(arr)}")
             i=0
             for sql in arr:
+                sql=sql.replace("\r","")
+                sql = sql.split("\n")
+                sql = [k for k in sql if k.strip()[:2]!="--"]
+                sql = "\n".join(sql)
                 if sql.strip() == "" or sql.strip()[:2]=="--":
                     continue
                 _sql = sql+";"
                 #self.s_print("sql:", _sql)
-                #print(f"[TESTZ] sql: {_sql}")
                 tmp = self.execute(_sql)
                 #self.s_print(tmp)
                 i+=1

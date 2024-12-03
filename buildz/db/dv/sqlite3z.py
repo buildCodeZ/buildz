@@ -1,8 +1,9 @@
 
 import sqlite3
-import sys
+import sys,os
 from .basez import SimpleDv, fetch
 from .structz import CMD
+from buildz import xf,fz
 class Db(SimpleDv):
     # func to impl:
     def to_list(self, rst):
@@ -23,11 +24,16 @@ class Db(SimpleDv):
         self.cursor = None
         self.init(fp)
     def init(self, fp):
+        fz.makefdir(fp)
         self.fp = fp
 
 pass
 def build(argv, conf):
-    dv = Db(argv[0])
+    root = xf.g(conf, root=None)
+    fp = argv[0]
+    if root is not None:
+        fp = os.path.join(root, fp)
+    dv = Db(fp)
     return dv
 def buildbk(argv, conf):
     return CMD(make(argv, conf))
