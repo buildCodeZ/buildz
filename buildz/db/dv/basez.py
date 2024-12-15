@@ -1,5 +1,6 @@
 import sys
 from .structz import ItDv
+from buildz.db import tls
 def sp(obj):
     return super(obj.__class__, obj)
 
@@ -57,6 +58,47 @@ class SimpleDv(ItDv):
     def execute(self, sql, vals=()):
         tmp = self.cursor.execute(sql, vals)
         return tmp
+    def insert_or_update(self, maps, table, keys = None):
+        if type(maps)!=dict:
+            maps = maps.__dict__
+        if keys is None:
+            keys = []
+        if type(keys) not in (list, tuple):
+            keys = [keys]
+        update = False
+        conds = ""
+        if len(keys)>0:
+            need_query = True
+            conds = []
+            for k in keys:
+                if k not in maps:
+                    need_query = False
+                    break
+                v = maps[k]
+                if type(v)==str:
+                    v = f"'{v}'"
+                if v not is None:
+                    cond = f"{k} = {v}"
+                else:
+                    cond = f"{k} is null"
+                conds.append(cond)
+            if need_query:
+                conds = " and ".join(conds)
+                sql_search = f"select count(*) from {table} where {conds}"
+                rst = self.query(sql_search)[1][0]
+                update = rst>0
+        if update:
+            keys = set(keys)
+            kvs = [[k,tls.py2sql(v)] for k,v in maps.items() if k not in keys]
+            sets = [f"{k}={v}"]
+            sets = ",".join(sets)
+            sql = f"update {table} set {sets} where {conds}"
+        else:
+            kvs = [k, tls.py2sql(v) for k,v in maps.items()]
+            ks = ",".join([kv[0] for kv in kvs])
+            vs = ",".join([kv[1] for kv in kvs])
+            sql = f"insert into {table}({ks}) values({vs});"
+        return self.execute(sql)
 
 pass
 

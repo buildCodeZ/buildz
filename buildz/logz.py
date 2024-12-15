@@ -1,11 +1,10 @@
 #
 
 
-from .. import xf
-from .. import ioc
-from ..base import Base
-from ..ioc import wrap
-from ..tools import *
+from . import xf, ioc, fz
+from .base import Base
+from .ioc import wrap
+#from .tools import *
 import time, sys
 class Log(Base):
     def tag(self, _tag):
@@ -56,13 +55,14 @@ def mstr(s):
     if s is None or len(s)==0:
         return s
     return s[:1].upper()+s[1:].lower()
-class FpLog(Log):
-    def init(self, fp = None,shows =None, tag=None, format=None):
+class FormatLog(Log):
+    def init(self, shows =None, tag=None, format=None):
         if format is None:
             format = "[{LEVEL}] %Y-%m-%d %H:%M:%S {tag} {msg}\n"
         self.format=format
         super().init(shows, tag)
-        self.fp = fp
+    def output(self, msg):
+        raise Exception("impl")
     def log(self, level, tag, *args):
         m_level = level.lower()
         u_level = level.upper()
@@ -73,8 +73,12 @@ class FpLog(Log):
             tag = "base"
         rst = time.strftime(self.format, time.localtime(time.time()))
         msg = replaces(rst, "{Level}", x_level, "{level}", m_level, "{LEVEL}", u_level, "{tag}", tag, "{msg}", msg)
-        # rst = rst.replace("{level}",level).replace("{tag}", tag).replace
-        # msg = f"[{level}] {date} {tag} {msg}\n"
+        self.output(msg)
+class FpLog(FormatLog):
+    def init(self, fp = None,shows =None, tag=None, format=None):
+        super().init(shows, tag, format)
+        self.fp = fp
+    def output(self, msg):
         sys.stdout.write(msg)
         if self.fp is not None:
             fp = time.strftime(self.fp)
@@ -82,3 +86,26 @@ class FpLog(Log):
             fz.write(msg.encode("utf-8"), fp, 'ab')
 
 pass
+class StdLog(FormatLog):
+    def output(self, msg):
+        sys.stdout.write(msg)
+
+pass
+
+class Logs(Log):
+    def init(self, logs, shows = None, tag= None):
+        super().init(shows, tag)
+        self.logs = logs
+    def log(self, level, tag, *args):
+        for _log in self.logs:
+            _log.log(level, tag, *args)
+
+pass
+
+def build(obj=None, shows=None, tag=None, format=None):
+    if obj is None:
+        return StdLog(shows, tag, format)
+    return obj
+
+pass
+make=build

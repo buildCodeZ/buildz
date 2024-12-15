@@ -193,6 +193,10 @@ def removes(maps, keys):
     return None
 
 pass
+dset = sets
+dget = gets
+dhas = has
+dremove = removes
 def l2m(arr, **maps):
     rst = {}
     i = 0

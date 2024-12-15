@@ -7,7 +7,7 @@ from ..base import Base
 from ..ioc import wrap
 from ..tools import *
 import time, sys
-from ..tz.log import FpLog
+from ..logz import FpLog
 @wrap.obj(id="log")
 @wrap.obj_sets(cache="ref,cache")
 class AutoLog(FpLog):

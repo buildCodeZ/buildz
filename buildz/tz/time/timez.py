@@ -1,6 +1,6 @@
 import time
 from ... import Base
-from ..log import FpLog
+from ...logz import FpLog
 class Clock(Base):
     def default(self, cost, fc, rst, *a, **b):
         print(f"cost {cost} sec on {fc}")

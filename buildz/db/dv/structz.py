@@ -1,5 +1,9 @@
 #import pymysql
 import sys
+import datetime
+import decimal
+from buildz import logz
+from buildz.db import tls
 class ItDv:
     def begin(self):
         pass
@@ -28,10 +32,12 @@ class CMD:
         return self.dv.begin()
     def close(self):
         return self.dv.close()
-    def __init__(self, dv, simple_format = True):
+    def __init__(self, dv, simple_format = True, log = None):
         self.s_rst = ""
         self.dv = dv
         self.simple_format = simple_format
+        self.log = logz.make(log)
+        self.insert_or_update = dv.insert_or_update
     def __enter__(self, *argv, **maps):
         self.dv.begin()
         return self
@@ -79,9 +85,20 @@ class CMD:
         if type(obj) == decimal.Decimal:
             obj = str(obj) 
         if type(obj) == bytes:
-            obj = list(obj)[0]
+            for code in "utf-8,gbk".split(","):
+                try:
+                    obj = obj.decode(code)
+                    break
+                except:
+                    continue
+            else:
+                obj = list(obj)
+            #obj = list(obj)[0]
         import json
-        rs = json.dumps(obj, ensure_ascii=0)
+        try:
+            rs = json.dumps(obj, ensure_ascii=0)
+        except:
+            rs = json.dumps(str(obj), ensure_ascii=0)
         return rs
     def tr_sz(self, s, sz):
         try:
@@ -89,7 +106,7 @@ class CMD:
             s = s+(b" "*(sz-len(s)))
             s = s.decode("gbk")
         except Exception as exp:
-            print("TR_SZ exp:", exp)
+            self.log.error("TR_SZ exp:", exp)
         return s
     def format(self, arr):
         arr = [[self.rp(k) for k in obj] for obj in arr]
@@ -126,7 +143,7 @@ class CMD:
                 s = f.read().decode(cd)
             arr = s.split(";")
             n = len(arr)
-            print(f"[TESTZ] done fread {fp}: {len(arr)}")
+            self.log.info(f"[TESTZ] done fread {fp}: {len(arr)}")
             i=0
             for sql in arr:
                 sql=sql.replace("\r","")
