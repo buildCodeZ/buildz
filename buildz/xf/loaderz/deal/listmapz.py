@@ -6,6 +6,24 @@ from buildz import Base
 class Args(Base):
     def str(self):
         return f"<Args args={self.args}, maps={self.maps}>"
+    @property
+    def lists(self):
+        return self.args
+    @lists.setter
+    def lists(self, val):
+        self.args=val
+    @lists.deleter
+    def lists(self):
+        del self.args
+    @property
+    def dicts(self):
+        return self.maps
+    @dicts.setter
+    def dicts(self, val):
+        self.maps=val
+    @dicts.deleter
+    def dicts(self):
+        del self.maps
     def init(self, args, maps):
         self.args = args
         self.maps = maps
@@ -15,9 +33,10 @@ class ListMapDeal(lr.LRDeal):
     """
         分隔符，有分隔符后将缓存的数据当作字符串
     """
-    def init(self, left, right, as_map = False):
+    def init(self, left, right, as_map = False, as_args=False):
         super().init(left, right, "listmap")
         self.as_map = as_map
+        self.as_args = as_args
     def types(self):
         return ['list']
     def build(self, obj):
@@ -48,6 +67,8 @@ class ListMapDeal(lr.LRDeal):
             else:
                 lst.append(obj.val)
                 i+=1
+        if self.as_args:
+            return item.Item(Args(lst, mp), type='args', is_val=1)
         if len(mp)==0:
             if self.as_map:
                 if len(lst)==0:

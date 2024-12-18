@@ -1,4 +1,5 @@
 #
+import datetime,decimal
 def lower(val):
     rst = ""
     for c in val:
@@ -16,6 +17,7 @@ def upper(val):
             continue
         if mark_up:
             c = c.upper()
+            mark_up = False
         rst+=c
     return rst
 pass

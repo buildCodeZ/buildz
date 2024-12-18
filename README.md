@@ -21,6 +21,8 @@
 运行python -m buildz查看帮助
 
 持续更新中。。。
+2024/12/18:
+增加数据映射xz，数据库db增加类似orm功能以及表和索引结构查询功能（目前只写了mysql,oracle,sqlite3的查询），配置文件读写xf的输出增加对ListMap的支持(dumpx, dumpxf)
 2024/11/11:
 新增buildz.tz.xfind，对json做查询用的，功能类似jsonpath，自己实现的原因是好玩，以及不想为了用jsonpath去学对应的语法
 2024/10/08:

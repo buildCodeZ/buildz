@@ -2,6 +2,7 @@
 from buildz import xf, Base
 class Translate(Base):
     """
+    数据映射
     conf:
     main: [
         null, mdict

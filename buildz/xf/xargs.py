@@ -8,7 +8,7 @@ def fetch(argv = None):
     argv = [str(k) for k in argv]
     s = " ".join(argv)
     s = s.strip()
-    return loadx(s, True)
+    return loadx(s, out_args=True)
     lrs = [["",""]]
     if len(s)==0:
         return None

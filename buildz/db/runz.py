@@ -19,28 +19,38 @@ else:
     from .dv.structz import CMD
 
 pass
-def cmd(conf):
+
+def loop_get(conf, key, loop, default=None, exp=False):
+    key = xf.get(conf, key, default)
+    if loop:
+        while key in conf:
+            key = conf[key]
+    return key
+def make(conf, loop=True):
     obj = conf
-    dv = obj['dv']
-    db_url = obj['db']
-    db_url = obj[db_url]
-    user = xf.g(obj,user=None)
-    pwd = xf.g(obj,pwd=None)
-    src = obj['src']
-    out = obj['out']
-    cmd = CMD(build(dv, [db_url, user, pwd], obj))
-    return cmd
+    dv = loop_get(obj, 'dv', loop)
+    db_url = loop_get(obj, 'db', loop)
+    assert dv is not None
+    assert db_url is not None
+    user = loop_get(obj, 'user', loop,None)
+    pwd = loop_get(obj, 'pwd', loop,None)
+    obj = build(dv, [db_url, user, pwd], obj)
+    return obj
+def cmd(conf, loop=True):
+    return CMD(make(conf, loop))
 
 pass
 def test(fp):
     obj = xf.loads(xf.fread(fp))
-    dv = obj['dv']
-    db_url = obj['db']
-    db_url = obj[db_url]
-    user = xf.g(obj,user=None)
-    pwd = xf.g(obj,pwd=None)
-    src = obj['src']
-    out = obj['out']
+    loop =  xf.g(obj, loop=True)
+    dv = loop_get(obj, 'dv', loop)
+    db_url = loop_get(obj, 'db', loop)
+    assert dv is not None
+    assert db_url is not None
+    user = loop_get(obj, 'user', loop)
+    pwd = loop_get(obj, 'pwd', loop)
+    src = loop_get(obj, 'src', loop)
+    out = loop_get(obj, 'out', loop)
     sqls = xf.fread(src)
     sqls = sqls.replace("\r\n", "\n").rstrip().split("\n")
     sqls_strip = [k.strip() for k in sqls]

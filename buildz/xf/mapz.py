@@ -1,10 +1,16 @@
 
 def get(obj, key, default=None, set = False):
-    if key not in obj:
-        if set:
-            obj[key] = default
-        return default
-    return obj[key]
+    if type(obj)==list:
+        key = int(key)
+        if len(obj)<=key:
+            return default
+        return obj[key]
+    else:
+        if key not in obj:
+            if set:
+                obj[key] = default
+            return default
+        return obj[key]
 
 pass
 def getf(obj, key, fc):

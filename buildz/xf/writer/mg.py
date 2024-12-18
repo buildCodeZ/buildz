@@ -1,5 +1,6 @@
 
 from . import itemz
+from ..readz import is_args
 class Manager:
     def __init__(self):
         self.deals = []
@@ -37,6 +38,15 @@ class Manager:
                     stack_build.append(['list'])
                     done = 0
                     break
+                elif is_args(obj):
+                    ncrr = []
+                    for k,v in obj.dicts.items():
+                        ncrr+=[k,v]
+                    ncrr = list(obj.lists)+ncrr
+                    stack_src.append(ncrr)
+                    stack_build.append([['args', len(obj.lists)]])
+                    done = 0
+                    break
                 else:
                     stack_build[-1].append(itemz.ShowItem(obj, is_val=1))
             if done:
@@ -47,7 +57,9 @@ class Manager:
                     v = self.deal(v, conf)
                     rst.append(v)
                 if items[0] != 'root':
-                    if items[0] == 'list':
+                    if type(items[0]) in (list, tuple) and items[0][0] == 'args':
+                        obj = itemz.ShowItem(rst, is_args=1, list_num = items[0][1])
+                    elif items[0] == 'list':
                         obj = itemz.ShowItem(rst, is_list=1)
                     else:
                         obj = itemz.ShowItem(rst, is_dict=1)

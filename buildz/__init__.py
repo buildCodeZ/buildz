@@ -1,6 +1,6 @@
 #coding=utf-8
 
-__version__="0.6.31"
+__version__="0.6.34"
 
 # 小号多
 __author__ = "Zzz, emails: 1174534295@qq.com, 1309458652@qq.com"

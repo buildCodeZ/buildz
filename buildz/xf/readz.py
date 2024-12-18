@@ -1,6 +1,7 @@
 
 from .loaderz import mg, buffer, base
 from . import file
+import os
 from .loaderz.deal import nextz, spt, strz, listz, spc, setz, mapz, reval, lrval, listmapz
 class BoolFc:
     def __init__(self, mg):
@@ -79,7 +80,7 @@ def build(as_bytes=False):
 
 pass
 g_mgx = None
-def build_args(as_bytes=False):
+def build_args(as_bytes=False, as_args = False):
     global g_mgx
     if g_mgx is not None and g_mgx.as_bytes == as_bytes:
         return g_mgx
@@ -94,9 +95,9 @@ def build_args(as_bytes=False):
     # mgs.add(listz.ListDeal("(", ")"))
     # mgs.add(listz.ListDeal("[", "]"))
     # mgs.add(mapz.MapDeal("{", "}"))
-    mgs.add(listmapz.ListMapDeal("(", ")"))
-    mgs.add(listmapz.ListMapDeal("[", "]"))
-    mgs.add(listmapz.ListMapDeal("{", "}", True))
+    mgs.add(listmapz.ListMapDeal("(", ")", as_args=as_args))
+    mgs.add(listmapz.ListMapDeal("[", "]", as_args =as_args))
+    mgs.add(listmapz.ListMapDeal("{", "}", True, as_args=as_args))
     build_val(mgs)
     #1,0,0,1: 没引号当r"..."
     #1,0,1,1: 没引导当"..."
@@ -126,11 +127,11 @@ def is_args(obj):
     return type(obj)==listmapz.Args
 
 pass
-def loads_args(s, as_args = False, as_bytes = False):
-    mgs = build_args(type(s)==bytes)
+def loads_args(s, as_args = False, out_args=False):
+    mgs = build_args(type(s)==bytes, as_args)
     #input = buffer.BufferInput(s)
     rst = mgs.loads(s)
-    if not as_args:
+    if not out_args:
         return rst
     if is_args(rst):
         return rst
@@ -151,11 +152,25 @@ def loads(s):
 
 pass
 
-def loadf(fp, bts = False):
+def loadf(fp, bts = False, **maps):
+    if not os.path.isfile(fp):
+        if 'default' in maps:
+            return maps['default']
     if bts:
         s = file.bread(fp)
     else:
         s = file.fread(fp)
     return loads(s)
+
+pass
+def loadxf(fp, bts = False, **maps):
+    if not os.path.isfile(fp):
+        if 'default' in maps:
+            return maps['default']
+    if bts:
+        s = file.bread(fp)
+    else:
+        s = file.fread(fp)
+    return loadx(s)
 
 pass

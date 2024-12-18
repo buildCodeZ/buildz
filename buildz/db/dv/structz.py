@@ -43,12 +43,12 @@ class CMD:
         return self
     def __exit__(self, *argv, **maps):
         self.dv.close()
-    def exec(self, fc, sql, vals = ()):
+    def exec(self, fc, *a,**b):
         need_close = False
         if not self.dv.is_open():
             self.dv.begin()
             need_close = True
-        rst = fc(sql, vals)
+        rst = fc(*a,**b)
         if need_close:
             self.dv.close()
         return rst
@@ -56,6 +56,11 @@ class CMD:
         return self.exec(self.dv.query, sql, vals)
     def execute(self, sql, vals = ()):
         return self.exec(self.dv.execute, sql, vals)
+    def executes(self, sqls):
+        if type(sqls)==str:
+            sqls = sqls.split(";")
+        sqls = [sql.strip() for sql in sqls if sql.strip()!=""]
+        _ = [self.execute(sql) for sql in sqls]
     def s_print(self, *args):
         args = [str(k) for k in args]
         s = " ".join(args)
@@ -185,8 +190,23 @@ class CMD:
         else:
             self.s_print("SQL:", s)
             try:
-                if self.dv.check_query(s):
+                tab = s.split(" ")[0]
+                if tab in "tables,indexes,columns,index_keys".split(","):
+                    _val = None
+                    _arr = s.split(" ")
+                    _arr = [_k.strip() for _k in _arr if _k.strip()!=""]
+                    if len(_arr)>1:
+                        _val = _arr[1]
+                    _fc = getattr(self.dv, tab)
+                    rst = self.exec(_fc, _val)
+                    show_query = True
+                elif self.dv.check_query(s):
                     rst = self.query(s)
+                    show_query = True
+                else:
+                    rst = self.execute(s)
+                    show_query = False
+                if show_query:
                     result = []
                     if len(rst)>0:
                         keys = rst[0]
@@ -197,7 +217,6 @@ class CMD:
                             result.append([str(i)]+v)
                     self.s_print(self.format(result))
                 else:
-                    rst = self.execute(s)
                     self.s_print(rst)
             except Exception as exp:
                 import traceback

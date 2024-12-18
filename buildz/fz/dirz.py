@@ -12,6 +12,9 @@ class FileInfo:
         self.isdir = isdir
         self.empty_dir = empty_dir
         self.visit_dir = visit_dir
+        self.name = os.path.basename(path)
+        self.dirpath = os.path.dirname(path)
+        self.rdirpath = os.path.dirname(rpath)
 
 pass
 #列出文件夹下所有文件和文件更新时间
@@ -23,11 +26,14 @@ class FileDeal:
         self.init(*argv, **maps)
     def result(self):
         return None
+    def reset(self, filepath, depth=0):
+        pass
     def init(self, *argv, **maps):
         pass
     def work(self, *argv, **maps):
         return self.dirs(*argv, **maps)
     def dirs(self, filepath, depth = 0):
+        self.reset(filepath, depth)
         dirs(filepath, self, depth)
         return self.result()
     def visit(self, fileinfo, depth):
