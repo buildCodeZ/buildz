@@ -33,6 +33,7 @@ class Translate(Base):
         self.vars = vars
     def kfc(self, fckey, val, vars=None):
         fc = self.var(fckey, vars)
+        #print(f"[TESTZ] kfc: fckey: {fckey}, val: {val}, fc: {fc}")
         return fc(val)
     def var(self, key, vars=None):
         #print(f"[TESTZ] vars: {vars}")

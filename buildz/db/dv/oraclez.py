@@ -52,29 +52,31 @@ class Db(SimpleDv):
         """
         query_table = ""
         if table is not None:
-            query_table =  f" and t.table_name = '{table}'"
-        return f"select t.table_name as table_name, tc.comments as table_note from all_tables t inner join all_tab_comments tc on t.table_name=tc.table_name where t.owner='{self.user.upper()}' {query_table};"
+            query_table =  f" and t.table_name = '{table.upper()}'"
+        return f"select t.table_name as table_name, tc.comments as table_note from all_tables t inner join all_tab_comments tc on t.table_name=tc.table_name where t.owner='{self.user.upper()}' {query_table}"
     def sql_columns(self, table):
         """
             require:
                 table_name, column_name, column_type, column_default, nullable, column_offset, column_note
         """
-        return f"select c.table_name as table_name, c.column_name as column_name, c.data_type|| '(' ||c.data_length||','||c.data_precision||','||c.data_scale||')' as column_type, c.data_default as column_default, c.nullable as nullable, c.column_id as column_offset, cc.comments as column_note from all_tab_columns c inner join all_col_comments cc on c.column_name=cc.column_name and c.table_name=cc.table_name where c.table_name='{table}' order by c.column_id asc;"
-    def sql_indexes(self, table=None):
+        return f"select c.table_name as table_name, c.column_name as column_name, c.data_type|| '(' ||c.data_length||','||c.data_precision||','||c.data_scale||')' as column_type, c.data_default as column_default, c.nullable as nullable, c.column_id as column_offset, cc.comments as column_note from all_tab_columns c inner join all_col_comments cc on c.column_name=cc.column_name and c.table_name=cc.table_name where c.table_name='{table.upper()}' order by c.column_id asc"
+    def sql_indexes(self, table=None, index=None):
         """
             require:
                 table_name, index_name, is_unique, index_type, index_note
         """
         query_table = ""
         if table is not None:
-            query_table =  f" and table_name = '{table}'"
-        return f"select table_name, index_name,  case uniqueness when 'UNIQUE' then 1 else 0 end as is_unique, index_type, '' as index_note from all_indexes where owner = '{self.user.upper()}'{query_table};"
-    def sql_index_keys(self, index):
+            query_table =  f" and table_name = '{table.upper()}'"
+            if index is not None:
+                query_table+= f" and index_name='{index.upper()}'"
+        return f"select table_name, index_name,  case uniqueness when 'UNIQUE' then 1 else 0 end as is_unique, index_type, '' as index_note from all_indexes where owner = '{self.user.upper()}'{query_table}"
+    def sql_index_keys(self, table, index):
         """
             require:
-                index_name, column_name, index_offset, column_note
+                table_name, index_name, column_name, index_offset, column_note
         """
-        return f"select index_name, column_name, column_position as index_offset, '' as note from all_ind_columns where index_name='{index}' order by column_position asc;"
+        return f"select table_name, index_name, column_name, column_position as index_offset, '' as note from all_ind_columns where index_name='{index.upper()}' and table_name='{table.upper()}' order by column_position asc"
 
 pass
 def build(argv, conf):

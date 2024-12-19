@@ -171,20 +171,23 @@ class TableObject(Base):
         return dv
     def query(self, sql, dv=None, sql2py=True):
         dv=self.rdv(dv)
-        rst = dv.query(sql)
+        rst = dv.query(sql, as_map=1)
         if sql2py:
             rst = [self.sql2py(it) for it in rst]
         return rst
     def queryAll(self, dv=None, sql2py=True):
         sql = f"select * from {self.table};"
         return self.query(sql, dv, sql2py)
-    def save(self, obj, dv=None, py2sql = True, commit=False):
+    def save(self, obj, dv=None, py2sql = True, commit=False, check = True):
         dv = self.rdv(dv)
         if type(obj) not in [list, tuple]:
             obj = [obj]
         if py2sql:
             obj = [self.toSql(k) for k in obj]
-        _ = [dv.insert_or_update(k, self.table, self.query_keys) for k in obj]
+        query_keys = self.query_keys
+        if not check:
+            query_keys = None
+        _ = [dv.insert_or_update(k, self.table, query_keys) for k in obj]
         if commit:
             dv.execute("commit;")
         return _

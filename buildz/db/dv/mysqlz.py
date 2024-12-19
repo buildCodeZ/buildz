@@ -45,7 +45,7 @@ class Db(SimpleDv):
                 table_name, column_name, column_type, column_default, nullable, column_offset, column_note
         """
         return f"select table_name, column_name, column_type, column_default, is_nullable as nullable, ordinal_position as column_offset, column_comment as column_note from information_schema.columns where table_schema='{self.db}' and table_name = '{table}' order by ordinal_position asc;"
-    def sql_indexes(self, table=None):
+    def sql_indexes(self, table=None, index=None):
         """
             require:
                 table_name, index_name, is_unique, index_type, index_note
@@ -53,13 +53,15 @@ class Db(SimpleDv):
         query_table = ""
         if table is not None:
             query_table =  f" and table_name = '{table}'"
+            if index is not None:
+                query_table+= f" and index_name='{index}'"
         return f"select table_name, index_name, 1-any_value(non_unique) as is_unique, any_value(index_type) as index_type, any_value(index_comment) as index_note from information_schema.statistics where table_schema='{self.db}' {query_table} group by index_name;"
-    def sql_index_keys(self, index):
+    def sql_index_keys(self, table, index):
         """
             require:
-                index_name, column_name, index_offset, column_note
+                table_name, index_name, column_name, index_offset, column_note
         """
-        return f"select index_name, column_name, seq_in_index as index_offset, comment as column_note from information_schema.statistics where table_name='flow_review' and table_schema='{self.db}' and index_name = '{index}' order by seq_in_index asc;"
+        return f"select table_name, index_name, column_name, seq_in_index as index_offset, comment as column_note from information_schema.statistics where table_name='{table}' and table_schema='{self.db}' and index_name = '{index}' order by seq_in_index asc;"
 
 pass
 def build(argv, conf):

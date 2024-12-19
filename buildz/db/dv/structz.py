@@ -192,13 +192,11 @@ class CMD:
             try:
                 tab = s.split(" ")[0]
                 if tab in "tables,indexes,columns,index_keys".split(","):
-                    _val = None
                     _arr = s.split(" ")
                     _arr = [_k.strip() for _k in _arr if _k.strip()!=""]
-                    if len(_arr)>1:
-                        _val = _arr[1]
+                    _arr = _arr[1:]
                     _fc = getattr(self.dv, tab)
-                    rst = self.exec(_fc, _val)
+                    rst = self.exec(_fc, *_arr)
                     show_query = True
                 elif self.dv.check_query(s):
                     rst = self.query(s)

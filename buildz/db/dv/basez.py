@@ -32,10 +32,10 @@ class SimpleDv(ItDv):
         """
         raise Exception("unimplement")
         return None
-    def sql_index_keys(self, index):
+    def sql_index_keys(self, table, index):
         """
             require:
-                index_name, column_name, index_offset, column_note
+                table_name, index_name, column_name, index_offset, column_note
         """
         raise Exception("unimplement")
         return None
@@ -51,17 +51,17 @@ class SimpleDv(ItDv):
     def columns(self, table, as_map=None):
         sql = self.sql_columns(table)
         return self.query(sql, as_map=as_map)
-    def indexes(self, table=None, as_map=None):
-        sql = self.sql_indexes(table)
+    def indexes(self, table=None, index=None, as_map=None):
+        sql = self.sql_indexes(table, index)
         return self.query(sql, as_map=as_map)
-    def index_keys(self, index, as_map=None):
-        sql = self.sql_index_keys(table)
+    def index_keys(self, table, index, as_map=None):
+        sql = self.sql_index_keys(table, index)
         return self.query(sql, as_map=as_map)
     # func already impl
     def check_query(self, s):
         arr = s.split(" ")
         k = arr[0].strip().lower()
-        rst = k not in "delete,insert,update,create,drop,commit".split(",")
+        rst = k not in "delete,insert,update,create,drop,commit,alter".split(",")
         return rst
     def out_list(self, query_result, as_map=None):
         if as_map is None:
