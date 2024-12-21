@@ -15,7 +15,7 @@ class XfileDeal(FormatDeal):
             # or fp: item_conf(fp)
         }
     简写:
-        [[id, xfile], fp]
+        [[xfile, id], fp]
         [xfile, fp]
         [xf, fp]
     例:

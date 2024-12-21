@@ -16,8 +16,19 @@
         },
         {
             nullable: 0,
-            key: key
+            out: 1,
+            conf: {
+                //sort: -1,
+                data:[
+                    {key: key, nullable: 0}
+                    {key: force_new, default: false},
+                ]
+            }
         },
+        // {
+        //     nullable: 0,
+        //     key: key
+        // },
         {
             nullable: 1,
             key: info

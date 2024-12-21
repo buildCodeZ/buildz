@@ -54,7 +54,7 @@ class ObjectDeal(FormatDeal):
                 after_remove: item_conf
             }
         简写：
-            [[id, object, single], source, args, maps, sets, calls] 
+            [[object, id, single], source, args, maps, sets, calls] 
                 sets: [[key1, item_conf], ...]
         极简:
             [object, source]
@@ -302,7 +302,7 @@ class IOCObjectMap(IOCObjectSet_):
 
 pass
 class IOCObject(Basez):
-    KEYS = "id,args,maps,call,prev_call,single,remove,sets,after_remove".split(",")
+    KEYS = "id,args,maps,call,prev_call,single,remove,sets,after_remove,template,parent,temp".split(",")
     SET_KEYS = "maps,sets".split(",")
     def init(self, **maps):
         rst = update_set(maps)

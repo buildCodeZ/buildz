@@ -19,8 +19,9 @@ class Decorator(Base):
         return self.namespace
     def regist(self, key, fc):
         self.fcs[key] = fc
-    def get_conf(self, src):
-        ns = self.namespace
+    def get_conf(self, src, ns = None):
+        if ns is None:
+            ns = self.namespace
         if src in self._ns:
             ns = self._ns[src]
         if ns not in self.confs:
@@ -33,8 +34,8 @@ class Decorator(Base):
         if tag not in conf:
             conf[tag]=[]
         return conf[tag][index]
-    def add(self, tag, data, src = None):
-        conf = self.get_conf(src)
+    def add(self, tag, data, src = None, ns = None):
+        conf = self.get_conf(src, ns)
         if tag not in conf:
             conf[tag]=[]
         id = len(conf[tag])
@@ -45,12 +46,12 @@ class Decorator(Base):
         if tag not in conf:
             conf[tag]={}
         conf[tag][key]=val
-    def add_datas(self, item, key):
+    def add_datas(self, item, key=None, ns = None):
         if type(item)==str:
             item = xf.loads(item)
-        return self.add("datas", item, key)
-    def get_datas(self, id):
-        return self.get("datas", id)
+        return self.add("datas", item, key, ns)
+    def get_datas(self, id, key=None):
+        return self.get("datas", id, key)
     def set_datas(self, id, val):
         return self.set("datas", id, val)
     def set_envs(self, key, val):
@@ -91,6 +92,15 @@ class NameSpace(Base):
         obj = Fcs()
         for k,f in fcs.items():
             setattr(obj, k, self.fc(namespace, f))
+        def wfc(rfc, *a, **b):
+            with self.lock:
+                ns = self.decorator.curr_ns()
+                self.decorator.ns(namespace)
+                rst = rfc(*a,**b)
+                self.decorator.fcns(namespace, rst)
+                self.decorator.ns(ns)
+                return rst
+        setattr(obj, "wrap", wfc)
         return obj
 
 pass

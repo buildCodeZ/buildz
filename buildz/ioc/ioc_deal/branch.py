@@ -19,7 +19,7 @@ class BranchDeal(FormatDeal):
                 default(optional): item_conf
             }
         简写：
-            [[id, branch], judge, {vals}, default]
+            [[branch, id], judge, {vals}, default]
             [branch, judge, {vals}, default]
             [branch, judge, {vals}]
         例:

@@ -17,7 +17,7 @@ class ListDeal(FormatDeal):
                 ]
             }
         简写:
-            [[id, list], data]
+            [[list, id], data]
             [list, data]
         例:
             [list, [[ref, obj.test], [env, path]]] // 返回列表,第0个元素是对数据obj.test的索引，第二个是环境变量path的值

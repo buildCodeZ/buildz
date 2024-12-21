@@ -17,7 +17,7 @@ class CallsDeal(FormatDeal):
             ]
         }
     简写:
-        [[id, calls], calls]
+        [[calls, id], calls]
         [calls, calls]
     例:
         //顺序调用buildz.pyz.pyexe()和buildz.pyz.pypkg()

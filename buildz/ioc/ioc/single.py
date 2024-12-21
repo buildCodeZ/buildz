@@ -21,6 +21,8 @@ class Single(Base):
         self.default = default
         self.singles = {}
     def get_ids(self, edata: EncapeData):
+        if edata.force_new:
+            return None
         sid = edata.sid
         data = edata.data
         info = edata.info

@@ -14,9 +14,11 @@ class RefDeal(FormatDeal):
                 ref|key: 引导数据id
                 default: 默认值
                 info: item_conf, 额外的引用信息, 默认null
+                force_new: 无视single配置创建新实例，默认false
             }
         简写:
-            [[id, ref], key, default, info]
+            [[ref, id], [key, force_new], default, info]
+            [[ref, id], key, default, info]
         极简:
             [ref, key]
         例:

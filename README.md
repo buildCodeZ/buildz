@@ -21,6 +21,8 @@
 运行python -m buildz查看帮助
 
 持续更新中。。。
+2024/12/22:
+增加pathz模块，方便处理路径，修改ioc和db
 2024/12/18:
 增加数据映射xz，数据库db增加类似orm功能以及表和索引结构查询功能（目前只写了mysql,oracle,sqlite3的查询），配置文件读写xf的输出增加对ListMap的支持(dumpx, dumpxf)
 2024/11/11:

@@ -19,7 +19,7 @@ class MethodCallDeal(FormatDeal):
             info: item_conf，额外引用信息，默认null
         }
     简写:
-        [[id, mcall], source, method, args, maps, info]
+        [[mcall, id], source, method, args, maps, info]
         [mcall, method]
     
     例:

@@ -6,8 +6,20 @@ from .base import Base
 from .ioc import wrap
 #from .tools import *
 import time, sys
+ns = wrap.ns("buildz.logz")
+@ns.obj(id="baseLog")
+@ns.obj_args("ref, buildz.logz.shows, null", "ref, buildz.logz.tag, null", "ref, buildz.logz.base, null")
 class Log(Base):
+    def call(self, _tag):
+        return self.tag(_tag)
     def tag(self, _tag):
+        if type(_tag) != str:
+            try:
+                if not hasattr(_tag, "__name__"):
+                    _tag = _tag.__class__
+                _tag = _tag.__module__+"."+_tag.__name__
+            except:
+                _tag = str(_tag)
         log = Log(self.shows, _tag, self)
         return log
     def get_tag(self):
@@ -55,6 +67,8 @@ def mstr(s):
     if s is None or len(s)==0:
         return s
     return s[:1].upper()+s[1:].lower()
+@ns.obj(id="formatLog")
+@ns.obj_args("ref, buildz.logz.shows, null", "ref, buildz.logz.tag, null", "ref, buildz.logz.format, null")
 class FormatLog(Log):
     def init(self, shows =None, tag=None, format=None):
         if format is None:
@@ -79,7 +93,7 @@ class FpLog(FormatLog):
         super().init(shows, tag, format)
         self.fp = fp
     def output(self, msg):
-        sys.stdout.write(msg)
+        #sys.stdout.write(msg)
         if self.fp is not None:
             fp = time.strftime(self.fp)
             fz.makefdir(fp)
@@ -91,7 +105,10 @@ class StdLog(FormatLog):
         sys.stdout.write(msg)
 
 pass
-
+#wrap.decorator.add_datas()
+wrap.decorator.add_datas("[logs.list, refs], buildz\.logz\.item,", ns = "buildz.logz")
+@ns.obj(id="logs")
+@ns.obj_args("ref, logs.list, []", "ref, buildz.logz.shows,null", "ref, buildz.logz.tag, null")
 class Logs(Log):
     def init(self, logs, shows = None, tag= None):
         super().init(shows, tag)

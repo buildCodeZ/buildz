@@ -20,7 +20,7 @@ class CallDeal(FormatDeal):
             }
         }
     简写:
-        [[id, call], method, args, maps]
+        [[call, id], method, args, maps]
         [call, method]
     例:
         [call, buildz.ioc.demo.test.test] //调用buildz.ioc.demo.test下的test方法

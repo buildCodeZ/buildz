@@ -16,7 +16,7 @@ class ObjectVarDeal(FormatDeal):
                 info: null
             }
         简写:
-            [[id, ovar], source, key, info]
+            [[ovar, id], source, key, info]
             [ovar, source, key]
         例:
             [ovar, obj.test, id] //返回对象id=obj.test的变量id

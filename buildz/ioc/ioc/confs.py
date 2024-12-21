@@ -405,7 +405,7 @@ class Confs(Base):
         return self.get_obj(*args, **maps)
     def remove(self, *a,**b):
         return self.get_obj(*a, **b, remove=True)
-    def get_obj(self, id, sid = None, src = None, info = None, remove = False):
+    def get_obj(self, id, sid = None, src = None, info = None, remove = False, force_new = False):
         """
             根据data id获取data对象，处理逻辑：根据data id查配置，根据配置的type查deal，返回deal处理过的配置
         """
@@ -429,6 +429,7 @@ class Confs(Base):
             raise IOCError(f"confs: can't find deal of {id}, type = {conf.type}")
             return None
         #print(f"get_obj: {id}({sid}), conf: {conf}, deal: {deal}, type: {conf.type}")
+        conf.force_new = force_new
         if not remove:
             obj = deal(conf)
         else:

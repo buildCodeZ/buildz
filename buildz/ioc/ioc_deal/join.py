@@ -14,7 +14,7 @@ class JoinDeal(FormatDeal):
             data: [...]
         }
     简写:
-        [[id, join], data]
+        [[join, id], data]
         [join, data]
     例:
         [join, [[val, home], [val, buildz]]] //返回字符串 "home/buildz"

@@ -130,26 +130,33 @@ class SimpleDv(ItDv):
             keys = [keys]
         update = False
         conds = ""
-        if len(keys)>0:
-            need_query = True
-            conds = []
-            for k in keys:
-                if k not in maps:
-                    need_query = False
-                    break
-                v = maps[k]
-                if type(v)==str:
-                    v = f"'{v}'"
-                if v is not None:
-                    cond = f"{k} = {v}"
-                else:
-                    cond = f"{k} is null"
-                conds.append(cond)
-            if need_query:
-                conds = " and ".join(conds)
-                sql_search = f"select count(*) from {table} where {conds}"
-                rst = self.query(sql_search, as_map = False)[1][0]
-                update = rst>0
+        # if len(keys)>0:
+        #     need_query = True
+        #     conds = []
+        #     for k in keys:
+        #         if k not in maps:
+        #             need_query = False
+        #             break
+        #         v = maps[k]
+        #         if type(v)==str:
+        #             v = f"'{v}'"
+        #         if v is not None:
+        #             cond = f"{k} = {v}"
+        #         else:
+        #             cond = f"{k} is null"
+        #         conds.append(cond)
+        #     if need_query:
+        #         conds = " and ".join(conds)
+        #         sql_search = f"select count(*) from {table} where {conds}"
+        #         rst = self.query(sql_search, as_map = False)[1][0]
+        #         update = rst>0
+        kvs = [[k,tls.py2sql(v)] for k,v in maps.items()]
+        sets = [f"{k}={v}" for k,v in kvs]
+        sets = ",".join(sets)
+        ks = ",".join([kv[0] for kv in kvs])
+        vs = ",".join([str(kv[1]) for kv in kvs])
+        sql = f"insert into {table}({ks}) values({vs}) on duplicate key update {sets}"
+        return self.execute(sql)
         if update:
             keys = set(keys)
             kvs = [[k,tls.py2sql(v)] for k,v in maps.items() if k not in keys]
@@ -157,10 +164,10 @@ class SimpleDv(ItDv):
             sets = ",".join(sets)
             sql = f"update {table} set {sets} where {conds}"
         else:
-            kvs = [[k, tls.py2sql(v)] for k,v in maps.items()]
+            kvs = [[k,tls.py2sql(v)] for k,v in maps.items()]
             ks = ",".join([kv[0] for kv in kvs])
             vs = ",".join([str(kv[1]) for kv in kvs])
-            sql = f"insert into {table}({ks}) values({vs});"
+            sql = f"insert into {table}({ks}) values({vs})"
         return self.execute(sql)
 
 pass

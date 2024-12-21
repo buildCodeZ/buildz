@@ -15,7 +15,7 @@ class IOCObjectDeal(FormatDeal):
                 key: string = conf, confs, sid 
             }
         简写:
-            [[id, ioc], key]
+            [[ioc, id], key]
             [ioc]
         例:
             [ioc, conf] //返回ioc内部数据的conf字段

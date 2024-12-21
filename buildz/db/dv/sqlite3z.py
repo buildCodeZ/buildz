@@ -4,6 +4,7 @@ import sys,os
 from .basez import SimpleDv, fetch
 from .structz import CMD
 from buildz import xf,fz
+from buildz.db import tls
 class Db(SimpleDv):
     # func to impl:
     def to_list(self, rst):
@@ -89,6 +90,21 @@ class Db(SimpleDv):
             rst = rst[1:]
             rst = [{k:v for k,v in zip(keys, dt)} for dt in rst]
         return rst
+    def insert_or_update(self, maps, table, keys = None):
+        if type(maps)!=dict:
+            maps = maps.__dict__
+        if keys is None:
+            keys = []
+        if type(keys) not in (list, tuple):
+            keys = [keys]
+        kvs = [[k,tls.py2sql(v)] for k,v in maps.items()]
+        sets = [f"{k}={v}" for k,v in kvs]
+        sets = ",".join(sets)
+        ks = ",".join([kv[0] for kv in kvs])
+        vs = ",".join([str(kv[1]) for kv in kvs])
+        sql = f"insert into {table}({ks}) values({vs}) ON CONFLICT DO UPDATE SET {sets}"
+        #print(f"[TESTZ] sql: {sql}")
+        return self.execute(sql)
 
 pass
 def build(argv, conf):

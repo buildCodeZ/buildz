@@ -17,7 +17,7 @@ class MapDeal(FormatDeal):
             }
         }
     简写:
-        [[id, map], data]
+        [[map, id], data]
         [map, data]
     例:
         [map, {obj:[ref, obj.test], path: [env, path]}] // 返回{obj:对对象obj.test的索引, path: 环境变量path的值}

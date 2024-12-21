@@ -20,8 +20,10 @@ def deal_item(item, conf):
 def deal_key(it, conf):
     data_keys = xf.g(conf, data_keys=[])
     tmp = {}
+    #print(f"[TESTZ] conf: {conf}, it: {it}")
     for i in range(min(len(it), len(data_keys))):
         tmp[data_keys[i]] = it[i]
+    #print(f"[TESTZ] tmp: {tmp}")
     sql_key = tmp['sql_key']
     sql_def = tmp['sql_def']
     py_key = xf.g(tmp, py_key=None)
@@ -31,11 +33,12 @@ def deal_key(it, conf):
     xf.g(conf, vars=[]).append(sql_key+" "+sql_def)
 def makes(datas, data_keys = "sql_key,sql_def,py_key".split(",")):
     if type(datas)==dict:
-        rst = [make(v, k) for k,v in datas.items()]
+        rst = [make(v, k, py_name = k) for k,v in datas.items()]
     else:
         rst = [make(it) for it in datas]
     return rst
-def make(data, table=None, data_keys = "sql_key,sql_def,py_key".split(",")):
+def make(data, table=None, data_keys = "sql_key,sql_def,py_key".split(","), py_name=None):
+    #print(f"[TESTZ] MARK: {data}")
     """
         从配置中生成建表语句，删表语句和orm对象
         输入:
@@ -75,13 +78,16 @@ def make(data, table=None, data_keys = "sql_key,sql_def,py_key".split(",")):
     elif type(data) == dict:
         data = dict2list(data)
     conf = {}
-    xf.s(conf, sql_before = [], sql_after = [], sql_delete_before=[], sql_delete_after=[],auto_translate=True,table=table,keys=[],py2sqls={},query_keys=None, data_keys = data_keys, vars=[])
+    xf.s(conf, sql_before = [], sql_after = [], sql_delete_before=[], sql_delete_after=[],auto_translate=True,table=table,keys=[],py2sqls={},query_keys=None, data_keys = data_keys, vars=[], py_name = py_name)
     for it in data:
         if len(it)==1 and type(it[0]) in (list, tuple):
             deal_item(it[0], conf)
         else:
             deal_key(it, conf)
     table = xf.g(conf, table=table)
+    py_name = xf.g(conf, py_name = py_name)
+    if py_name is None:
+        py_name = table
     vars =  xf.g(conf, vars = [])
     vars = ",".join(vars)
     assert table is not None
@@ -93,7 +99,7 @@ def make(data, table=None, data_keys = "sql_key,sql_def,py_key".split(",")):
     sqls_del = sqls[2]+[sql_del]+sqls[3]
     sqls = [sqls_crt, sqls_del]
     sqls = [(";\n".join(k)+";").replace(";;",";") for k in sqls]
-    obj = TableObject(*xf.g(conf, keys=[], table=table, py2sqls = None, query_keys=None,auto_translate=True), sql_create = sqls[0], sql_delete = sqls[1])
+    obj = TableObject(*xf.g(conf, keys=[], table=table, py2sqls = None, query_keys=None,auto_translate=True), sql_create = sqls[0], sql_delete = sqls[1], py_name = py_name)
     return sqls, obj
 
 pass
@@ -108,10 +114,13 @@ class TableObject(Base):
         auto_translate:
             对于没有在py2sqls自定义映射的表字段，是否自动转换(py|autoTran<=>auto_tran|sql)
     """
-    def init(self, keys, table=None, py2sqls=None, query_keys=None, auto_translate=True, dv = None, sql_create=None, sql_delete=None):
+    def init(self, keys, table=None, py2sqls=None, query_keys=None, auto_translate=True, dv = None, sql_create=None, sql_delete=None, py_name = None):
         if table is None:
             table = tls.lower(self.__class__.__name__)
         self.table = table
+        if py_name is None:
+            py_name = table
+        self.py_name = py_name
         if py2sqls is None:
             py2sqls = {}
         if type(py2sqls) in (list, tuple):
@@ -139,6 +148,7 @@ class TableObject(Base):
         self.sql_delete = sql_delete
     def create(self, dv=None):
         assert self.sql_create is not None
+        #print(f"[TESTZ] sql_create: {self.sql_create}")
         dv = self.rdv(dv)
         dv.executes(self.sql_create)
     def delete(self, dv=None):
@@ -153,7 +163,7 @@ class TableObject(Base):
                 if hasattr(obj, k):
                     tmp[k] = getattr(obj, k)
             obj = tmp
-        obj = {self.py2sqls[k]:v for k,v in obj.items()}
+        obj = {self.py2sqls[k]:v for k,v in obj.items() if k in self.py2sqls}
         return obj
     def toPy(self, obj):
         if type(obj)!=dict:
@@ -178,17 +188,35 @@ class TableObject(Base):
     def queryAll(self, dv=None, sql2py=True):
         sql = f"select * from {self.table};"
         return self.query(sql, dv, sql2py)
+    def filterSql(self, obj):
+        if type(obj)!=dict:
+            tmp = {}
+            for k in self.py2sqls:
+                if hasattr(obj, k):
+                    tmp[k] = getattr(obj, k)
+            obj = tmp
+        obj = {k:v for k,v in obj.items() if k in self.keys}
+        return obj
     def save(self, obj, dv=None, py2sql = True, commit=False, check = True):
         dv = self.rdv(dv)
         if type(obj) not in [list, tuple]:
             obj = [obj]
         if py2sql:
             obj = [self.toSql(k) for k in obj]
+        else:
+            obj = [self.filterSql(k) for k in obj]
         query_keys = self.query_keys
         if not check:
             query_keys = None
         _ = [dv.insert_or_update(k, self.table, query_keys) for k in obj]
         if commit:
-            dv.execute("commit;")
+            dv.execute("commit")
         return _
+    def clean(self, dv=None,commit = False):
+        dv = self.rdv(dv)
+        dv.execute(f"delete from {self.table}")
+        if commit:
+            dv.execute("commit")
+        
+
 

@@ -16,7 +16,7 @@ class VarDeal(FormatDeal):
                 var|data: string
             }
         简写:
-            [[id, var], data]
+            [[var, id], data]
             [var, data]
         例:
             [var, buildz.pyz.is_windows] // 返回buildz.pyz下的is_windows

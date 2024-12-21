@@ -58,7 +58,7 @@ class DealDeal(FormatDeal):
                 source: id # 要求source实现了方法__call__(self, edata:EncapeData)
             }
         简写:
-            [[id, deal], target, source]
+            [[deal, id], target, source]
             [deal, target, source]
         例:
             [deal, target, source] //

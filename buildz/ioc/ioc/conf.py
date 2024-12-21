@@ -201,7 +201,7 @@ class Conf(Base):
         return self.confs.has_var(key)
     def pop_var(self, key):
         self.confs.pop_var(key)
-    def get_obj(self, id, src = None, info=None, remove = False):
+    def get_obj(self, id, src = None, info=None, remove = False, force_new = False):
         """
             根据data id获取data对象，处理逻辑：根据data id查配置，根据配置的type查deal，返回deal处理过的配置
         """
@@ -213,9 +213,12 @@ class Conf(Base):
         if conf is None:
             raise IdNotFoundError(f"can't find conf of {id}")
             return None
+        conf.force_new = force_new
         if conf.conf is None:
             if remove:
                 return None
+            # 不太记得了，应该是错误代码
+            print(f"[TESTZ] error code: {conf.conf}")
             return conf.data()
         deal = self.get_deal(conf.type)
         if deal is None:

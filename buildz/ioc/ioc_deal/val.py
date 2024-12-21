@@ -11,7 +11,7 @@ class ValDeal(Base):
                 val|data: 任何数据
             }
         简写:
-            [[id, val], data]
+            [[val, id], data]
         极简:
             [val, data]
 

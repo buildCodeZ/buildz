@@ -18,7 +18,7 @@ class IOCFObjectDeal(FormatDeal):
                 pattern: item_conf
             }
         简写:
-            [[id, ioc], filepath]
+            [[ioc, id], filepath]
         例:
             [iocf, filepath] //
     """

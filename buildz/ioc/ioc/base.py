@@ -33,7 +33,7 @@ class EncapeData(Base):
         包含data id对应的配置，配置文件id，配置文件对象
         [object.test, call, ]
     """
-    def __init__(self, data, conf=None, local = False, type = None, src = None, info = None, confs = None):
+    def __init__(self, data, conf=None, local = False, type = None, src = None, info = None, confs = None, force_new = False):
         """
             data: 配置数据
             conf: 配置数据对应的配置文件的管理器
@@ -42,6 +42,7 @@ class EncapeData(Base):
             src: 源对象，配置数据生成的对象调用conf获取对象，会有这个字段，目前只有object会放这个字段，其他要么透传要么不传
             info: 额外的调用信息，目前只有object会用到里面的id字段，作为单例额外输入
         """
+        self.force_new = force_new
         if typez(data)==dict:
             pid = xf.g1(data, parent=None, template=None, temp=None)
             if pid is not None:
@@ -77,8 +78,8 @@ class EncapeData(Base):
         self.info = info
     def deal(self, remove = False):
         if self.conf is None:
-            return self.confs.get(self, src = self.src, info=self.info, remove = remove)
-        return self.conf.get(self, src = self.src, info=self.info, remove = remove)
+            return self.confs.get(self, src = self.src, info=self.info, remove = remove, force_new = self.force_new)
+        return self.conf.get(self, src = self.src, info=self.info, remove = remove, force_new = self.force_new)
 
 
 pass

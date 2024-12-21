@@ -16,11 +16,12 @@ class RefsDeal(FormatDeal):
                 info: item_conf, 额外的引用信息, 默认null
             }
         简写:
-            [[id, refs], key, info]
+            [[refs, id], [key, force_new], info]
+            [[refs, id], key, info]
         极简:
             [refs, key]
         例:
-            [refs, obj.test] // 数据项"obj.test"的引用
+            [refs, r".*obj\.test.*"] // 数据项"obj.test"的引用
     """
     def init(self, fp_lists=None, fp_defaults=None):
         super().init("RefsDeal", fp_lists, fp_defaults, join(dp, "conf", "refs_lists.js"), None)
