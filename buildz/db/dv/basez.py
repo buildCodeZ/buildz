@@ -117,19 +117,25 @@ class SimpleDv(ItDv):
         if commit:
             self.execute("commit;")
     def execute(self, sql, vals=(), commit=False):
+        #print(f"[TESTZ] sql: {sql}")
         tmp = self.cursor.execute(sql, vals)
         if commit:
             self.cursor.execute("commit;")
         return tmp
-    def insert_or_update(self, maps, table, keys = None):
+    def iou_sql(self, table, ks, vs, sets):
+        sql = f"insert into {table}({ks}) values({vs}) on duplicate key update {sets}"
+        return sql
+    def insert_or_update(self, maps, table, keys = None, update_keys = None):
+        if type(update_keys)==str:
+            update_keys = [update_keys]
         if type(maps)!=dict:
             maps = maps.__dict__
         if keys is None:
             keys = []
         if type(keys) not in (list, tuple):
             keys = [keys]
-        update = False
-        conds = ""
+        # update = False
+        # conds = ""
         # if len(keys)>0:
         #     need_query = True
         #     conds = []
@@ -151,11 +157,13 @@ class SimpleDv(ItDv):
         #         rst = self.query(sql_search, as_map = False)[1][0]
         #         update = rst>0
         kvs = [[k,tls.py2sql(v)] for k,v in maps.items()]
-        sets = [f"{k}={v}" for k,v in kvs]
+        #print(f"[TESTZ] save kvs: {kvs}, update_keys: {update_keys}")
+        sets = [f"{k}={v}" for k,v in kvs if update_keys is None or k in update_keys]
         sets = ",".join(sets)
         ks = ",".join([kv[0] for kv in kvs])
         vs = ",".join([str(kv[1]) for kv in kvs])
-        sql = f"insert into {table}({ks}) values({vs}) on duplicate key update {sets}"
+        sql = self.iou_sql(table, ks, vs, sets)
+        #sql = f"insert into {table}({ks}) values({vs}) on duplicate key update {sets}"
         return self.execute(sql)
         if update:
             keys = set(keys)

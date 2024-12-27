@@ -228,6 +228,10 @@ class IOCConf(Basez):
         if hasattr(cls, self.key):
             return getattr(cls, self.key)
         return default
+    def unset(self, cls):
+        if hasattr(cls, self.ckey):
+            delattr(cls, self.ckey)
+            delattr(cls, self.key)
     def set(self, cls, dt):
         setattr(cls, self.key, dt)
         setattr(cls, self.ckey, cls)
@@ -341,7 +345,7 @@ class IOCObject(Basez):
         if 'mcalls' in conf and 'call' not in conf:
             conf['call'] = {'type': "calls", 'calls': conf['mcalls']}
         conf[g_obj_cid] = decorator.add_datas(conf, self)
-        g_ioc_conf.set(cls, conf)
+        g_ioc_conf.unset(cls)
         return cls
 
 pass

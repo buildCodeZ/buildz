@@ -281,6 +281,14 @@ class Confs(Base):
     def pop_vars(self, vars):
         if vars is not None:
             [self.pop_var(key) for key in vars]
+    def set_var(self, key, val):
+        """
+            will remove push datas
+        """
+        self.vars[key] = [val]
+    def unset_var(self, key):
+        if key in self.vars:
+            del self.vars[key]
     def push_var(self, key, val):
         if key not in self.vars:
             self.vars[key] =  []

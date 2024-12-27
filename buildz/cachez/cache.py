@@ -52,8 +52,10 @@ class CacheKey(Base):
         else:
             assert 0
 @ns.obj(id="cache.file")
-@ns.obj_args("ref, fps, cache.js","ref, log, null", "ref, rfp.current.first, false", "ref, split, .", "ref, key.currents, buildz.cache.path.currents", "ref, key.basedir, buildz.cache.path.basedir", "ref, save.index, 0", "ref, save.auto, false")
+@ns.obj_args("ref, fps, cache.js","ref, log, null", "ref, rfp.current.first, false", "ref, split, .", "ref, key.currents, buildz.cache.path.currents", "ref, key.basedir, buildz.cache.path.basedir", "ref, save.index, -1", "ref, save.auto, false")
 class Cache(Base):
+    def clean(self):
+        self.data = {}
     def bind(self, key):
         return CacheKey(self, key)
     def has(self, key):
@@ -68,7 +70,7 @@ class Cache(Base):
             self.save()
     def remove(self, key):
         xf.removes(self.data, key.split(self.spt))
-    def init(self, fps="cache.js", log=None, current_first=False, spt = ".", key_currents = "buildz.cache.path.currents", key_basedir = "buildz.cache.path.basedir", save_index = 0, auto_save = False):
+    def init(self, fps="cache.js", log=None, current_first=False, spt = ".", key_currents = "buildz.cache.path.currents", key_basedir = "buildz.cache.path.basedir", save_index = -1, auto_save = False):
         if type(fps) not in (tuple, list):
             fps = [fps]
         self.fps = fps

@@ -105,6 +105,11 @@ def make(data, table=None, data_keys = "sql_key,sql_def,py_key".split(","), py_n
 pass
 
 class TableObject(Base):
+    def clone(self, table_name, py_name = None):
+        sql_create = self.sql_create.replace("<table>", table_name)
+        sql_delete = self.sql_delete.replace("<table>", table_name)
+        obj = TableObject(self.keys, table_name, self.src_py2sqls, self.query_keys, self.auto_translate, self.dv, sql_create, sql_delete, py_name)
+        return obj
     """
         字段映射
         keys: 表字段
@@ -115,6 +120,7 @@ class TableObject(Base):
             对于没有在py2sqls自定义映射的表字段，是否自动转换(py|autoTran<=>auto_tran|sql)
     """
     def init(self, keys, table=None, py2sqls=None, query_keys=None, auto_translate=True, dv = None, sql_create=None, sql_delete=None, py_name = None):
+        self.src_py2sqls = py2sqls
         if table is None:
             table = tls.lower(self.__class__.__name__)
         self.table = table
@@ -148,11 +154,17 @@ class TableObject(Base):
         self.sql_delete = sql_delete
     def create(self, dv=None):
         assert self.sql_create is not None
+        if self.sql_create.find("<table>")>=0:
+            print(f"[WARN] not create template table by {self.sql_create}")
+            return
         #print(f"[TESTZ] sql_create: {self.sql_create}")
         dv = self.rdv(dv)
         dv.executes(self.sql_create)
     def delete(self, dv=None):
         assert self.sql_delete is not None
+        if self.sql_delete.find("<table>")>=0:
+            print(f"[WARN] not delete template table by {self.sql_delete}")
+            return
         self.rdv(dv).execute(self.sql_delete)
     def bind(self, dv):
         self.dv = dv
@@ -164,6 +176,9 @@ class TableObject(Base):
                     tmp[k] = getattr(obj, k)
             obj = tmp
         obj = {self.py2sqls[k]:v for k,v in obj.items() if k in self.py2sqls}
+        return obj
+    def toSqlKeys(self, keys):
+        obj = [k for k in keys if k in self.py2sqls]
         return obj
     def toPy(self, obj):
         if type(obj)!=dict:
@@ -191,24 +206,28 @@ class TableObject(Base):
     def filterSql(self, obj):
         if type(obj)!=dict:
             tmp = {}
-            for k in self.py2sqls:
+            for k in self.sql2py:
                 if hasattr(obj, k):
                     tmp[k] = getattr(obj, k)
             obj = tmp
         obj = {k:v for k,v in obj.items() if k in self.keys}
         return obj
-    def save(self, obj, dv=None, py2sql = True, commit=False, check = True):
+    def save(self, obj, dv=None, py2sql = True, commit=False, check = True, update_keys = None):
         dv = self.rdv(dv)
+        if type(update_keys)==str:
+            update_keys = [update_keys]
         if type(obj) not in [list, tuple]:
             obj = [obj]
         if py2sql:
             obj = [self.toSql(k) for k in obj]
+            if update_keys is not None:
+                update_keys = self.toSqlKeys(update_keys)#[self.toSqlKeys(k) for k in update_keys]
         else:
             obj = [self.filterSql(k) for k in obj]
         query_keys = self.query_keys
         if not check:
             query_keys = None
-        _ = [dv.insert_or_update(k, self.table, query_keys) for k in obj]
+        _ = [dv.insert_or_update(k, self.table, query_keys, update_keys) for k in obj]
         if commit:
             dv.execute("commit")
         return _

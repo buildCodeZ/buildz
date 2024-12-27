@@ -34,6 +34,8 @@ class MapDeal(lr.LRDeal):
             opt = arr[i+1]
             if opt.type != "kv":
                 raise Exception(f"u f opt in map: {opt}")
+            if type(k.val)==list:
+                k.val = tuple(k.val)
             rst[k.val] = v.val
         return item.Item(rst, type='map', is_val = 1)
 

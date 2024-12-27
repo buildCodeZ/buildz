@@ -193,6 +193,10 @@ class Conf(Base):
         return self._default_type
     def get_var(self, key, i = -1):
         return self.confs.get_var(key, i)
+    def set_var(self, key, val):
+        return self.confs.set_var(key, val)
+    def unset_var(self, key):
+        return self.confs.unset_var(key)
     def var_keys(self):
         return self.confs.var_keys()
     def push_var(self, key, val):

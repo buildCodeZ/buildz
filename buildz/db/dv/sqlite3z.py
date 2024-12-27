@@ -90,7 +90,10 @@ class Db(SimpleDv):
             rst = rst[1:]
             rst = [{k:v for k,v in zip(keys, dt)} for dt in rst]
         return rst
-    def insert_or_update(self, maps, table, keys = None):
+    def iou_sql(self, table, ks, vs, sets):
+        sql = f"insert into {table}({ks}) values({vs}) ON CONFLICT DO UPDATE SET {sets}"
+        return sql
+    def insert_or_updatexxx(self, maps, table, keys = None, update_keys = None):
         if type(maps)!=dict:
             maps = maps.__dict__
         if keys is None:
@@ -98,7 +101,7 @@ class Db(SimpleDv):
         if type(keys) not in (list, tuple):
             keys = [keys]
         kvs = [[k,tls.py2sql(v)] for k,v in maps.items()]
-        sets = [f"{k}={v}" for k,v in kvs]
+        sets = [f"{k}={v}" for k,v in kvs if update_keys is None or k in update_keys]
         sets = ",".join(sets)
         ks = ",".join([kv[0] for kv in kvs])
         vs = ",".join([str(kv[1]) for kv in kvs])
