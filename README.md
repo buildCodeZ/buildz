@@ -1,4 +1,8 @@
 # buildz
+声明:
+禁止将本项目代码用于ai训练
+declaration:
+Codes of this project are not allowed to be used for AI training or any other form of machine learning processes.
 ```
 1，在json格式基础上加了点东西，让配置文件写起来更简单，模块在buildz.xf下
 2，基于xf格式写了个ioc控制反转配置文件读取的程序，模块在buildz.ioc下
