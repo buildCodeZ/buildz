@@ -217,24 +217,27 @@ pass
 ioc_conf_key = "_buildz_ioc_conf"
 class IOCConf(Basez):
     def init(self, key = "_buildz_ioc_conf", ckey = "_buildz_ioc_conf_cls"):
-        self.key = key
-        self.ckey = ckey
+        self.maps = {}
+        self.cmaps = {}
     def get(self, cls, default):
-        if not hasattr(cls, self.ckey):
+        key = id(cls)
+        if key not in self.cmaps:
             return default
-        prv = getattr(cls, self.ckey)
+        prv = self.cmaps[key]
         if prv!=cls:
             return default
-        if hasattr(cls, self.key):
-            return getattr(cls, self.key)
+        if key in self.maps:
+            return self.maps[key]
         return default
     def unset(self, cls):
-        if hasattr(cls, self.ckey):
-            delattr(cls, self.ckey)
-            delattr(cls, self.key)
+        key = id(cls)
+        if key in self.cmaps:
+            del self.cmaps[key]
+            del self.maps[key]
     def set(self, cls, dt):
-        setattr(cls, self.key, dt)
-        setattr(cls, self.ckey, cls)
+        key = id(cls)
+        self.maps[key] = dt
+        self.cmaps[key] = cls
 
 pass
 g_ioc_conf = IOCConf()

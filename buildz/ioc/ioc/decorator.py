@@ -4,13 +4,20 @@ from buildz import xf
 from threading import Lock
 class Decorator(Base):
     def init(self):
-        self.conf = {}
+        #self.conf = {}
         self.confs = {}
-        self.confs[None] = self.conf
+        self.confs[None] = {}
+        self.objs = {}
+        self.ids = {}
         self.namespace = None
         self.fcs = {}
         self._ns = {}
         self.regist("add_datas", self.add_datas)
+    def get_conf_obj(self, ns):
+        return self.objs[ns]
+    @property
+    def conf(self):
+        return self.get_conf_obj(self.namespace)
     def fcns(self, namespace, fc):
         self._ns[fc] = namespace
     def ns(self, namespace):
@@ -60,20 +67,32 @@ class Decorator(Base):
         return self.add("inits", val)
     def add_locals(self, item):
         return self.add("locals", item)
+    def bind_confs(self, confs):
+        for ns, val in self.confs.items():
+            id = confs.add(val)
+            obj = confs.get_conf(id)
+            self.ids[ns] = id
+            self.objs[ns] = obj
     def all(self):
         arr = [val for k,val in self.confs.items()]
         return arr
-    def call(self):
-        return self.conf
+    # def call(self):
+    #     return self.conf
 
 pass
 
 decorator = Decorator()
 class Fcs:
-    pass
+    def __init__(self, k, ns):
+        self._ioc_ns = [k, ns]
+    @property
+    def conf(self):
+        return self._ioc_ns[1].get_conf(self._ioc_ns[0])
 
 pass
 class NameSpace(Base):
+    def get_conf(self, ns):
+        return self.decorator.get_conf_obj(ns)
     def init(self, decorator):
         self.decorator = decorator
         self.lock = Lock()
@@ -89,7 +108,7 @@ class NameSpace(Base):
         return wfc
     def call(self, namespace):
         fcs = self.decorator.fcs
-        obj = Fcs()
+        obj = Fcs(namespace, self)
         for k,f in fcs.items():
             setattr(obj, k, self.fc(namespace, f))
         def wfc(rfc, *a, **b):

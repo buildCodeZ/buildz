@@ -5,7 +5,7 @@ from . import xf, ioc, fz
 from .base import Base
 from .ioc import wrap
 #from .tools import *
-import time, sys
+import time, sys, threading
 ns = wrap.ns("buildz.logz")
 @ns.obj(id="baseLog")
 @ns.obj_args("ref, buildz.logz.shows, null", "ref, buildz.logz.tag, null", "ref, buildz.logz.base, null")
@@ -24,17 +24,26 @@ class Log(Base):
         return log
     def get_tag(self):
         return self._tag
-    def init(self, shows = None, tag= None, base = None):
+    def init(self, shows = None, tag= None, base = None, lock = False):
         if shows is None:
             shows = ["info", "debug", "warn", "error"]
         self.shows=shows
         self._tag = tag
         self.base = base
+        if lock:
+            self.lock = threading.Lock()
+        else:
+            self.lock = None
+    def log(self, level, tag, *args):
+        if self.lock is not None:
+            with self.lock:
+                return self.do_log(level, tag, *args)
+        return self.do_log(level, tag, *args)
     def xlog(self, level, *args):
         if level not in self.shows:
             return
         self.log(level, self.tag, *args)
-    def log(self, level, tag, *args):
+    def do_log(self, level, tag, *args):
         if self.base is not None:
             return self.base.log(level, tag, *args)
         raise Exception("unimpl")
@@ -70,14 +79,14 @@ def mstr(s):
 @ns.obj(id="formatLog")
 @ns.obj_args("ref, buildz.logz.shows, null", "ref, buildz.logz.tag, null", "ref, buildz.logz.format, null")
 class FormatLog(Log):
-    def init(self, shows =None, tag=None, format=None):
+    def init(self, shows =None, tag=None, format=None, lock = False):
         if format is None:
             format = "[{LEVEL}] %Y-%m-%d %H:%M:%S {tag} {msg}\n"
         self.format=format
-        super().init(shows, tag)
+        super().init(shows, tag, lock)
     def output(self, msg):
         raise Exception("impl")
-    def log(self, level, tag, *args):
+    def do_log(self, level, tag, *args):
         m_level = level.lower()
         u_level = level.upper()
         x_level = mstr(level)
@@ -89,8 +98,8 @@ class FormatLog(Log):
         msg = replaces(rst, "{Level}", x_level, "{level}", m_level, "{LEVEL}", u_level, "{tag}", tag, "{msg}", msg)
         self.output(msg)
 class FpLog(FormatLog):
-    def init(self, fp = None,shows =None, tag=None, format=None):
-        super().init(shows, tag, format)
+    def init(self, fp = None,shows =None, tag=None, format=None, lock = False):
+        super().init(shows, tag, format, lock)
         self.fp = fp
     def output(self, msg):
         #sys.stdout.write(msg)
@@ -110,10 +119,10 @@ wrap.decorator.add_datas("[logs.list, refs], buildz\.logz\.item,", ns = "buildz.
 @ns.obj(id="logs")
 @ns.obj_args("ref, logs.list, []", "ref, buildz.logz.shows,null", "ref, buildz.logz.tag, null")
 class Logs(Log):
-    def init(self, logs, shows = None, tag= None):
-        super().init(shows, tag)
+    def init(self, logs, shows = None, tag= None, lock = False):
+        super().init(shows, tag, lock=lock)
         self.logs = logs
-    def log(self, level, tag, *args):
+    def do_log(self, level, tag, *args):
         for _log in self.logs:
             _log.log(level, tag, *args)
 

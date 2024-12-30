@@ -274,6 +274,10 @@ class Confs(Base):
         if not self.has_var(key):
             return None, False
         return self.vars[key][i], True
+    def set_vars(self, vars):
+        [self.set_var(key,val) for key,val in vars.items()]
+    def unset_vars(self, vars):
+        [self.unset_var(key) for key in vars]
     def push_vars(self, vars):
         if vars is not None:
             [self.push_var(key,val) for key,val in vars.items()]
@@ -370,16 +374,20 @@ class Confs(Base):
             raise
         #return self.add(conf)
     def add_decorator(self):
+        decorator.bind_confs(self)
+        return
         confs = decorator.all()
         return self.adds(confs)
-        conf = decorator()
-        #print(f"[TESTZ] CONFS add decorator(): {conf}")
-        return self.add(conf)
+        # conf = decorator()
+        # #print(f"[TESTZ] CONFS add decorator(): {conf}")
+        # return self.add(conf)
     def add_wrap(self):
         return self.add_decorator()
     def adds(self, confs):
         for conf in confs:
             self.add(conf)
+    def get_conf(self, id):
+        return self.confs[id]
     def add(self, conf):
         """
             {
