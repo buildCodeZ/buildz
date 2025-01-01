@@ -24,6 +24,8 @@ class Path(Base):
             if os.path.exists(_fp):
                 return _fp
         return Path.rjoin(paths[last], *a)
+    def add(self, name, path, index=0):
+        self.paths[name].insert(index, path)
     def set(self, name, paths, last = -1, curr = None):
         if type(paths) not in (list, tuple):
             paths = [paths]

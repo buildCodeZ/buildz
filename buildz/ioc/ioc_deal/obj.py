@@ -1,12 +1,12 @@
 #
 from ..ioc.base import Base, EncapeData,IOCError
 from ..ioc.single import Single
-from ..ioc.decorator import decorator
+from ..ioc.decorator import decorator, IOCDObj
 from .base import FormatData,FormatDeal
 from buildz import xf, pyz
 from buildz import Base as Basez
 import os
-g_obj_cid = '_buildz_ioc_conf_index'
+#g_obj_cid = '_buildz_ioc_conf_index'
 dp = os.path.dirname(__file__)
 join = os.path.join
 class ObjectDeal(FormatDeal):
@@ -241,7 +241,7 @@ class IOCConf(Basez):
 
 pass
 g_ioc_conf = IOCConf()
-class IOCObjectAdd_(Basez):
+class IOCObjectAdd_(IOCDObj):
     def init(self, key, *arr):
         _arr = update_list(arr)
         self.key = key
@@ -286,7 +286,7 @@ class IOCObjectMCall(IOCObjectAdd_):
         super().init("mcalls", *_arr)
 
 pass
-class IOCObjectSet_(Basez):
+class IOCObjectSet_(IOCDObj):
     def init(self, key, **maps):
         _maps = update_set(maps)
         self._maps = {key:_maps}
@@ -308,10 +308,11 @@ class IOCObjectMap(IOCObjectSet_):
         super().init("maps", **maps)
 
 pass
-class IOCObject(Basez):
+class IOCObject(IOCDObj):
     KEYS = "id,args,maps,call,prev_call,single,remove,sets,after_remove,template,parent,temp".split(",")
     SET_KEYS = "maps,sets".split(",")
     def init(self, **maps):
+        super().init()
         rst = update_set(maps)
         for key in self.SET_KEYS:
             if key not in maps:
@@ -347,7 +348,8 @@ class IOCObject(Basez):
         conf['type'] = 'object'
         if 'mcalls' in conf and 'call' not in conf:
             conf['call'] = {'type': "calls", 'calls': conf['mcalls']}
-        conf[g_obj_cid] = decorator.add_datas(conf, self)
+        self.decorator.add_datas(conf)
+        #conf[g_obj_cid] = self.decorator.add_datas(conf, self)
         g_ioc_conf.unset(cls)
         return cls
 

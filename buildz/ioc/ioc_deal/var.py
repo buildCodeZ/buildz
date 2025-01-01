@@ -1,7 +1,7 @@
 #
 from ..ioc.base import Base, EncapeData
 from .base import FormatData,FormatDeal
-from ..ioc.decorator import decorator
+from ..ioc.decorator import decorator,IOCDObj
 from buildz import xf, pyz
 from buildz import Base as Basez
 import os
@@ -38,8 +38,9 @@ class VarDeal(FormatDeal):
 
 pass
 
-class IOCVar(Basez):
+class IOCVar(IOCDObj):
     def init(self, id):
+        super().init()
         self.id = id
     def call(self, cls):
         src = cls.__module__+"."+cls.__name__

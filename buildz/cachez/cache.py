@@ -157,13 +157,13 @@ class Mem(Cache):
 
 pass
 @ns.obj(id="cache")
-@ns.obj_args("ref, cache.file", "ref, cache.mem")
+@ns.obj_args("ref, cache.mem", "ref, cache.file")
 class Caches(Base):
-    def init(self, cache, mem):
+    def init(self, mem, cache):
         self.cache = cache
         self.mem = mem
-        self.caches = [cache, mem]
-        self.set = cache.set
+        self.caches = [mem, cache]
+        self.set = mem.set
         self.remove = cache.remove
         self.call=cache.call
         self.rfp = cache.rfp
@@ -188,9 +188,8 @@ class Caches(Base):
         self.mem.remove(key)
     def get(self, key):
         for cache in self.caches:
-            v = cache.get(key)
-            if v is not None:
-                return v
+            if cache.has(key):
+                return cache.get(key)
         return None
     def has(self, key):
         for cache in self.caches:

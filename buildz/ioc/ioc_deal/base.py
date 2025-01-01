@@ -2,7 +2,7 @@
 
 from ..ioc.base import Base, EncapeData, IdNotFoundError
 from buildz import xf
-from ..ioc.decorator import decorator
+from ..ioc.decorator import decorator, IOCDObj
 import os
 dp = os.path.dirname(__file__)
 join = os.path.join
@@ -215,7 +215,10 @@ class FormatDeal(BaseDeal):
 
 pass
 
-class Order(Base):
+class Order(IOCDObj):
+    """
+        应该是什么没写完全的功能，已经忘记是做啥用的了
+    """
     def init(self, *fcs, reverse=False):
         self.fcs = fcs
         if reverse:

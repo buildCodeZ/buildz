@@ -115,7 +115,7 @@ class StdLog(FormatLog):
 
 pass
 #wrap.decorator.add_datas()
-wrap.decorator.add_datas("[logs.list, refs], buildz\.logz\.item,", ns = "buildz.logz")
+wrap.ns.add_datas("[logs.list, refs], buildz\.logz\.item,", ns = "buildz.logz")
 @ns.obj(id="logs")
 @ns.obj_args("ref, logs.list, []", "ref, buildz.logz.shows,null", "ref, buildz.logz.tag, null")
 class Logs(Log):

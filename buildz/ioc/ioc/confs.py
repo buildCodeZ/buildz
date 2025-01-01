@@ -1,6 +1,6 @@
 #coding=utf-8
 from buildz import xf, pyz
-from .decorator import decorator
+from .decorator import decorators,IOCDObj,decorator
 from buildz.xf import g as xg
 from buildz import argx
 import json
@@ -374,10 +374,11 @@ class Confs(Base):
             raise
         #return self.add(conf)
     def add_decorator(self):
-        decorator.bind_confs(self)
+        decorators.bind(self)
+        #decorator.bind_confs(self)
         return
-        confs = decorator.all()
-        return self.adds(confs)
+        # confs = decorator.all()
+        # return self.adds(confs)
         # conf = decorator()
         # #print(f"[TESTZ] CONFS add decorator(): {conf}")
         # return self.add(conf)
@@ -525,4 +526,37 @@ class ConfsList(Base):
 
 pass
 
+class PushVar(IOCDObj):
+    def init(self, key, val):
+        super().init()
+        self.key = key
+        self.val = val
+    def bind(self, wrap):
+        super().bind(wrap)
+        self.decorator.add_bind(self)
+    def call(self):
+        conf = self.decorator.obj
+        confs = conf.confs
+        id = confs.gid(self.decorator.namespace, self.key)
+        confs.push_var(id, val)
+
+pass
+# class PushVar(IOCDObj):
+#     def init(self, id):
+#         super().init()
+#         self.id = id
+#     def call(self, val):
+#         def bind_fc():
+#             conf = self.decorator.obj
+#             confs = conf.confs
+#             id = confs.gid(self.decorator.namespace, self.id)
+#             confs.push_var(id, val)
+#         self.decorator.add_bind(bind_fc)
+#         return val
+
+# pass
+
+
+decorator.regist("push_var", PushVar)
+#ns.push_var("path")(pathz)
 
