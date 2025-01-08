@@ -48,7 +48,7 @@ class IOCVar(IOCDObj):
         conf['id'] = self.id
         conf['type'] = 'var'
         conf['var'] = src
-        decorator.add_datas(conf)
+        self.decorator.add_datas(conf)
         return cls
 
 pass

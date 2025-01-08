@@ -191,8 +191,12 @@ class Conf(Base):
         if self._default_type is None:
             return self.confs.default_type
         return self._default_type
-    def get_var(self, key, i = -1):
-        return self.confs.get_var(key, i)
+    def get_var(self, key, i = -1, search_confs = True):
+        var, exist = self.confs.get_var(key, i)
+        if not exist and search_confs:
+            gid = self.confs.gid(self.namespace, key)
+            var, exist = self.confs.get_var(gid, i)
+        return var, exist
     def set_var(self, key, val):
         return self.confs.set_var(key, val)
     def unset_var(self, key):

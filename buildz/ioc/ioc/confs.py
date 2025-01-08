@@ -541,6 +541,21 @@ class PushVar(IOCDObj):
         confs.push_var(id, val)
 
 pass
+class PushVars(IOCDObj):
+    def init(self, maps):
+        super().init()
+        self.maps
+    def bind(self, wrap):
+        super().bind(wrap)
+        self.decorator.add_bind(self)
+    def call(self):
+        conf = self.decorator.obj
+        confs = conf.confs
+        for key, val in self.maps.items():
+            id = confs.gid(self.decorator.namespace, key)
+            confs.push_var(id, val)
+
+pass
 # class PushVar(IOCDObj):
 #     def init(self, id):
 #         super().init()

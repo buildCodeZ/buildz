@@ -17,7 +17,7 @@ def pkg(fp):
     __import__(fp)
 
 pass
-def imports(dp, pts=".*\.py$", pfx=""):
+def imports(dp=".", pts=".*\.py$", pfx=""):
     """
     find filepath by dirpath(dp) and pattern(pts), 
     import:
