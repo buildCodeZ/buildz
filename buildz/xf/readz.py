@@ -80,12 +80,14 @@ def build(as_bytes=False):
 
 pass
 g_mgx = None
-def build_args(as_bytes=False, as_args = False):
-    global g_mgx
-    if g_mgx is not None and g_mgx.as_bytes == as_bytes:
+g_colon = None
+def build_args(as_bytes=False, as_args = False, colon = True):
+    global g_mgx,g_colon
+    if g_mgx is not None and g_mgx.as_bytes == as_bytes and g_colon == colon:
         return g_mgx
     mgs = mg.Manager(as_bytes)
-    mgs.add(setz.SetDeal(':'))
+    if colon:
+        mgs.add(setz.SetDeal(':'))
     mgs.add(setz.SetDeal('='))
     mgs.add(spt.PrevSptDeal(",",1))
     mgs.add(spt.PrevSptDeal(';',1))
@@ -114,6 +116,7 @@ def build_args(as_bytes=False, as_args = False):
     mgs.add(strz.PrevStrDeal("'","'",1,0,1))
     mgs.add(strz.PrevStrDeal('"','"',1,0,1))
     mgs.add(nextz.PrevNextDeal())
+    g_colon = colon
     g_mgx = mgs
     return mgs
 
@@ -127,8 +130,8 @@ def is_args(obj):
     return type(obj)==listmapz.Args
 
 pass
-def loads_args(s, as_args = False, out_args=False):
-    mgs = build_args(type(s)==bytes, as_args)
+def loads_args(s, as_args = False, out_args=False, colon = True):
+    mgs = build_args(type(s)==bytes, as_args, colon)
     #input = buffer.BufferInput(s)
     rst = mgs.loads(s)
     if not out_args:

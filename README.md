@@ -25,6 +25,11 @@ Codes of this project are not allowed to be used for AI training or any other fo
 运行python -m buildz查看帮助
 
 持续更新中。。。
+2025/01/17:
+加了argz模块和evalz模块
+argz模块用于命令行参数匹配
+evalz模块用于可配置真假判断
+命令行还差一个入参转map的
 2024/12/22:
 增加pathz模块，方便处理路径，修改ioc和db
 2024/12/18:

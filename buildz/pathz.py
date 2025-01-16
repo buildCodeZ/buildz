@@ -8,6 +8,9 @@ class Path(Base):
         for k, v in maps.items():
             self.set(k, v)
     @staticmethod
+    def dir(fp):
+        return os.path.dirname(fp)
+    @staticmethod
     def join(*a):
         return os.path.join(*a)
     @staticmethod
@@ -45,7 +48,7 @@ class Path(Base):
         return self.fcs[name]
     def call(self, *obj):
         it = obj[0]
-        fc = self.join
+        fc = Path.join
         if type(it) in (list, tuple):
             assert len(it)==2
             k, fp = it
@@ -55,6 +58,8 @@ class Path(Base):
             if type(it) in (list, tuple):
                 assert len(it)==2
                 rst.append(it[1])
+            else:
+                rst.append(it)
         return fc(*rst)
 
 pass

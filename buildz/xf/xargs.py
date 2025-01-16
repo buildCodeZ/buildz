@@ -2,13 +2,13 @@
 #from .read import loads
 from .readz import loads, loadx
 import sys
-def fetch(argv = None):
+def fetch(argv = None,base=1):
     if argv is None:
-        argv = sys.argv[1:]
+        argv = sys.argv[base:]
     argv = [str(k) for k in argv]
     s = " ".join(argv)
     s = s.strip()
-    return loadx(s, out_args=True)
+    return loadx(s, out_args=True, colon = False)
     lrs = [["",""]]
     if len(s)==0:
         return None

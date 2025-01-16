@@ -10,6 +10,9 @@ from .basez import SimpleDv, fetch
 from .structz import CMD
 class Db(SimpleDv):
     # func to impl:
+    def query(self, sql, vals={}, as_map = None):
+        assert len(vals)==0
+        return super().query(sql, {}, as_map)
     def to_list(self, rst):
         rows = self.cursor.description
         keys = [k[0].lower() for k in rows]
