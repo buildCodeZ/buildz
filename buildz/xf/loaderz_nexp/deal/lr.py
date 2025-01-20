@@ -2,6 +2,13 @@ from .. import base
 from .. import item
 from .. import exp
 class LRDeal(base.BaseDeal):
+    def check_right(self, obj):
+        if obj.type!='str':
+            return False
+        val = obj.val
+        if val.find(self.right)>=0:
+            raise Exception(f"unexcept right symbol {self.right}")
+        return True
     def labels(self):
         return [self.left]
     def types(self):
@@ -12,31 +19,32 @@ class LRDeal(base.BaseDeal):
             return False
         _arr = []
         rm = buffer.full().strip()
-        rm_pos = buffer.pos()
         buffer.clean2read(self.ll)
         if len(rm)>0:
-            _arr.append(item.Item(rm, rm_pos, type="str", is_val=False))
-        arr_pos = list(rm_pos)
+            _arr.append(item.Item(rm, type="str", is_val=False))
         while True:
             cr = buffer.read(self.lr)
             if cr == self.right:
                 rm = buffer.full().strip()
-                rm_pos = buffer.pos()
                 buffer.clean2read(self.lr)
                 break
             if not mg.deal(buffer, _arr):
-                e_pos = buffer.pos()
-                raise exp.Exp("Error lr", e_pos)
+                raise Exception("Error lr")
         buffer.clean()
-        arr_pos[1] = rm_pos[1]
-        arr_pos = tuple(arr_pos)
         if len(rm)>0:
-            _arr.append(item.Item(rm , rm_pos, type = 'str', is_val=False))
+            _arr.append(item.Item(rm ,type = 'str', is_val=False))
+        # dts = []
+        # for k in _arr:
+        #     _k = mg.build(k)
+        #     if item.is_null(_k):
+        #         continue
+        #     dts.append(_k)
+        #dts = [mg.build(k) for k in _arr]
         if self.mg_build:
             dts = mg.build_arr(_arr)
         else:
             dts = _arr
-        obj = self.build_arr(dts, arr_pos)
+        obj = self.build_arr(dts)
         rst.append(obj)
         return True
     def to_vals(self, _arr, mg):
@@ -47,8 +55,8 @@ class LRDeal(base.BaseDeal):
                 continue
             dts.append(_k)
         return dts
-    def build_arr(self, obj, arr_pos):
-        return item.Item(obj, arr_pos, type = self.type, is_val=True)
+    def build_arr(self, obj):
+        return item.Item(obj, type = self.type, is_val=True)
     """
         分隔符，有分隔符后将缓存的数据当作字符串
     """

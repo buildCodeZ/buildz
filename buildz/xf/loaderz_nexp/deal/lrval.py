@@ -22,22 +22,21 @@ class LRValDeal(lr.LRDeal):
     def init(self, left, right, fc):
         super().init(left, right, 'lrval', False)
         self.fc = fc
-    def build_arr(self, arr, arr_pos):
+    def build(self, arr):
         rst = []
-        #pos = self.arr_pos(arr)#(arr[0].pos[0], arr[-1].pos[-1])
         if len(arr)!=3:
-            raise exp.Exp(f"error in lrval:{arr}", arr_pos)
+            raise Exception("error in lrval:"+arr)
         for _item in arr[::2]:
             if type(_item.val)!=str:
-                raise exp.Exp(f"error in list:{_item}", _item.pos)
+                raise Exception("error in list:"+_item)
             rst.append(_item.val)
         try:
             val = self.fc(rst[0], rst[1])
         except Exception as exp1:
             print("exp:", exp1)
-            raise exp.Exp(f"error in lrval fc: {self.fc}({rst}): {exp1} ", pos)
-        return item.Item(val, arr_pos, type='val', is_val = 1)
-    def build_arrx(self, arr, arr_pos):
+            raise Exception(f"error in lrval fc: {self.fc}({rst}): {exp1} ")
+        return item.Item(val, type='val', is_val = 1)
+    def build_arr(self, obj):
         return self.build(obj)
 
 pass

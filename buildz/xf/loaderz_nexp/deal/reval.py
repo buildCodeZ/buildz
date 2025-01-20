@@ -28,6 +28,6 @@ class ValDeal(base.BaseDeal):
         if re.match(self.pt, val) is None:
             return None
         val = self.fc(val)
-        return item.Item(val, obj.pos, type = "val", is_val = 1)
+        return item.Item(val, type = "val", is_val = 1)
 
 pass

@@ -16,10 +16,7 @@ time cost in <function loads at 0x0000015DEDD0F100>: 0.3307473659515381
 还有个比较操蛋的点是，用java也写了一版读取xf格式配置文件，结果java版比C版还快，一脸问号，是在C写的内存分配和回收占用时间了吗？更无语的是，java做循环读取配置文件，貌似会触发java的优化，平均速度还会更快（循环100次后和C加速版python的json差不多一样快了），不清楚是因为循环读的是一样的字符串导致的java优化，还是其他原因导致的java优化，如果是其他原因，说明读多个配置文件的时候java版会越来越快，java版会比C版更适合使用，而且java自己有垃圾回收，有List和Map，有时间下个python库用python调java试试
 """
 from buildz.xf import readz as rz
-try:
-    from buildz.xf import readz_nexp as rz_nexp
-except:
-    rz_nexp=rz
+from buildz.xf import readz_bk as rzbk
 from buildz.xf import read as rd
 from buildz import xf, fz
 import json
@@ -81,8 +78,8 @@ num = 3
 cs = [0,0,0,0]
 for i in range(num):
     jv,cj = cost("json.loads", json.loads,js)
-    xvbk,cxbk = cost("rz_nexp.loads", rz_nexp.loads, js)
     xv,cx = cost("rz.loads",rz.loads,js)
+    xvbk,cxbk = cost("rzbk.loads", rzbk.loads, js)
     cv,cv = cost("cxf.loads", cxf.loads, js)
     cs[0]+=cj
     cs[1]+=cx
@@ -93,13 +90,12 @@ print(f"judge: {jv==xvbk}")
 print(f"judge: {jv==cv}")
 print(f"json mean cost: {cs[0]/num}")
 print(f"xf mean cost: {cs[1]/num}")
-print(f"xf_nexp mean cost: {cs[2]/num}")
+print(f"xf_bk mean cost: {cs[2]/num}")
 print(f"cxf mean cost: {cs[3]/num}")
 print(f"xf cost =  {'%.3f'%(cs[1]/cs[0],)} json")
-print(f"xf_nexp cost =  {'%.3f'%(cs[2]/cs[0],)} json")
+print(f"xfbk cost =  {'%.3f'%(cs[2]/cs[0],)} json")
 print(f"cxf cost = {'%.3f'%(cs[3]/cs[0],)} json")
-print(f"xf cost = {'%.3f'%(cs[1]/cs[3],)} cxf")
-print(f"xf cost = {'%.3f'%(cs[1]/cs[2],)} xf_nexp")
+print(f"xf cost = {'%.3f'%(cs[1]/cs[2],)} cxf")
 #_xv = cost("rd.loads",rd.loads, js)
 #with open("test.json", 'w') as f:
 #    f.write(js)

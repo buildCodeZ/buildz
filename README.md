@@ -25,6 +25,8 @@ Codes of this project are not allowed to be used for AI training or any other fo
 运行python -m buildz查看帮助
 
 持续更新中。。。
+2025/01/21:
+修改xf的读写，读加上报错字符串位置，写改成递归调用减少时间开销
 2025/01/17:
 加了argz模块和evalz模块
 argz模块用于命令行参数匹配

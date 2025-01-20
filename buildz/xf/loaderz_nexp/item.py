@@ -7,11 +7,10 @@ remain和type？
 '''
 class Item:
     def __str__(self):
-        return f"<Item val={self.val}, type = {self.type}, is_val = {self.is_val}, pos={self.pos}, others={self.others}>"
+        return f"<Item val={self.val}, type = {self.type}, is_val = {self.is_val}, others={self.others}>"
     def __repr__(self):
         return str(self)
-    def __init__(self, val, pos, type = None, is_val=False, others = None):
-        self.pos = pos
+    def __init__(self, val, type = None, is_val=False, others = None):
         self.val= val
         self.is_val= is_val
         self.type = type

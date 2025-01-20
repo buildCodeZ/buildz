@@ -1,11 +1,5 @@
 
-def arr_pos(arr):
-    if len(arr)==0:
-        return (0,0)
-    return (arr[0].pos[0], arr[-1].pos[-1])
 class BaseDeal:
-    def arr_pos(self, arr):
-        return arr_pos(arr)
     def has_prev(self):
         return 1
     def has_deal(self):

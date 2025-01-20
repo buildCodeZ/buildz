@@ -1,6 +1,6 @@
 
 from .readz import loads, load, loadf, loads_args, loadx, is_args, loadxf
-from .write import dumps, dump, dumpf, dumpx, dumpxf
+from .writez import dumps, dump, dumpf, dumpx, dumpxf
 from .file import *
 from .mapz import *
 from .xargs import fetch as args

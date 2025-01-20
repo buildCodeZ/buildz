@@ -57,13 +57,13 @@ class Manager:
         #print(f"[TESTZ] obj: {obj}")
         _type = obj.type
         if _type not in self.builds:
-            raise exp.Exp(f"unspt type: {_type}", obj.pos)
+            raise Exception("unspt type:"+_type)
         builds = self.builds[_type]
         for deal in builds:
             rst = deal.build(obj)
             if rst is not None:
                 return rst
-        raise exp.Exp(f"unspt deal type:[{obj}]", obj.pos)
+        raise Exception(f"unspt deal type:[{obj}]")
     def deal(self, buffer, arr):
         c = buffer.read()
         if len(c)==0 and buffer.size()==0:
@@ -87,20 +87,20 @@ class Manager:
             dts.append(_k)
         return dts
     def load(self, buffer):
-        try:
-            return self._load(buffer)
-        except exp.Exp as _exp:
-            #import traceback
-            #traceback.print_exc()
-            exp.deal(_exp, buffer)
-    def _load(self, buffer):
         arr = []
         while self.deal(buffer, arr):
             pass
-        arr = self.build_arr(arr)
-        arr_pos = base.arr_pos(arr)#(arr[0].pos[0], arr[-1].pos[-1])
+        #arr = [k.val for k in arr]
+        #rst = []
+        # for k in arr:
+        #     if type(k) == self.type:
+        #         if len(k.strip())==0:
+        #             continue
+        #     rst.append(k)
         #print(f"mg arr: {arr}")
-        obj = item.Item(arr, arr_pos, type = "list", is_val = 0)
+        arr = self.build_arr(arr)
+        #print(f"mg arr: {arr}")
+        obj = item.Item(arr, type = "list", is_val = 0)
         obj = self.build(obj)
         #arr = rst
         #if len(arr)==1:

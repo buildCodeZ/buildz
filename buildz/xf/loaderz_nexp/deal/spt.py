@@ -15,16 +15,14 @@ class PrevSptDeal(base.BaseDeal):
         c = buffer.read(self.l)
         if c != self.spt:
             return False
-        spt_pos = (buffer.read_base, buffer.read_base+self.l)
         rm = buffer.full().strip()
-        rm_pos = buffer.pos()
         buffer.clean2read(self.l)
-        it = item.Item(self.spt, spt_pos, type = self.type, is_val = 0)
+        it = item.Item(self.spt, type = self.type, is_val = 0)
         if len(rm)==0:
             if not self.allow_empty or (len(arr)>0 and arr[-1].is_val):    
                 arr.append(it)
                 return True
-        obj = item.Item(rm, rm_pos, type = 'str', is_val = 0)
+        obj = item.Item(rm, type = 'str', is_val = 0)
         arr.append(obj)
         arr.append(it)
         return True

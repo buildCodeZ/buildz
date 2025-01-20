@@ -11,6 +11,9 @@ class ListDeal(lr.LRDeal):
     def types(self):
         return ['list']
     def build(self, obj):
+        #print(f"list build: {obj}")
+        #if self.check_right(obj):
+        #    return None
         val = obj.val
         if len(val)==0:
             obj.val = []
@@ -20,14 +23,13 @@ class ListDeal(lr.LRDeal):
             opt = val[1]
             if opt.type=='kv':
                 return None
-        return self.build_arr(val, obj.pos)
-    def build_arr(self, arr, arr_pos):
+        return self.build_arr(val)
+    def build_arr(self, arr):
         rst = []
-        #pos = self.arr_pos(arr)#(arr[0].pos[0],arr[-1].pos[-1])
         for _item in arr:
             if not _item.is_val:
-                raise exp.Exp(f"error in list: item is not val: {_item}", _item.pos)
+                raise Exception(f"error in list:{_item}")
             rst.append(_item.val)
-        return item.Item(rst, arr_pos, type='list', is_val = 1)
+        return item.Item(rst, type='list', is_val = 1)
 
 pass

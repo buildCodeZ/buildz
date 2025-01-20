@@ -21,8 +21,8 @@ class ListMapDeal(lr.LRDeal):
             obj.val = []
             obj.is_val = 1
             return obj
-        return self.build_arr(val, obj.pos)
-    def build_arr(self, arr, arr_pos):
+        return self.build_arr(val)
+    def build_arr(self, arr):
         rst = {}
         lst = []
         mp = {}
@@ -34,7 +34,7 @@ class ListMapDeal(lr.LRDeal):
                 opt = arr[i+1]
             if opt is not None and opt.type == 'kv':
                 if i+2>=len(arr):
-                    raise exp.Exp(f"u f in listmap: {arr}", arr_pos)
+                    raise Exception(f"u f in listmap: {arr}")
                 val = arr[i+2]
                 mp[obj.val]=val.val
                 i+=3
@@ -42,17 +42,17 @@ class ListMapDeal(lr.LRDeal):
                 lst.append(obj.val)
                 i+=1
         if self.as_args:
-            return item.Item(Args(lst, mp), arr_pos, type='args', is_val=1)
+            return item.Item(Args(lst, mp), type='args', is_val=1)
         if len(mp)==0:
             if self.as_map:
                 if len(lst)==0:
-                    return item.Item(mp, arr_pos, type="map", is_val=1)
+                    return item.Item(mp, type="map", is_val=1)
                 else:
-                    return item.Item(Args(lst, mp), arr_pos, type='args', is_val=1)
-            return item.Item(lst, arr_pos, type="list", is_val=1)
+                    return item.Item(Args(lst, mp), type='args', is_val=1)
+            return item.Item(lst, type="list", is_val=1)
         elif len(lst)==0:
-            return item.Item(mp, arr_pos, type="map", is_val=1)
+            return item.Item(mp, type="map", is_val=1)
         else:
-            return item.Item(Args(lst, mp), arr_pos, type='args', is_val=1)
+            return item.Item(Args(lst, mp), type='args', is_val=1)
 
 pass

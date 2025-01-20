@@ -13,11 +13,10 @@ class PrevNextDeal(base.BaseDeal):
         c = buffer.read_cache(1)
         if len(c)==0:
             rm = buffer.full().strip()
-            pos = buffer.pos()
             buffer.clean()
             if len(rm)==0:
                 return False
-            obj = item.Item(rm, pos, type = 'str', is_val = 0)
+            obj = item.Item(rm, type = 'str', is_val = 0)
             arr.append(obj)
             # TODO return True?
             return False
