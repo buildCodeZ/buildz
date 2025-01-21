@@ -24,8 +24,8 @@ class Config(Base):
 
 pass
 #wrap.add_datas("[(env, env.buildz.auto.deal), buildz.auto.deal, auto.deal]")
-@wrap.obj_args("[env, buildz.auto.deal, auto.deal]")
 @wrap.obj(id="autoz.deal")
+@wrap.obj_args("[env, buildz.auto.deal, auto.deal]")
 class DfDeal(Base):
     def init(self, id):
         self.id = id

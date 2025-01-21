@@ -119,9 +119,9 @@ wrap.ns.add_datas("[logs.list, refs], buildz\.logz\.item,", ns = "buildz.logz")
 @ns.obj(id="logs")
 @ns.obj_args("ref, logs.list, []", "ref, buildz.logz.shows,null", "ref, buildz.logz.tag, null")
 class Logs(Log):
-    def init(self, logs, shows = None, tag= None, lock = False):
+    def init(self, logs=[], shows = None, tag= None, lock = False):
         super().init(shows, tag, lock=lock)
-        self.logs = logs
+        self.logs = list(logs)
     def do_log(self, level, tag, *args):
         for _log in self.logs:
             _log.log(level, tag, *args)
