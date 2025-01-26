@@ -277,3 +277,17 @@ def flush_maps(maps, fc_key = lambda x:x.split(".") if type(x)==str else [x], vi
     return rst
 
 pass
+def unflush_maps_item(rst, keys, val, fc_key):
+    if type(val)!=dict:
+        key = fc_key(keys)
+        rst[key] = val
+        return
+    for k, v in val.items():
+        unflush_maps_item(rst, keys+[k], v, fc_key)
+def unflush_maps(maps, fc_key = lambda x:".".join([str(k) for k in x]) if type(x) in (list, tuple) else str(x)):
+    if type(maps)!=dict:
+        return maps
+    rst = {}
+    for k,v in maps.items():
+        unflush_maps_item(rst, [k], v, fc_key)
+    return rst

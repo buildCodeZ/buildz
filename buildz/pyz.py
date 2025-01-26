@@ -33,19 +33,24 @@ def hashcode(s):
     return hashlib.md5(s).hexdigest()
 
 pass
-def test_current(fp, up = 1, adds = []):
+def add_prevdir(fp, up = 1, adds = []):
     """
-        将当前目录的上{up}层目录加入sys.path，这样可以在同层写测试代码，但是写import的时候还是要当作是在上{up}层做import
+        将当前文件所在目录的上{up}层目录加入sys.path，这样可以在同层写测试代码，但是写import的时候还是要当作是在上{up}层做import
     """
     if type(adds) not in [list, tuple]:
         adds = [adds]
-    dp = os.path.dirname(os.path.abspath(fp))
+    fp = os.path.abspath(fp)
+    if os.path.isfile(fp):
+        dp = os.path.dirname(fp)
+    else:
+        dp = fp
     for i in range(up):
         dp = os.path.dirname(dp)
     dp = os.path.join(dp, *adds)
     sys.path.insert(0, dp)
 
 pass
+test_current = add_prevdir
 add_path = test_current
 add_current = test_current
 add = test_current

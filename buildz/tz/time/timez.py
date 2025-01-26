@@ -3,7 +3,7 @@ from ... import Base
 from ...logz import FpLog
 class Clock(Base):
     def default(self, cost, fc, rst, *a, **b):
-        print(f"cost {cost} sec on {fc}")
+        print(f"cost {cost} sec on fc")
     def init(self, fc=None, out_sec = False, show = True):
         if fc is None:
             fc = self.default

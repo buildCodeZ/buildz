@@ -270,38 +270,44 @@ class Confs(Base):
         return self.fcs[key]
     def var_keys(self):
         return self.vars.keys()
-    def get_var(self, key, i=-1):
+    def get_var(self, key, i=-1, ns = None):
+        key = self.gid(ns, key)
         if not self.has_var(key):
             return None, False
         return self.vars[key][i], True
-    def set_vars(self, vars):
-        [self.set_var(key,val) for key,val in vars.items()]
-    def unset_vars(self, vars):
-        [self.unset_var(key) for key in vars]
-    def push_vars(self, vars):
+    def set_vars(self, vars, ns = None):
+        [self.set_var(key,val,ns) for key,val in vars.items()]
+    def unset_vars(self, vars, ns = None):
+        [self.unset_var(key,ns) for key in vars]
+    def push_vars(self, vars, ns = None):
         if vars is not None:
-            [self.push_var(key,val) for key,val in vars.items()]
+            [self.push_var(key,val,ns) for key,val in vars.items()]
         return pyz.with_out(lambda :self.pop_vars(vars))
-    def pop_vars(self, vars):
+    def pop_vars(self, vars, ns = None):
         if vars is not None:
-            [self.pop_var(key) for key in vars]
-    def set_var(self, key, val):
+            [self.pop_var(key,ns) for key in vars]
+    def set_var(self, key, val, ns = None):
         """
             will remove push datas
         """
+        key = self.gid(ns, key)
         self.vars[key] = [val]
-    def unset_var(self, key):
+    def unset_var(self, key, ns = None):
+        key = self.gid(ns, key)
         if key in self.vars:
             del self.vars[key]
-    def push_var(self, key, val):
+    def push_var(self, key, val, ns = None):
+        key = self.gid(ns, key)
         if key not in self.vars:
             self.vars[key] =  []
         self.vars[key].append(val)
-    def has_var(self, key):
+    def has_var(self, key, ns=None):
+        key = self.gid(ns, key)
         if key not in self.vars:
             return False
         return len(self.vars[key])>0
-    def pop_var(self, key):
+    def pop_var(self, key, ns=None):
+        key = self.gid(ns, key)
         if not self.has_var(key):
             return
         self.vars[key].pop(-1)

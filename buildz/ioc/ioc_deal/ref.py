@@ -47,6 +47,7 @@ class RefDeal(FormatDeal):
         try:
             return edata.conf.get_obj(key, info = info, src = edata.src)
         except IdNotFoundError as exp:
+            #print(f"[testz] ref data: {data} in {edata.conf}")
             if "default" in data:
                 key = data['default']
                 return self.get_obj(key, edata.conf, src=edata.src)
