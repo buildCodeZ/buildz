@@ -103,12 +103,18 @@ class ArgItem(Base):
         find = False
         for key, vtype in self.trs:
             if vtype =="dict":
-                if key in maps:
-                    val = maps[key]
+                if xf.dhas(maps, key):
+                    val = xf.dget(maps, key)
                     if self.remove:
-                        del maps[key]
-                    find = True
+                        xf.dremove(maps, key)
+                    find=True
                     break
+                #if key in maps:
+                #    val = maps[key]
+                #    if self.remove:
+                #        del maps[key]
+                #    find = True
+                #    break
             else:
                 if key in set_args:
                     val = args[key]
@@ -123,7 +129,8 @@ class ArgItem(Base):
         if not find and self.need:
             raise ArgExp("need", set(self.trs), self.des)
         if self.vtype == 'dict':
-            rst_maps[self.key] = val
+            xf.dset(rst_maps, self.key, val)
+            #rst_maps[self.key] = val
         else:
             rst_args[self.key] = val
 
@@ -135,9 +142,11 @@ class ArgItemBuild(build.Build):
         value = xf.g(conf, value=None)
         des = xf.g(conf, des=None)
         remove = xf.g(conf, remove=True)
-        src = conf['src']
-        if type(src) not in (list, tuple):
-            src = [src]
+        src = xf.g(conf, src=None)
+        srcs = xf.g(conf, srcs = [])
+        if src is not None:
+            srcs.append(src)
+        src = srcs
         item = ArgItem(key, vtype, need, default, value, des, remove)
         for s in src:
             if type(s) not in (list, tuple):

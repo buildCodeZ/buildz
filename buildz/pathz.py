@@ -5,6 +5,11 @@ class Path(Base):
         self.paths = {}
         self.fcs = {}
         self.lasts = {}
+        k = "check_abs"
+        self.check_abs = True
+        if k in maps:
+            self.check_abs = maps[k]
+            del maps[k]
         for k, v in maps.items():
             self.set(k, v)
     @staticmethod
@@ -19,7 +24,11 @@ class Path(Base):
             return os.path.join(*a)
         return os.path.join(path, *a)
     @staticmethod
-    def rfp(paths, *a, last=-1):
+    def rfp(paths, *a, last=-1, check_abs=False):
+        if check_abs and len(a)>0:
+            f = a[0]
+            if f[0]=="/" or f.find(":")>0:
+                return Path.join(*a)
         #print(f"[TESTZ] a: {a}, paths: {paths}")
         #fp = os.path.join(*a)
         for path in paths:
@@ -42,7 +51,7 @@ class Path(Base):
         self.paths[name] = paths
         self.lasts[name] = last
         def fc(*a):
-            return self.rfp(paths, *a, last=last)
+            return self.rfp(paths, *a, last=last, check_abs=self.check_abs)
         self.fcs[name] = fc
     def __getattr__(self, name):
         return self.fcs[name]

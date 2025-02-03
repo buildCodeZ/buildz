@@ -91,6 +91,12 @@ def pypkg():
     """
         return python package path, test on linux and windows
     """
+    try:
+        import buildz
+        import os
+        return os.path.dirname(buildz.__path__[0])
+    except:
+        pass
     import site
     sites = site.getsitepackages()
     if is_windows:
@@ -155,3 +161,56 @@ def mainerr(fc, *args, **maps):
         print("not main:", st.filename)
 
 pass
+
+def not_null(*args, exp_def=None):
+    for v in args:
+        if v is not None:
+            return v
+    return ret_exp_def(exp_def)
+nnull = not_null
+class exp_def_enp:
+    def __init__(self, exp=False, default=None, exp_fc = Exception, exp_args = [], exp_maps = {}):
+        self.exp_fc = exp_fc
+        self.exp_args = exp_args
+        self.exp_maps=exp_maps
+        self.exp = exp
+        self.default = default
+    def __call__(self, exp=None, default=None, exp_fc = None, exp_args=None, exp_maps=None):
+        exp = not_null(exp, self.exp)
+        default = not_null(default, self.default)
+        exp_fc = not_null(exp_fc, self.exp_fc)
+        exp_args=not_null(exp_args, self.exp_args)
+        exp_maps = not_null(exp_maps, self.exp_maps)
+        if exp:
+            raise exp_fc(*exp_args, **exp_maps)
+        return default
+pass
+def default(val):
+    return exp_def_enp(False, val)
+
+exp_def = exp_def_enp
+def ret_exp_def(val):
+    if isinstance(val, exp_def_enp):
+        return val()
+    return val
+
+def decode(s, coding = 'utf-8'):
+    coding = coding.lower()
+    xcoding = 'utf-8'
+    if coding == 'utf-8':
+        xcoding = 'gbk'
+    try:
+        return s.decode(coding)
+    except:
+        return s.decode(xcoding)
+
+pass
+def encode(bs, coding="utf-8"):
+    coding = coding.lower()
+    xcoding = 'utf-8'
+    if coding == 'utf-8':
+        xcoding = 'gbk'
+    try:
+        return bs.encode(coding)
+    except:
+        return bs.encode(xcoding)

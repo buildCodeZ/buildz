@@ -1,5 +1,33 @@
 #coding=utf-8
 from . import pyz
+def fcBase(cls, lst=0, keys = tuple()):
+    class _Base(cls):
+        def str(self):
+            return str(self.__class__)
+        def repr(self):
+            return self.str()
+        def __str__(self):
+            return self.str()
+        def __repr__(self):
+            return self.repr()
+        def __call__(self, *a, **b):
+            return self.call(*a, **b)
+        def call(self, *a, **b):
+            return None
+        def init(self, *a, **b):
+            pass
+        def __init__(self, *a, **b):
+            sa = a[:lst]
+            a = a[lst:]
+            sb = {}
+            for k in keys:
+                if k in b:
+                    sb[k] = b[k]
+                    del b[k]
+            super().__init__(*sa, **sb)
+            self.init(*a, **b)
+    return _Base
+
 class Base:
     def str(self):
         return str(self.__class__)

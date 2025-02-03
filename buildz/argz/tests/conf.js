@@ -22,10 +22,10 @@
     }
     maps: {
         filepath: {
-            src: [f, fp, filepath]
+            srcs: [f, fp, filepath]
         }
         content: {
-            src: [c, ct, content]
+            srcs: [c, ct, content]
         }
     }
 }

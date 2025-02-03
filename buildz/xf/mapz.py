@@ -1,4 +1,4 @@
-
+from buildz import pyz
 def get(obj, key, default=None, set = False):
     if type(obj)==list:
         key = int(key)
@@ -138,7 +138,7 @@ def im2l(maps):
 pass
     
 def sets(maps, keys, val):
-    if type(keys) != list:
+    if type(keys) not in (list,tuple):
         keys = [keys]
     for key in keys[:-1]:
         if type(maps)==dict:
@@ -151,7 +151,7 @@ def sets(maps, keys, val):
 
 pass
 def has(maps, keys):
-    if type(keys) != list:
+    if type(keys) not in (list,tuple):
         keys = [keys]
     for key in keys:
         if type(maps)==dict:
@@ -167,22 +167,28 @@ def has(maps, keys):
 pass
 
 def gets(maps, keys, default = None):
-    if type(keys) != list:
+    if type(keys) not in (list,tuple):
         keys = [keys]
     for key in keys:
+        find = 1
         if type(maps)==dict:
-            if key not in maps:
-                return default
+            find = key in maps
+        elif type(maps) in (list, tuple):
+            try:
+                key = int(key)
+            except:
+                key = len(maps)
+            find = key<len(maps)
         else:
-            key = int(key)
-            if key>=len(maps):
-                return default
+            find = False
+        if not find:
+            return pyz.ret_exp_def(default)
         maps = maps[key]
     return maps
 
 pass
 def removes(maps, keys):
-    if type(keys) != list:
+    if type(keys) not in (list,tuple):
         keys = [keys]
     arr = []
     for key in keys:
@@ -197,6 +203,28 @@ def removes(maps, keys):
             del maps[key]
         first=0
     return None
+
+pass
+
+def dhget(maps, keys):
+    if type(keys) not in (list,tuple):
+        keys = [keys]
+    for key in keys:
+        find = 1
+        if type(maps)==dict:
+            find = key in maps
+        elif type(maps) in (list, tuple):
+            try:
+                key = int(key)
+            except:
+                key = len(maps)
+            find = key<len(maps)
+        else:
+            find = False
+        if not find:
+            return None, find
+        maps = maps[key]
+    return maps, True
 
 pass
 dset = sets

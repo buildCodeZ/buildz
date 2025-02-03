@@ -14,6 +14,9 @@ class Fc(Base):
         if isinstance(fc, Fc):
             return fc
         return Fc(fc)
+class RetFc(Fc):
+    def call(self, args, maps):
+        return args, maps
 class ArgsCall(Fc):
     def init(self, fc, args=None, name = None):
         fc=self.make(fc)
@@ -88,23 +91,34 @@ class FcBuild(build.Build):
         src = xf.g(conf, src = None)
         fc = self.builder.get_var(src)
         return Fc(fc)
+class RetBuild(build.Build):
+    def call(self, conf):
+        ctype = xf.g(conf, type=None)
+        if ctype != "ret":
+            return None
+        return RetFc()
 class CallBuild(build.Build):
     def init(self):
         self.args = argz.ArrArgsBuild()
         self.eval = evalx.EvalBuild()
         self.fc = FcBuild()
         self.calls = CallsBuild()
+        self.ret = RetBuild()
         super().init(self.args, self.eval, self.fc, self.calls)
     def call(self, conf):
         args = self.args(conf)
         judges = self.eval(conf)
         fc = self.fc(conf)
         calls = self.calls(conf)
+        ret = self.ret(conf)
         bfc = fc is None
         bcls = calls is None
-        assert (bfc+bcls)==1
+        bret = ret is None
+        assert (bfc+bcls+bret)==2
         if fc is None:
             fc = calls
+        if fc is None:
+            fc = ret
         if args is not None:
             fc = ArgsCall(fc, args)
         if judges is not None:
