@@ -15,7 +15,8 @@ class Ids(Base):
         if type(id) in (list, tuple):
             return id
         return id.split(self.spt)
-    def call(self, a,b):
+    def call(self, id):
+        return self.ids(id)
         a = self.ids(a)
         b = self.ids(b)
         return self.id(a,b)

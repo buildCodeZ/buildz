@@ -1,6 +1,15 @@
+## 2025/02/12
+添加http和https代理和抓包代码(buildz.netz.mhttp)，目前只能代理和抓包，后续会考虑加上报文截断和修改等的简便接口
+添加创建公钥私钥、证书和证书签名的代码(buildz.netz.sslz)
+测试代码：
+    开启抓包服务器
+        python -m buildz.netz.test
+    调用测试
+        python -m buildz.netz.test.test_cli
+稍微修改buildz.logz，加了个简化创建代码
+添加buildz.iocz模块，是对buildz.ioc代码的优化，目前只写了一点点，用不了
 ## 2025/02/03
 加一些文件处理代码
-
 ## 2025/01/27:
 ioc.push_vars等函数可选namespace
 wrap.load_conf可选flush

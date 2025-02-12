@@ -10,6 +10,12 @@ ns = wrap.ns("buildz.logz")
 @ns.obj(id="baseLog")
 @ns.obj_args("ref, buildz.logz.shows, null", "ref, buildz.logz.tag, null", "ref, buildz.logz.base, null")
 class Log(Base):
+    def show(self, type):
+        if type not in self.shows:
+            self.show.append(type)
+    def unshow(self, type):
+        if type in self.shows:
+            self.shows.remove(type)
     def call(self, _tag):
         return self.tag(_tag)
     def tag(self, _tag):
@@ -20,7 +26,10 @@ class Log(Base):
                 _tag = _tag.__module__+"."+_tag.__name__
             except:
                 _tag = str(_tag)
-        log = Log(self.shows, _tag, self)
+        base = self
+        if self.base is not None:
+            base = self.base
+        log = Log(self.shows, _tag, base)
         return log
     def get_tag(self):
         return self._tag
@@ -81,7 +90,7 @@ def mstr(s):
 class FormatLog(Log):
     def init(self, shows =None, tag=None, format=None, lock = False):
         if format is None:
-            format = "[{LEVEL}] %Y-%m-%d %H:%M:%S {tag} {msg}\n"
+            format = "[{LEVEL}] %Y-%m-%d %H:%M:%S [{tag}] {msg}\n"
         self.format=format
         super().init(shows, tag, lock)
     def output(self, msg):
@@ -125,6 +134,15 @@ class Logs(Log):
     def do_log(self, level, tag, *args):
         for _log in self.logs:
             _log.log(level, tag, *args)
+
+pass
+def simple(fp=None,std=True, shows=None, tag=None, format=None,lock=False):
+    logs = []
+    if fp is not None:
+        logs.append(FpLog(fp,shows,tag,format,lock))
+    if std:
+        logs.append(StdLog(shows,tag,format,lock))
+    return Logs(logs)
 
 pass
 
