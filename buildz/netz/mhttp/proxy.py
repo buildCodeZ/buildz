@@ -132,7 +132,7 @@ class ProxyDealer(Base):
                     break
         finally:
             self.wskt.close()
-            self.monitor.close()
+            #self.monitor.close()
 
 pass
 

@@ -5,6 +5,11 @@ except:
     print("need package requests: pip install requests")
     raise
 session = rq.session()
+from buildz import pathz
+
+path = pathz.Path()
+path.set("res", "./res")
+fp_cert = path.res("ca.crt")
 import sys
 ip = "127.0.0.1"
 port=9999
@@ -19,12 +24,12 @@ proxies = {
 }
 
 url = "https://www.baidu.com"
-verify=False
-rp = rq.get(url, proxies = proxies,verify=verify)
+verify=fp_cert
+rp = session.get(url, proxies = proxies,verify=verify)
 print(rp,len(rp.content))
 
 url = "http://www.baidu.com"
-rp = rq.get(url, proxies = proxies,verify=verify)
+rp = session.get(url, proxies = proxies,verify=verify)
 print(rp,len(rp.content))
 
 url = "https://www.bilibili.com/"
@@ -34,5 +39,5 @@ headers = {
     "Accept-Encoding":"gzip, deflate, br, zstd",
     "Accept-Language":"zh-CN,zh;q=0.9"
 }
-rp = rq.get(url, proxies = proxies,verify=verify,headers=headers)
+rp = session.get(url, proxies = proxies,verify=verify,headers=headers)
 print(rp,len(rp.content))

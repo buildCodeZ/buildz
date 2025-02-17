@@ -14,6 +14,30 @@ path.set("res", "./res")
 fp_prv = path.res("ca.prv")
 fp_cert = path.res("ca.crt")
 ca_pwd = "test"
+
+
+ca_conf = xf.loads(r"""
+// 国家
+country: CN
+// 省份
+provice: fujian
+// 城镇
+local: quanzhou
+// 机构
+org: buildz
+// 域名
+comman: buildz
+// 邮箱
+email: netz@buildz
+// 是否是ca
+ca: true
+//dns: [localhost]
+// 签名有效提前时间（签名多少天前就有效）
+valid_before: 1
+// 签名有效时间（签名后有效多少天）
+valid: 3650
+ca:true
+""")
 log = logz.simple(path.res("caps/%Y%m%d.log"))
 fz.makedir(path.res())
 def gen_cert():
@@ -44,26 +68,3 @@ def caps():
 #pyz.lc(locals(), caps)
 
 
-
-
-ca_conf = xf.loads(r"""
-// 国家
-country: CN
-// 省份
-provice: fujian
-// 城镇
-local: quanzhou
-// 机构
-org: buildz
-// 域名
-comman: buildz
-// 邮箱
-email: netz@buildz
-// 是否是ca
-ca: true
-//dns: [localhost]
-// 签名有效提前时间（签名多少天前就有效）
-valid_before: 1
-// 签名有效时间（签名后有效多少天）
-valid: 3650
-""")

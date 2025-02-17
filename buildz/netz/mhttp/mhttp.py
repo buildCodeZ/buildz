@@ -120,9 +120,9 @@ class WSocket(Base):
         skt.connect(addr)
         return skt
     @staticmethod
-    def Bind(skt, buffer_size=-1):
+    def Bind(skt, buffer_size=-1, addr=None):
         wskt = WSocket(buffer_size)
-        wskt.bind(skt)
+        wskt.bind(skt, addr)
         return wskt
     def init(self, buffer_size=-1):
         self.buffer_size = buffer_size
@@ -130,8 +130,10 @@ class WSocket(Base):
         if w_buffer_size<0:
             w_buffer_size=0
         self.w_buffer_size = w_buffer_size
-    def bind(self, skt):
-        self.addr = skt.getpeername()
+    def bind(self, skt, addr=None):
+        if addr is None:
+            addr = skt.getpeername()
+        self.addr = addr
         rfile = skt.makefile('rb', self.buffer_size)
         wfile = skt.makefile('wb', self.w_buffer_size)
         self.skt = skt 
@@ -148,7 +150,7 @@ class WSocket(Base):
             skt = socket.socket()
             log.debug(f"connect: {addr}")
             skt.connect(tuple(addr))
-        self.bind(skt)
+        self.bind(skt, addr)
     def closefile(self):
         try:
             self.rfile.close()

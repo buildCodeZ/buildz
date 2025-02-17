@@ -287,7 +287,7 @@ def loadf_certs(fp):
 def load_certs(bs):
     spt = b"-----END CERTIFICATE-----"
     pems = bs.split(spt)
-    pems = [k.strip()+spt for k in pems if k.strip()!=b""]
+    pems = [k+spt for k in pems if k.strip()!=b""]
     certs = [x509.load_pem_x509_certificate(pem) for pem in pems]
     return certs
 def verify_certs_fp(fp, cas = None, verify_time=True):
