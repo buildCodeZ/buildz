@@ -12,13 +12,12 @@ class Ids(Base):
                 ids = ids[0]
         return self.spt.join(ids)
     def ids(self, id):
+        if id is None:
+            return []
         if type(id) in (list, tuple):
             return id
         return id.split(self.spt)
     def call(self, id):
         return self.ids(id)
-        a = self.ids(a)
-        b = self.ids(b)
-        return self.id(a,b)
 pass
 

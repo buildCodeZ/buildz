@@ -19,6 +19,7 @@ def pkg(fp):
 pass
 def imports(dp=".", pts=".*\.py$", pfx=""):
     """
+    not include test: r"^(?!.*(?:test|bak)).*\.py$"
     find filepath by dirpath(dp) and pattern(pts), 
     import:
     filepath = ".".join(filepath.split(".")[:-1])

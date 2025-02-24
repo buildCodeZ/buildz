@@ -1,29 +1,34 @@
 #
-from .tdict import TDict
-from buildz import pyz, dz
+from .tdict import TagDict
+from ... import pyz, dz
 class Key:
     Pub = "pub"
     Pri = "pri"
     Ns = "ns"
-    tags_ns = "ns,pub".split(",")
-    tags_pub = ['pub']
+    tags_ns = [Ns,Pub]
+    tags_pub = [Pub]
     tags_pri = None
 pass
-class TData(TDict):
+class TagData(TagDict):
     '''
         分成三个域，公共pub，私有pri和同域名ns
+        设置访问规则
         不同域名只能访问pub数据
         同域名访问pub和ns
         同一个配置文件内（同一个id）访问pub，ns和pri
     '''
-    def init(self, id=None, ns=None):
+    Key = Key
+    def init(self, ns=None, id=None):
         self.ns = ns
         self.id = id
         super().init(Key.Pub)
+    def set_id(self, id):
+        self.id = id
     def call(self, *a,**b):
         return self.tget(*a,**b)
-    def nsid(self, src, id):
-        if isinstance(src, TData):
+    @staticmethod
+    def nsid(src, id):
+        if isinstance(src, TagData):
             ns = src.ns
             id = src.id
         else:

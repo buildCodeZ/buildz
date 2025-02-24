@@ -1,4 +1,12 @@
 from buildz import pyz
+def dict2list(obj):
+    if type(obj)!=dict:
+        return obj
+    return list(obj.items())
+def dict2iter(obj):
+    if type(obj)!=dict:
+        return obj
+    return obj.items()
 def get(obj, key, default=None, set = False):
     if type(obj)==list:
         key = int(key)

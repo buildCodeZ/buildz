@@ -50,6 +50,7 @@ def add_prevdir(fp, up = 1, adds = []):
     sys.path.insert(0, dp)
 
 pass
+add_prev_dir = add_prevdir
 test_current = add_prevdir
 add_path = test_current
 add_current = test_current
@@ -214,3 +215,16 @@ def encode(bs, coding="utf-8"):
         return bs.encode(coding)
     except:
         return bs.encode(xcoding)
+
+
+def fc_input(s, fc_done):
+    s = input(s)
+    fc_done(s)
+
+pass
+def th_input(s, fc_done):
+    import threading as th
+    t = th.Thread(target=fc_input, args=(s, fc_done), daemon=True)
+    t.start()
+
+pass

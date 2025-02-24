@@ -2,13 +2,12 @@
 from .base import *
 from ... import dz,pyz
 from ..ioc.single import Single
-class ObjectEncape(BaseEncape):
+class DealEncape(BaseEncape):
     '''
         id=?
         
     '''
     def init(self, single, src, args, maps, sets, before_set=None, after_set=None):
-        super().init()
         self.single = Single(single)
         self.src, self.args, self.maps, self.sets = src, args, maps, sets
         self.before_set = before_set
@@ -34,18 +33,17 @@ class ObjectEncape(BaseEncape):
         self.obj(self.after_set, obj_conf)
         self.single.set(params, obj)
         return obj
-class ObjectDeal(BaseDeal):
+class DealDeal(BaseDeal):
     def init(self):
         super().init()
-        self.load_srcs = {}
     def deal(self, conf, unit):
         id = dz.g(conf, id=None)
-        encape = self.cache_get(id, unit.ns)
-        if encape is not None:
-            return encape
+        k_ch = (ns, id)
         single = dz.g(conf, single=None)
         if single is None and id is None:
             single = Single.Key.multi
+        if id is not None and k_ch in self.cache_encapes:
+            return self.cache_encapes[k_ch]
         src, args, maps, sets = dz.g(conf, source=None, args=[], maps={},sets=[])
         before_set, after_set = dz.g(conf, before_set=None, after_set=None)
         before_set = self.get_encape(before_set, unit)
@@ -64,7 +62,8 @@ class ObjectDeal(BaseDeal):
         for k,v in dz.dict2iter(sets):
             lsets.append((self.get_encape(k, unit),self.get_encape(v, unit)))
         encape = ObjectEncape(single, src, args, lmaps, lsets,before_set,after_set)
-        self.cache_set(id, unit.ns, encape)
+        if id is not None:
+            self.cache_encapes[k_ch] = encape
         return encape
 
 pass

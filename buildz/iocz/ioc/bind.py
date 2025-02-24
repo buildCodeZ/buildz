@@ -1,5 +1,5 @@
 #
-from buildz import Base
+from ... import Base
 
 class Bind(Base):
     def init(self):

@@ -1,6 +1,6 @@
 #
-from buildz import pyz,dz,Base
-class TDict(Base):
+from ... import pyz,dz,Base
+class TagDict(Base):
     def remove(self, key, tag=None):
         tag = pyz.nnull(tag, self.default)
         rst = dz.get_set(self.maps, tag, dict())
@@ -20,11 +20,13 @@ class TDict(Base):
             rst = self.maps[tag]
             val, has = dz.dget(rst, key)
             if has:
-                return val, 1
-        return None,0
-    def __getattr__(self, tag):
+                return val, tag, 1
+        return None, None, 0
+    def tag(self, tag):
         rst = dz.get_set(self.maps, tag, dict())
         return rst
+    def __getattr__(self, tag):
+        return self.tag(tag)
     def init(self, default=""):
         self.maps = {}
         self.default=default

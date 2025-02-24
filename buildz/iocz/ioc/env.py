@@ -1,5 +1,5 @@
 from .base import Base, fcBase
-from buildz import xf,pyz
+from ... import xf,pyz
 class EnvExp(Exception):
     def __init__(self, id):
         super().__init__(f"EnvExp id not found: '{id}'")

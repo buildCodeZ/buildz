@@ -1,6 +1,18 @@
 from . import Base
 import os,sys,json,time
+class Key:
+    first='first'
+    ifirst = 0
+    last= 'last'
+    ilast = -1
+    @staticmethod
+    def check_first(val):
+        return val in (Key.first, Key.ifirst)
+    @staticmethod
+    def check_last(val):
+        return val in (Key.last, Key.ilast)
 class Path(Base):
+    Key = Key
     def init(self, **maps):
         self.paths = {}
         self.fcs = {}
@@ -42,9 +54,9 @@ class Path(Base):
         if type(paths) not in (list, tuple):
             paths = [paths]
         if curr is not None and None not in paths:
-            if curr in (0, 'first'):
+            if Key.check_first(curr):
                 paths = [None]+paths
-            elif curr in (-1, 'last'):
+            elif Key.check_last(curr):
                 paths.append(None)
             else:
                 assert False
