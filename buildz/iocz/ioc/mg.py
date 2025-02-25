@@ -7,33 +7,41 @@ from ... import pyz,dz
 from .ids import Ids
 from .unit import Unit
 from .builds import Buildset
-class StrDealKey(Base):
+class GetKey(Base):
+    def call(self, conf):
+        return None, 0
+    def fill(self, conf, key):
+        assert 0,'not callable'
+class SimpleConfKey(Base):
     def init(self, key):
         self.key = key
     def call(self, conf):
         if self.key not in conf:
-            return None
-        return conf[self.key]
+            return None,0
+        return conf[self.key],1
+    def fill(self, conf, key):
+        conf[self.key] = key
 
 pass
 class Manager(Base):
     @staticmethod
-    def make_deal_key(deal_key):
-        if type(deal_key) == str:
-            deal_key = StrDealKey(deal_key)
-        return deal_key
+    def make_key(key):
+        if type(key) == str:
+            key = SimpleConfKey(key)
+        return key
     @staticmethod
     def make_ids(ids):
         if type(ids)==str:
             ids = Ids(ids)
         return ids
-    def init(self, ids, deal_key, deal_ids = None):
+    def init(self, ids, deal_key='type', conf_key='id', deal_ids = None):
         self._index = 0
         self.units = {}
         self.builds = Buildset(self)
         ids = self.make_ids(ids)
         self.ids = ids
-        self.deal_key = self.make_deal_key(deal_key)
+        self.deal_key = self.make_key(deal_key)
+        self.conf_key = self.make_key(conf_key)
         self.deal_ids = pyz.nnull(deal_ids, ids)
         self.confs = Dataset(self.ids)
         self.deals = Dataset(self.deal_ids)
@@ -46,11 +54,13 @@ class Manager(Base):
     def add(self, unit):
         unit.bind(self)
         self.units[unit.id] = unit
-    def create(self, ns=None, deal_ns = None, deal_key=None):
+    def create(self, ns=None, deal_ns = None, deal_key=None, conf_key= None):
         id = self.id()
         deal_key = pyz.nnull(deal_key, self.deal_key)
-        deal_key = self.make_deal_key(deal_key)
-        unit = Unit(ns, deal_ns, deal_key, id)
+        conf_key = pyz.nnull(conf_key, self.conf_key)
+        deal_key = self.make_key(deal_key)
+        conf_key = self.make_key(conf_key)
+        unit = Unit(ns, deal_ns, deal_key, conf_key, id)
         unit.bind(self)
         return unit
     def get_unit(self, id):

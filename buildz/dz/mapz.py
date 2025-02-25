@@ -1,4 +1,10 @@
 from buildz import pyz
+def islist(obj):
+    return type(obj) in (list, tuple)
+def tolist(obj):
+    if not islist(obj):
+        obj = [obj]
+    return obj
 def dict2list(obj):
     if type(obj)!=dict:
         return obj
@@ -180,7 +186,7 @@ def dhas(maps, keys):
 
 pass
 
-def dget(maps, keys):
+def dget(maps, keys, default = None):
     if type(keys) not in (list,tuple):
         keys = [keys]
     for key in keys:
@@ -196,7 +202,7 @@ def dget(maps, keys):
         else:
             find = False
         if not find:
-            return None,0
+            return default,0
         maps = maps[key]
     return maps,1
 
@@ -216,7 +222,7 @@ def dremove(maps, keys):
         if first or len(maps[key])==0:
             del maps[key]
         first=0
-    return None
+    return
 
 pass
 

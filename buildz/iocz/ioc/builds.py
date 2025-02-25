@@ -25,17 +25,17 @@ class Builds(Base):
     def build(self):
         if not self.need_build:
             return
+        self.need_build = False
         for conf in self.jobs:
             if Confs.is_conf(conf):
-                encape = self.unit.get_encape(conf, self.unit.ns, self.unit.id)
+                encape,c,u = self.unit.get_encape(conf, self.unit.ns, self.unit.id)
             elif isinstance(conf, Encape):
                 encape = conf
             else:
-                encape = self.unit.get_encape(conf, self.unit.ns, self.unit.id)
+                encape,c,u = self.unit.get_encape(conf, self.unit.ns, self.unit.id)
             encape()
             self.dones.append(conf)
         self.jobs = []
-        self.need_build = False
     def call(self):
         self.build()
 class Buildset(Base):
@@ -52,6 +52,7 @@ class Buildset(Base):
     def build(self):
         if not self.need_build:
             return
+        self.need_build = False
         for builds in self.jobs:
             builds()
             self.dones.append(builds)

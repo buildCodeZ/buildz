@@ -1,5 +1,6 @@
 from ..ioc.base import *
 from ..ioc.confs import Confs
+from ... import dz
 class BaseEncape(Encape):
     @staticmethod
     def obj(val,*a,**b):
@@ -28,24 +29,21 @@ class BaseDeal(Deal):
             assert find
             return ep
         return key
-
-pass
-
-class Params(Base):
-    def clone(self, **upds):
-        args, maps = list(self.args), dict(self.maps)
-        maps.update(upds)
-        return Params(args, maps)
-    def init(self, *args, **maps):
-        self.args = args
-        self.maps = maps
-    def get(self, key, default=None):
-        if key not in self.maps:
-            return default
-        return self.maps[key]
-    def __getattr__(self, key):
-        if key not in self.maps:
-            return None
-        return self.maps[key]
+    def build(self, conf, unit):
+        return None
+    def deal(self, conf, unit):
+        'encape, conf, conf_need_udpate'
+        encape = self.build(conf,unit)
+        return encape,conf,False
+    def call(self, conf, unit):
+        'encape, conf, conf_need_udpate'
+        id,find=unit.conf_key(conf)
+        ns = unit.ns
+        encape = self.cache_get(id, ns)
+        if encape is not None:
+            return encape, conf, False
+        encape,conf,upd = self.deal(conf,unit)
+        self.cache_set(id, ns, encape)
+        return encape,conf,upd
 
 pass

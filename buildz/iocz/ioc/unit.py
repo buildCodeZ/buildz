@@ -6,10 +6,11 @@ from .encapes import Encapes
 from ... import pyz
 from .builds import Builds
 class Unit(Base):
-    def init(self, ns=None, deal_ns=None, deal_key = None, id=None):
+    def init(self, ns=None, deal_ns=None, deal_key = None, conf_key = None, id=None):
         self.ns = ns
         self.deal_ns = deal_ns
         self.deal_key = deal_key
+        self.conf_key = conf_key
         self.id = id
         self.confs = Confs(ns, deal_ns, id)
         self.deals = Datas(deal_ns, id)
@@ -32,6 +33,7 @@ class Unit(Base):
             return
         self.mg = mg
         self.deal_key = pyz.nnull(self.deal_key, mg.deal_key)
+        self.conf_key = pyz.nnull(self.conf_key, mg.conf_key)
         if self.id is None:
             self.id = mg.id()
             self.confs.set_id(self.id)
@@ -49,6 +51,7 @@ class Unit(Base):
     def get_conf(self, key, src=None, id=None, gfind=True):
         return self.confs.tget(key, src, id, gfind)
     def set_conf(self, key, conf, tag=None):
+        self.conf_key.fill(conf, key)
         self.confs.set(key, conf, tag)
     def get_encape(self, key, src=None, id=None, gfind=True):
         self.build()

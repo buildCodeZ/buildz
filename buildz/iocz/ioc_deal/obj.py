@@ -38,13 +38,10 @@ class ObjectDeal(BaseDeal):
     def init(self):
         super().init()
         self.load_srcs = {}
-    def deal(self, conf, unit):
-        id = dz.g(conf, id=None)
-        encape = self.cache_get(id, unit.ns)
-        if encape is not None:
-            return encape
+    def build(self, conf, unit):
+        id,id_find = unit.conf_key(conf)
         single = dz.g(conf, single=None)
-        if single is None and id is None:
+        if single is None and not id_find:
             single = Single.Key.multi
         src, args, maps, sets = dz.g(conf, source=None, args=[], maps={},sets=[])
         before_set, after_set = dz.g(conf, before_set=None, after_set=None)
@@ -64,7 +61,6 @@ class ObjectDeal(BaseDeal):
         for k,v in dz.dict2iter(sets):
             lsets.append((self.get_encape(k, unit),self.get_encape(v, unit)))
         encape = ObjectEncape(single, src, args, lmaps, lsets,before_set,after_set)
-        self.cache_set(id, unit.ns, encape)
         return encape
 
 pass

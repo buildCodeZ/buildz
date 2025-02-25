@@ -29,7 +29,7 @@ class Encapes(Datas):
         self.set(key, encape, ctag)
         return encape, ctag, 1
     def make_conf(self, conf, deal_ns=None, id=None):
-        deal_key = self.deal_key(conf)
+        deal_key, dk_find = self.deal_key(conf)
         deal, dtag, dfind = self.deals.tget(deal_key, deal_ns, id, True)
         assert dfind
         encape, conf, upd = deal(conf, self.unit)
@@ -88,7 +88,7 @@ class Encapeset(Dataset):
             self.set(key, encape, ns, ctag)
         return encape, cid, keys, ctag, 1
     def make_conf(self, conf, deal_ns=None, id=None,cid=None):
-        deal_key = self.deal_key(conf)
+        deal_key, dk_find = self.deal_key(conf)
         deal, dtag, dfind = self.deals.tget(deal_key, deal_ns, id)
         assert dfind
         unit = self.mg.get_unit(cid)
