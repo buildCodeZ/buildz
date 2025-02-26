@@ -3,6 +3,7 @@
 from .base import *
 from .encapes import Encapeset
 from .dataset import Dataset
+from .vars import Varset
 from ... import pyz,dz
 from .ids import Ids
 from .unit import Unit
@@ -46,6 +47,16 @@ class Manager(Base):
         self.confs = Dataset(self.ids)
         self.deals = Dataset(self.deal_ids)
         self.encapes = Encapeset(self.ids, self)
+        self.vars = Varset(self.ids)
+        self.push_var = self.vars.vpush
+        self.push_vars = self.vars.vpushs
+        self.pop_var = self.vars.vpop
+        self.pop_vars = self.vars.vpops
+        self.set_var = self.vars.vset
+        self.set_vars = self.vars.vsets
+        self.get_var = self.vars.vget
+        self.unset_var = self.vars.vremove
+        self.unset_vars = self.vars.vremoves
         self.default_unit = self.create()
     def add_build(self, conf):
         self.builds.add(conf)

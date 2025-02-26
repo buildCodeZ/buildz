@@ -1,4 +1,6 @@
 from buildz import pyz
+def isdict(obj):
+    return type(obj)==dict
 def islist(obj):
     return type(obj) in (list, tuple)
 def tolist(obj):
@@ -59,20 +61,15 @@ def gf(obj, **maps):
     return rst
 
 pass
-def get_first(obj, *keys):
+def get_first(obj, keys, default = None):
     for k in keys:
         if k in obj:
-            return obj[k]
-    raise KeyError(keys[0])
+            return obj[k],1
+    return default,0
 
 pass
-def get_one(obj, keys, default = None):
-    for k in keys:
-        if k in obj:
-            return obj[k]
-    return default
-
-pass
+def get_one(obj, keys, default=None):
+    return get_first(obj, keys, default)[0]
 def g1(obj, **maps):
     v = None
     for k in maps:
@@ -317,7 +314,7 @@ def flush_maps(maps, fc_key = lambda x:x.split(".") if type(x)==str else [x], vi
     for k,v in maps.items():
         ks = fc_key(k)
         v = flush_maps(v, fc_key, visit_list)
-        sets(rst, ks, v)
+        dset(rst, ks, v)
     return rst
 
 pass

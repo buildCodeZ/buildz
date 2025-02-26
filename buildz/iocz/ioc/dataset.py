@@ -38,13 +38,16 @@ class Dataset(Base):
             self.ns_set(key, val, ns, data)
         if data.dts!=self:
             data.bind(self)
-    def tget(self, key, ns=None, id=None):
-        obj, id, keys,tag, find = self.get(key,ns,id)
+    def tget(self, key, ns=None, tag=None, id=None):
+        obj, id, keys,tag, find = self.get(key,ns,tag, id)
         return obj, tag, find
-    def get(self, key, ns=None, id = None):
-        obj, oid, find = self.ns_get(key,ns,id)
-        tag = TagData.Key.Ns
-        keys = key
+    def get(self, key, ns=None, tag=None, id = None):
+        if tag == TagData.Key.Pub:
+            find =False
+        else:
+            obj, oid, find = self.ns_get(key,ns,id)
+            tag = TagData.Key.Ns
+            keys = key
         if not find:
             obj, oid, keys, find=self.pub_get(key,ns,id)
             tag=TagData.Key.Pub

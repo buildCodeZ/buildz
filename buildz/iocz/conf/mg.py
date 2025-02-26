@@ -32,14 +32,27 @@ class DLKey(GetKey):
         if dz.islist(conf):
             return self.list_get(conf)
         return self.dict_get(conf)
-    def fill(self, conf):
-        pass
+    def list_fill(self, conf, key):
+        for indexes in self.indexes:
+            obj, find = dz.dget(conf, indexes)
+            if find:
+                dz.dset(conf, indexes, key)
+                return
+        assert 0
+    def dict_fill(self, conf, key):
+        for keys in self.keys:
+            obj, find = dz.dget(conf, keys)
+            if find:
+                dz.dset(conf, keys, key)
+                return
+        dz.dset(conf, self.keys[0], key)
+    def fill(self, conf, key):
+        if dz.islist(conf):
+            self.list_fill(conf, key)
+        else:
+            self.dict_fill(conf, key)
 default_conf = None
-def init():
-    global default_conf
-    if default_conf not None:
-        return
-    default_conf = xf.loads(r'''
+s_default_conf = r"""
     {
         id.spt: '.'
         conf:{
@@ -54,10 +67,19 @@ def init():
             default: null
         }
     }
-    ''')
+"""
+def init():
+    global default_conf
+    if default_conf is not None:
+        return
+    default_conf = xf.loads(s_default_conf)
     default_conf = dz.flush_maps(default_conf)
 class ConfManager(Manager):
     def init(self, conf=None):
+        ids, deal_key, conf_key, deal_ids = self.Conf(conf)
+        super().init(ids, deal_key, conf_key, deal_ids)
+    @staticmethod
+    def Conf(conf=None):
         init()
         spt = Ids(".")
         if conf is None:
@@ -70,9 +92,9 @@ class ConfManager(Manager):
         ids = Ids(id_spt)
         deal_spt, find = dz.dget(conf, spt("id.spt"), id_spt)
         deal_ids = Ids(deal_spt)
-        deal_key = DLKey(conf['deal'])
-        conf_key = DLKey(conf['conf'])
-        super().init(ids, deal_key, conf_key, deal_ids)
+        deal_key = DLKey.Load(conf['deal'])
+        conf_key = DLKey.Load(conf['conf'])
+        return ids, deal_key, conf_key, deal_ids
     def add_conf(self, conf):
         unit = ConfUnit(conf, self)
         return unit

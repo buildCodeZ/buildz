@@ -67,14 +67,14 @@ class Encapeset(Dataset):
         self.deals = mg.deals
         self.deal_key = mg.deal_key
         return self
-    def make(self, key, ns=None, id = None):
-        conf, cid, keys, ctag, cfind = self.confs.get(key, ns, id)
+    def make(self, key, ns=None, tag=None, id = None):
+        conf, cid, keys, ctag, cfind = self.confs.get(key, ns, tag, id)
         if not cfind:
-            return 0,0,0,0,0
+            return None,None,None,None,0
         conf, deal_ns = conf
         encape, conf, upd  = self.make_conf(conf, deal_ns, id, cid)
         if cid in self.objs:
-            obj = self.objs[id]
+            obj = self.objs[cid]
             if ns != obj.ns:
                 ids_ns = self.ids(obj.ns)
                 keys_ns = keys[:len(ids_ns)]
@@ -94,13 +94,13 @@ class Encapeset(Dataset):
         unit = self.mg.get_unit(cid)
         encape, conf, upd = deal(conf, unit)
         return encape, conf, upd 
-    def get(self, key, ns=None, id=None):
+    def get(self, key, ns=None, tag=None, id=None):
         if Confs.is_conf(key):
             encape, conf, upd = self.make_conf(key, None, id)
             return encape, None, None, Datas.Key.Pub, 1
-        obj, eid, keys, tag, find = super().get(key, ns, id)
+        obj, eid, keys, tag, find = super().get(key, ns, tag, id)
         if find:
             return obj, eid, keys, tag, find
-        return self.make(key, ns, id)
+        return self.make(key, ns, tag, id)
 
     

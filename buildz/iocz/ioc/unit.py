@@ -17,6 +17,14 @@ class Unit(Base):
         self.builds = Builds(self)
         self.mg = None
         self.build_encapes()
+    def update_ns(self, ns):
+        self.ns = ns
+        self.confs.ns = ns
+        if self.encapes is not None:
+            self.encapes.ns = ns
+    def update_deal_ns(self, deal_ns):
+        self.deal_ns = deal_ns
+        self.deals.ns = deal_ns
     def add_build(self, conf):
         self.builds.add(conf)
     def build(self):
