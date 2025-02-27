@@ -29,12 +29,6 @@ class BaseDeal(Deal):
             assert find
             return ep
         return key
-    def build(self, conf, unit):
-        return None
-    def deal(self, conf, unit):
-        'encape, conf, conf_need_udpate'
-        encape = self.build(conf,unit)
-        return encape,conf,False
     def call(self, conf, unit):
         'encape, conf, conf_need_udpate'
         id,find=unit.conf_key(conf)
@@ -42,7 +36,8 @@ class BaseDeal(Deal):
         encape = self.cache_get(id, ns)
         if encape is not None:
             return encape, conf, False
-        encape,conf,upd = self.deal(conf,unit)
+        conf, upd = self.update(conf, unit)
+        encape = self.deal(conf,unit)
         self.cache_set(id, ns, encape)
         return encape,conf,upd
 

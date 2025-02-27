@@ -28,7 +28,8 @@ class Dataset(Base):
             id = id.id
         val = (val,id)
         map = dz.get_set(self.ns, ns, dict())
-        map[key] = val
+        dz.dset(map, self.ids(key),val)
+        #map[key] = val
     def add(self, data):
         ns = data.ns
         self.objs[data.id] = data
@@ -64,15 +65,20 @@ class Dataset(Base):
         obj,find = dz.dget(self.pub, ids)
         if find:
             return obj, ids, find
-        return 0,0,0
+        return None,0,0
     def pub_get(self, key, ns=None, id=None):
         obj,keys,find = self._pub_get(key, ns, id)
         if find:
             v,id=obj
             return v,id,keys,find
-        return 0,0,0,0
+        return None,0,0,0
     def ns_get(self, key, ns=None, id=None):
         map = dz.get_set(self.ns, ns, dict())
+        obj, find = dz.dget(map, self.ids(key))
+        if not find:
+            return None,0,0
+        obj, id = obj
+        return obj,id,1
         if key not in map:
             return 0, 0, 0
         v,id=map[key]

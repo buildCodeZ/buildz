@@ -35,7 +35,7 @@ class Manager(Base):
         if type(ids)==str:
             ids = Ids(ids)
         return ids
-    def init(self, ids, deal_key='type', conf_key='id', deal_ids = None):
+    def init(self, ids, deal_key='type', conf_key='id', deal_ids = None, env_ids = None):
         self._index = 0
         self.units = {}
         self.builds = Buildset(self)
@@ -43,11 +43,17 @@ class Manager(Base):
         self.ids = ids
         self.deal_key = self.make_key(deal_key)
         self.conf_key = self.make_key(conf_key)
-        self.deal_ids = pyz.nnull(deal_ids, ids)
+        self.deal_ids = self.make_ids(pyz.nnull(deal_ids, ids))
+        self.env_ids = self.make_ids(pyz.nnull(env_ids, ids))
         self.confs = Dataset(self.ids)
+        self.envs = Dataset(self.env_ids)
         self.deals = Dataset(self.deal_ids)
         self.encapes = Encapeset(self.ids, self)
         self.vars = Varset(self.ids)
+        #
+        self.set_env = self.envs.set
+        self.get_env = self.envs.tget
+        #
         self.push_var = self.vars.vpush
         self.push_vars = self.vars.vpushs
         self.pop_var = self.vars.vpop
@@ -57,6 +63,7 @@ class Manager(Base):
         self.get_var = self.vars.vget
         self.unset_var = self.vars.vremove
         self.unset_vars = self.vars.vremoves
+        #
         self.default_unit = self.create()
     def add_build(self, conf):
         self.builds.add(conf)
@@ -65,13 +72,13 @@ class Manager(Base):
     def add(self, unit):
         unit.bind(self)
         self.units[unit.id] = unit
-    def create(self, ns=None, deal_ns = None, deal_key=None, conf_key= None):
+    def create(self, ns=None, deal_ns = None, env_ns = None, deal_key=None, conf_key= None):
         id = self.id()
         deal_key = pyz.nnull(deal_key, self.deal_key)
         conf_key = pyz.nnull(conf_key, self.conf_key)
         deal_key = self.make_key(deal_key)
         conf_key = self.make_key(conf_key)
-        unit = Unit(ns, deal_ns, deal_key, conf_key, id)
+        unit = Unit(ns, deal_ns, env_ns, deal_key, conf_key, id)
         unit.bind(self)
         return unit
     def get_unit(self, id):
@@ -95,5 +102,16 @@ class Manager(Base):
         return self.encapes.tget(key, ns, id)
     def set_encape(self, key, encape, ns=None, tag=None, id=None):
         self.encapes.set(key, encape, ns, tag, id)
+    def get(self, key, ns=None, id=None,params=None, search_var = True):
+        if search_var:
+            obj, find = self.get_var(key, ns)
+            if find:
+                return obj, 1
+        encape, tag, find = self.get_encape(key, ns, id)
+        if not find:
+            return None, 0
+        return encape(params),1
+
+
 
 pass

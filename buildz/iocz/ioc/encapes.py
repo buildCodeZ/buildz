@@ -98,9 +98,9 @@ class Encapeset(Dataset):
         if Confs.is_conf(key):
             encape, conf, upd = self.make_conf(key, None, id)
             return encape, None, None, Datas.Key.Pub, 1
-        obj, eid, keys, tag, find = super().get(key, ns, tag, id)
+        obj, eid, keys, _tag, find = super().get(key, ns, tag, id)
         if find:
-            return obj, eid, keys, tag, find
+            return obj, eid, keys, _tag, find
         return self.make(key, ns, tag, id)
 
     

@@ -38,12 +38,15 @@ class ObjectDeal(BaseDeal):
     def init(self):
         super().init()
         self.load_srcs = {}
-    def build(self, conf, unit):
+    def deal(self, conf, unit):
         id,id_find = unit.conf_key(conf)
         single = dz.g(conf, single=None)
         if single is None and not id_find:
             single = Single.Key.multi
         src, args, maps, sets = dz.g(conf, source=None, args=[], maps={},sets=[])
+        args = pyz.nnull(args, [])
+        maps = pyz.nnull(maps, {})
+        sets = pyz.nnull(sets, [])
         before_set, after_set = dz.g(conf, before_set=None, after_set=None)
         before_set = self.get_encape(before_set, unit)
         after_set = self.get_encape(after_set, unit)

@@ -2,6 +2,7 @@
 #
 from ..ioc.mg import Manager, GetKey, Ids
 from ... import dz,xf
+from ..conf_deal.deal import DealDeal
 from .unit import ConfUnit
 spt = Ids(".")
 class DLKey(GetKey):
@@ -55,6 +56,7 @@ default_conf = None
 s_default_conf = r"""
     {
         id.spt: '.'
+        env.spt: '.'
         conf:{
             dict.key = 'id'
             list.index = [(0,1)]
@@ -76,8 +78,9 @@ def init():
     default_conf = dz.flush_maps(default_conf)
 class ConfManager(Manager):
     def init(self, conf=None):
-        ids, deal_key, conf_key, deal_ids = self.Conf(conf)
-        super().init(ids, deal_key, conf_key, deal_ids)
+        ids, deal_key, conf_key, deal_ids, env_ids = self.Conf(conf)
+        super().init(ids, deal_key, conf_key, deal_ids, env_ids)
+        self.set_deal('deal', DealDeal())
     @staticmethod
     def Conf(conf=None):
         init()
@@ -92,9 +95,10 @@ class ConfManager(Manager):
         ids = Ids(id_spt)
         deal_spt, find = dz.dget(conf, spt("id.spt"), id_spt)
         deal_ids = Ids(deal_spt)
+        env_spt, find = dz.dget(conf, spt("env.spt"), id_spt)
         deal_key = DLKey.Load(conf['deal'])
         conf_key = DLKey.Load(conf['conf'])
-        return ids, deal_key, conf_key, deal_ids
+        return ids, deal_key, conf_key, deal_ids, env_spt
     def add_conf(self, conf):
         unit = ConfUnit(conf, self)
         return unit

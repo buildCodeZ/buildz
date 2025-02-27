@@ -10,10 +10,13 @@ pass
 class Deal(Base):
     def deal(self, conf, unit):
         return None
+    def update(self, conf, unit):
+        return conf, False
     def call(self, conf, unit):
         'encape, conf, conf_need_udpate'
+        conf, upd = self.update(conf, unit)
         encape = self.deal(conf,unit)
-        return encape,conf,False
+        return encape,conf,upd
 
 pass
 

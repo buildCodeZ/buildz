@@ -1,6 +1,6 @@
 #
 from .tdict import TagDict
-from ... import pyz, dz
+from ... import pyz, dz,Base
 class Key:
     Pub = "pub"
     Pri = "pri"
@@ -9,6 +9,10 @@ class Key:
     tags_pub = [Pub]
     tags_pri = None
 pass
+class UnitBase(Base):
+    def init(self, ns=None, id=None):
+        self.ns = ns
+        self.id = id
 class TagData(TagDict):
     '''
         分成三个域，公共pub，私有pri和同域名ns
@@ -28,7 +32,7 @@ class TagData(TagDict):
         return self.tget(*a,**b)
     @staticmethod
     def nsid(src, id):
-        if isinstance(src, TagData):
+        if isinstance(src, TagData) or isinstance(src, UnitBase):
             ns = src.ns
             id = src.id
         else:

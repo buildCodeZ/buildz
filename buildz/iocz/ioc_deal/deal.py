@@ -16,7 +16,7 @@ class DealDeal(BaseDeal):
     def init(self):
         super().init()
         self.load_srcs = {}
-    def build(self, conf, unit):
+    def deal(self, conf, unit):
         id,id_find = unit.conf_key(conf)
         src, tag, prev_call = dz.g(conf, source=None, tag=None, call=False)
         targets = dz.g(conf, deals=[])
