@@ -1,12 +1,13 @@
 #
 
-from buildz import iocz
-
-from buildz import xf, pyz, Base
-
+from buildz import iocz,xf, pyz, Base
+wraps = iocz.build_wraps()
+ns = wraps('test').wrap
+@ns.obj(id='test')
+@ns.obj.args("env,PATH")
 class Test(Base):
     def str(self):
-        return f'Test<{id(self)}>(id={self.id})'
+        return f'Test(<{id(self)}>|id={self.id})'
     def init(self, id=0):
         super().init()
         self.id = id
@@ -14,35 +15,9 @@ class Test(Base):
         print("Test.show:", self)
 
 pass
-confs = r"""
-confs.pri: {
-    deal_obj:{
-        type=deal
-        src=buildz_bak.iocz.conf_deal.obj.ObjectDeal
-        deals: [obj,object]
-        call=1
-    }
-    deal_val:{
-        type=deal
-        src=buildz_bak.iocz.conf_deal.val.ValDeal
-        deals: [val,value]
-        call=1
-    }
-    deal_ref: {
-        type:deal
-        src:buildz_bak.iocz.conf_deal.ref.RefDeal
-        deals: ref
-        call=1
-    }
-    deal_ioc: {
-        type:deal
-        src:buildz_bak.iocz.conf_deal.ioc.IOCDeal
-        deals: ioc
-        call=1
-    }
-}
-builds: [deal_obj,deal_val,deal_ref,deal_ioc]
-"""
+#ns.obj.args("env,PATH")(Test)
+#ns.obj(id='test')(Test)
+var = 'test_var'
 confs1 = r'''
 ns: xxx
 envs: {
@@ -50,14 +25,17 @@ envs: {
     b=1
 }
 confs.ns: [
-    [[obj, test1], <buildz>.iocz.conf.test.Test, [],{id=[ioc]}]
+    [[obj, test1], <buildz>.iocz.test.test.Test, null,{id=[cvar, <buildz>.iocz.test.test.var]}]
     {
         id=test
         type=obj
-        source=<buildz>.iocz.conf.test.Test
+        source=<buildz>.iocz.test.test.Test
         single=1
         args=[
-            [ref, test1]
+            #[ref, test1]
+            #[env, PATH]
+            [ref, test.test]
+            
         ]
     }
 ]
@@ -67,6 +45,7 @@ def get_env_sys(self, id, sid=None):
     return sysdt
 def test():
     mg = iocz.build()
+    wraps.bind(mg)
     print(mg)
     #unit = mg.add_conf(confs)
     unit = mg.add_conf(confs1)

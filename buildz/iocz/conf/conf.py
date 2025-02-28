@@ -15,7 +15,7 @@ class Conf(Base):
         if not dz.islist(val):
             val = [1, val]
         return val
-    def key(self, key, aliases, need=False, remove=True, deal = None, default=None):
+    def key(self, key, aliases=[], need=False, remove=True, deal = None, default=None):
         self.aliases[key] = list(aliases), need, remove, deal, self.default(default)
     def index(self, i, key=None, need=False, deal = None, dict_out = False, default=None):
         self.lists[i] = key,need,deal, dict_out, self.default(default)

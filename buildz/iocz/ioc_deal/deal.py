@@ -13,9 +13,6 @@ class DealEncape(BaseEncape):
         for target in self.targets:
             self.unit.set_deal(target, src, self.tag)
 class DealDeal(BaseDeal):
-    def init(self):
-        super().init()
-        self.load_srcs = {}
     def deal(self, conf, unit):
         id,id_find = unit.conf_key(conf)
         src, tag, prev_call = dz.g(conf, source=None, tag=None, call=False)
@@ -25,9 +22,7 @@ class DealDeal(BaseDeal):
         if Confs.is_conf(src):
             src = unit.get_encape(src, unit)
         elif type(src)==str:
-            if src not in self.load_srcs:
-                self.load_srcs[src] = pyz.load(src)
-            src = self.load_srcs[src]
+            src = self.load(src)
         return DealEncape(src, targets, tag, prev_call, unit,)
 
 pass

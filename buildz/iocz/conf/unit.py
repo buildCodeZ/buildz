@@ -46,6 +46,7 @@ class ConfUnit(Unit):
         deal_ns = dz.get_one(conf, self.key_deal_ns)
         env_ns = dz.get_one(conf, self.key_env_ns)
         super().init(ns, deal_ns, env_ns)
+        self.tag_key = None
         self.bind(mg)
         self.load(conf)
     def load_confs(self, confs, tag=None):
@@ -56,9 +57,10 @@ class ConfUnit(Unit):
                 rst.append(v)
             confs = rst
         for item in confs:
-            key,find = self.conf_key(item)
-            if find:
-                self.set_conf(key, item, tag)
+            self.add_conf(item, tag)
+            # key,find = self.conf_key(item)
+            # if find:
+            #     self.set_conf(key, item, tag)
     def load_envs(self, envs, tag=None):
         for key, val in envs.items():
             self.set_env(key, val, tag)

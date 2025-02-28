@@ -5,6 +5,10 @@ class TagDict(Base):
         tag = pyz.nnull(tag, self.default)
         rst = dz.get_set(self.maps, tag, dict())
         dz.dremove(rst, key)
+    def update(self, maps, tag=None):
+        tag = pyz.nnull(tag, self.default)
+        rst = dz.get_set(self.maps, tag, dict())
+        dz.fill(maps, rst)
     def set(self, key, val, tag=None):
         tag = pyz.nnull(tag, self.default)
         rst = dz.get_set(self.maps, tag, dict())

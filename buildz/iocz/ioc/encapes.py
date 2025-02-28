@@ -22,7 +22,7 @@ class Encapes(Datas):
         conf, ctag, cfind = self.confs.tget(key, ns, id, False)
         if not cfind:
             return 0,0,0
-        conf, deal_ns = conf
+        conf, deal_ns, cid = conf
         encape, conf, upd = self.make_conf(conf, deal_ns, id)
         if upd:
             self.confs.set(key, conf, ctag)
@@ -31,7 +31,7 @@ class Encapes(Datas):
     def make_conf(self, conf, deal_ns=None, id=None):
         deal_key, dk_find = self.deal_key(conf)
         deal, dtag, dfind = self.deals.tget(deal_key, deal_ns, id, True)
-        assert dfind
+        assert dfind, f'deal for {deal_ns}/{deal_key} not found'
         encape, conf, upd = deal(conf, self.unit)
         return encape, conf, upd
     def tget(self, key, src=None,id=None, gfind=True):
@@ -68,10 +68,10 @@ class Encapeset(Dataset):
         self.deal_key = mg.deal_key
         return self
     def make(self, key, ns=None, tag=None, id = None):
-        conf, cid, keys, ctag, cfind = self.confs.get(key, ns, tag, id)
+        conf, keys, ctag, cfind = self.confs.get(key, ns, tag, id)
         if not cfind:
-            return None,None,None,None,0
-        conf, deal_ns = conf
+            return None,None,None,0
+        conf, deal_ns, cid = conf
         encape, conf, upd  = self.make_conf(conf, deal_ns, id, cid)
         if cid in self.objs:
             obj = self.objs[cid]
@@ -86,11 +86,11 @@ class Encapeset(Dataset):
                 self.confs.objs[cid].set(key, conf, ctag)
         else:
             self.set(key, encape, ns, ctag)
-        return encape, cid, keys, ctag, 1
+        return encape, keys, ctag, 1
     def make_conf(self, conf, deal_ns=None, id=None,cid=None):
         deal_key, dk_find = self.deal_key(conf)
         deal, dtag, dfind = self.deals.tget(deal_key, deal_ns, id)
-        assert dfind
+        assert dfind, f"encapes make_conf deal {deal_ns}/'{deal_key}' not found"
         unit = self.mg.get_unit(cid)
         encape, conf, upd = deal(conf, unit)
         return encape, conf, upd 
@@ -98,9 +98,9 @@ class Encapeset(Dataset):
         if Confs.is_conf(key):
             encape, conf, upd = self.make_conf(key, None, id)
             return encape, None, None, Datas.Key.Pub, 1
-        obj, eid, keys, _tag, find = super().get(key, ns, tag, id)
+        obj, keys, _tag, find = super().get(key, ns, tag, id)
         if find:
-            return obj, eid, keys, _tag, find
+            return obj, keys, _tag, find
         return self.make(key, ns, tag, id)
 
     

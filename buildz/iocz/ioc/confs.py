@@ -10,6 +10,6 @@ class Confs(Datas):
         super().init(ns, id, dts)
         self.deal_ns = deal_ns
     def set(self, key, val, tag=None):
-        val = (val, self.deal_ns)
+        val = (val, self.deal_ns, self.id)
         super().set(key, val, tag)
         

@@ -21,13 +21,24 @@ class Deal(Base):
 pass
 
 class Params(Base):
-    def clone(self, **upds):
-        args, maps = list(self.args), dict(self.maps)
+    @staticmethod
+    def Clone(params, **upds):
+        if params is None:
+            args,maps = [],{}
+        else:
+            args, maps = list(self.args), dict(self.maps)
         maps.update(upds)
-        return Params(args, maps)
+        obj = Params()
+        obj.args = args
+        obj.maps = maps
+        return obj
+    def clone(self, **upds):
+        return Params.Clone(self, **upds)
     def init(self, *args, **maps):
         self.args = args
         self.maps = maps
+    def set(self, key, val):
+        self.maps[key] = val
     def get(self, key, default=None):
         if key not in self.maps:
             return default

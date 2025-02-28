@@ -14,12 +14,13 @@ class Unit(UnitBase):
         if isinstance(src, UnitBase) or isinstance(src, TagData):
             src,id = src.ns, src.id
         return src, id
-    def init(self, ns=None, deal_ns=None, env_ns=None, deal_key = None, conf_key = None, id=None):
+    def init(self, ns=None, deal_ns=None, env_ns=None, deal_key = None, conf_key = None, tag_key = None, id=None):
         super().init(ns, id)
         self.deal_ns = deal_ns
         self.env_ns = env_ns
         self.deal_key = deal_key
         self.conf_key = conf_key
+        self.tag_key = tag_key
         self.confs = Confs(ns, deal_ns, id)
         self.deals = Datas(deal_ns, id)
         self.envs = Envs(env_ns, id)
@@ -43,6 +44,7 @@ class Unit(UnitBase):
         self.mg = mg
         self.deal_key = pyz.nnull(self.deal_key, mg.deal_key)
         self.conf_key = pyz.nnull(self.conf_key, mg.conf_key)
+        self.tag_key = pyz.nnull(self.tag_key, mg.tag_key)
         if self.id is None:
             self.id = mg.id()
             self.confs.set_id(self.id)
@@ -55,9 +57,15 @@ class Unit(UnitBase):
         self.envs.bind(mg.envs)
         self.build_encapes()
         self.encapes.bind(mg.encapes)
+    def lc_get_env(self, key, ns=None, tag=None, id=None):
+        return self.envs.tget(key, ns, id, False)
     def get_env(self, key, src=-1, id=None, gfind=True):
         src, id = self.nsid(src, id)
-        return self.envs.tget(key, src, id, gfind)
+        if not gfind:
+            return self.lc_get_env(key, src, None, id)
+        return self.mg.get_env(key, src, None, id, self.lc_get_env)
+    def update_env(self, maps, tag=None, flush=False):
+        self.envs.update(maps, tag, flush)
     def set_env(self, key, val, tag=None):
         self.envs.set(key, val, tag)
     def get_deal(self, key, src=-1, id=None, gfind=True):
@@ -71,6 +79,15 @@ class Unit(UnitBase):
     def set_conf(self, key, conf, tag=None):
         self.conf_key.fill(conf, key)
         self.confs.set(key, conf, tag)
+    def tag(self, conf, _tag=None):
+        if _tag is None:
+            _tag, find = self.tag_key(conf)
+        return _tag
+    def add_conf(self, conf, tag = None):
+        key,find = self.conf_key(conf)
+        tag = self.tag(conf, tag)
+        if find:
+            self.set_conf(key, conf, tag)
     def get_encape(self, key, src=-1, id=None, gfind=True):
         src, id = self.nsid(src, id)
         self.mg.build()
@@ -80,7 +97,7 @@ class Unit(UnitBase):
     def get_var(self, key, src=-1, tag=None):
         src, id = self.nsid(src, None)
         return self.mg.get_var(key, src, tag)
-    def get(self, key, src=-1, id=None, gfind=True, params=None, search_var=True):
+    def get(self, key, params=None, src=-1, id=None, gfind=True, search_var=True):
         src, id = self.nsid(src, id)
         if search_var:
             obj, find = self.mg.get_var(key, src, TagData.Key.Ns)
@@ -90,3 +107,5 @@ class Unit(UnitBase):
         if not find:
             return None, 0
         return encape(params),1
+    def get_obj(self, key, params=None, src=-1, id=None, gfind = True, search_var=True):
+        return self.get(key, params, src, id, gfind, search_var)[0]

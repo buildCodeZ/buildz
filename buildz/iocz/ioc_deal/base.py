@@ -1,7 +1,25 @@
 from ..ioc.base import *
 from ..ioc.confs import Confs
-from ... import dz
+from ... import dz,pyz
+class CacheLoads(Base):
+    def init(self):
+        self.loads = {}
+    def call(self, src):
+        if src not in self.loads:
+            self.loads[src] = pyz.load(src)
+        return self.loads[src]
+
+pass
+loads = CacheLoads()
 class BaseEncape(Encape):
+    load = loads
+    def elist2obj(self, list, params=None):
+        return [self.obj(k,params) for k in list]
+    def edict2obj(self, list, params=None, dict=True):
+        if dict:
+            return {self.obj(k, params):self.obj(v, params) for k,v in list}
+        else:
+            return [[self.obj(it, params) for it in k] for k in list]
     @staticmethod
     def obj(val,*a,**b):
         if not isinstance(val, Encape):
@@ -10,6 +28,29 @@ class BaseEncape(Encape):
 
 pass
 class BaseDeal(Deal):
+    load = loads
+    def get_elist(self, unit, conf, key, default=[]):
+        val = None
+        if key in conf:
+            val = conf[key]
+        if val is None:
+            val = default
+        return self.list2encape(val, unit)
+    def get_edict(self, unit, conf, key, default={}):
+        val = None
+        if key in conf:
+            val = conf[key]
+        if val is None:
+            val = default
+        return self.dict2encape(val, unit)
+    def dict2encape(self, maps, unit):
+        rst = []
+        for k,v in dz.dict2iter(maps):
+            rst.append((self.get_encape(k, unit),self.get_encape(v, unit)))
+        return rst
+    def list2encape(self, list, unit):
+        list = [self.get_encape(k, unit) for k in list]
+        return list
     def init(self):
         self.cache_encapes = {}
     def cache_get(self, key, ns):

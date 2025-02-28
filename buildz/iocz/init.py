@@ -2,6 +2,7 @@
 
 from .conf import mg
 from .. import xf
+from .wrap import wraps, default_wraps
 s_default_conf = r"""
 confs.pri: {
     deal_obj:{
@@ -28,8 +29,26 @@ confs.pri: {
         deals: ioc
         call=1
     }
+    deal_cvar: {
+        type=deal
+        src: <buildz>.iocz.conf_deal.cvar.CVarDeal
+        deals: cvar
+        call=1
+    }
+    deal_call: {
+        type=deal
+        src: <buildz>.iocz.conf_deal.call.CallDeal
+        deals: (call, fc)
+        call=1
+    }
+    deal_env: {
+        type=deal
+        src: <buildz>.iocz.conf_deal.env.EnvDeal
+        deals: env
+        call=1
+    }
 }
-builds: [deal_obj,deal_val,deal_ref,deal_ioc]
+builds: [deal_obj,deal_val,deal_ref,deal_ioc,deal_cvar, deal_env,deal_call]
 """.replace("<buildz>", "buildz")
 def build(conf = None, default_conf = True):
     global s_default_conf
@@ -43,3 +62,9 @@ def build(conf = None, default_conf = True):
     return obj
 
 pass
+
+def build_wraps(default=True):
+    obj = wraps.WrapUnits()
+    if default:
+        default_wraps.build(obj)
+    return obj

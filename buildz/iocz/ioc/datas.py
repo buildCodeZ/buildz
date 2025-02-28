@@ -13,6 +13,9 @@ class Datas(TagData):
             return
         self.dts = dts
         dts.add(self)
+    def update(self, maps, tag=None):
+        for key, val in maps.items():
+            self.set(key, val, tag)
     def set(self, key, val, tag=None):
         tag = pyz.nnull(tag, self.default)
         super().set(key, val, tag)
