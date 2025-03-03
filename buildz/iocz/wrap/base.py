@@ -32,7 +32,8 @@ class WrapBase(Base):
     def init(self, unit=None):
         self.wrap_conf = {}
         self.confs = []
-        self.unit = unit
+        self.unit = None
+        self.bind(unit)
     def clone(self, unit):
         return self.__class__(unit)
     def bind(self, unit):

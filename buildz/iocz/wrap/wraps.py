@@ -27,13 +27,22 @@ class WrapUnit(Unit):
         for conf, tag in self.tmp_confs:
             self.add_conf(conf, tag)
         self.tmp_confs = []
+        for fc in self.binds:
+            fc(mg)
+        self.binds = []
     def init(self, ns=None, deal_ns = None, env_ns = None, units=None):
         super().init(ns, deal_ns, env_ns)
         self.units = None
         self.tmp_confs = []
         self.fcs = {}
+        self.binds = []
         self.wrap = WrapFcs(self, self.fcs)
         self.bind_units(units)
+    def add_bind(self, fc):
+        if self.mg is not None:
+            fc(self.mg)
+        else:
+            self.binds.append(fc)
     def bind_units(self, units):
         if self.units == units:
             return

@@ -132,6 +132,7 @@ class EvalBuilder(Base):
                 {type: val, data: 'test'}
             ]
         }
+        eq(var(name),val(test))
     """
     def init(self, default_type = None):
         self._default_type = default_type

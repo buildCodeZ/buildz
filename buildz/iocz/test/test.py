@@ -1,10 +1,13 @@
 #
 
 from buildz import iocz,xf, pyz, Base
+profiles = xf.loads(r"""
+PYTHON_PATH=test
+""")
 wraps = iocz.build_wraps()
 ns = wraps('test').wrap
 @ns.obj(id='test')
-@ns.obj.args("env,PATH")
+@ns.obj.args("env,PYTHON_PATH")
 class Test(Base):
     def str(self):
         return f'Test(<{id(self)}>|id={self.id})'
@@ -15,6 +18,7 @@ class Test(Base):
         print("Test.show:", self)
 
 pass
+ns.load_profiles(profiles)
 #ns.obj.args("env,PATH")(Test)
 #ns.obj(id='test')(Test)
 var = 'test_var'

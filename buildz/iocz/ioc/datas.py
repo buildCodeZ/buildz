@@ -18,6 +18,7 @@ class Datas(TagData):
             self.set(key, val, tag)
     def set(self, key, val, tag=None):
         tag = pyz.nnull(tag, self.default)
+        tag = TagData.Key.stand(tag)
         super().set(key, val, tag)
         if self.dts is not None and tag in (TagData.Key.Pub, TagData.Key.Ns):
                 self.dts.set(key, val, self.ns, tag, self)

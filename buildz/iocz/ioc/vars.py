@@ -15,6 +15,7 @@ class Varset(Dataset):
     def tag(self, _tag):
         if _tag is None:
             _tag = TagData.Key.Pub
+        _tag = TagData.Key.stand(_tag)
         return _tag
     def init(self, ids):
         super().init(ids)

@@ -8,6 +8,24 @@ class Key:
     tags_ns = [Ns,Pub]
     tags_pub = [Pub]
     tags_pri = None
+    @staticmethod
+    def is_pub(s):
+        return s in ("pub", "public")
+    @staticmethod
+    def is_pri(s):
+        return s in ("pri", "prv", "private")
+    @staticmethod
+    def is_ns(s):
+        return s in ("ns", "namespace")
+    @staticmethod
+    def stand(s):
+        if Key.is_pub(s):
+            return Key.Pub
+        elif Key.is_ns(s):
+            return Key.Ns
+        elif Key.is_pri(s):
+            return Key.Pri
+        return None
 pass
 class UnitBase(Base):
     def init(self, ns=None, id=None):

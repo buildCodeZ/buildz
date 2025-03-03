@@ -5,9 +5,11 @@ class Conf(Base):
     '''
         list to dict
     '''
-    def init(self):
+    def init(self, v2l=True):
         self.lists = {}
         self.aliases = {}
+        self.ranges = {}
+        self.v2l = v2l
     @staticmethod
     def default(val):
         if val is None:
@@ -15,13 +17,33 @@ class Conf(Base):
         if not dz.islist(val):
             val = [1, val]
         return val
+    def range(self, key, base, last=None, min = 0, default=None):
+        self.ranges[key] = base,last,min,self.default(default)
     def key(self, key, aliases=[], need=False, remove=True, deal = None, default=None):
         self.aliases[key] = list(aliases), need, remove, deal, self.default(default)
     def index(self, i, key=None, need=False, deal = None, dict_out = False, default=None):
         self.lists[i] = key,need,deal, dict_out, self.default(default)
+    def range_to_dict(self, rst, conf, unit=None):
+        for key, item in self.ranges.items():
+            base,last,min,default = item
+            if last is None:
+                tmp = conf[base:]
+            else:
+                tmp = conf[base:last]
+            if len(tmp)<min:
+                if default[0]:
+                    val = default[1]
+                else:
+                    assert 0,f"require key '{key}' not set in list {conf}"
+            else:
+                val = tmp
+            rst[key] = val
     def to_dict(self, conf, unit=None):
         if not dz.islist(conf):
-            return conf, False
+            if not dz.isdict(conf) and self.v2l:
+                conf = [conf]
+            else:
+                return conf, False
         rst = {}
         for i,item in self.lists.items():
             key, need, deal, out_dict, default = item
@@ -39,6 +61,7 @@ class Conf(Base):
                 rst.update(val)
             else:
                 rst[key] = val
+        self.range_to_dict(rst, conf, unit)
         return rst, 1
     def update_dict(self, conf, unit=None):
         upd = False

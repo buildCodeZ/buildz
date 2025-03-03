@@ -44,7 +44,7 @@ confs.pri: {
     deal_env: {
         type=deal
         src: <buildz>.iocz.conf_deal.env.EnvDeal
-        deals: env
+        deals: (env, profile,conf)
         call=1
     }
 }

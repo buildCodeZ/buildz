@@ -26,17 +26,47 @@ or
     ...
 ]
 '''
+def split2list(s, by=','):
+    if s is None:
+        return [s]
+    if not dz.islist(s):
+        s = s.split(by)
+    return s
+def join_nnull(by, *args):
+    args = [k for k in args if k is not None and k!=""]
+    return by.join(args)
+    
+def joins(prefix, suffix=None, by='.', split=","):
+    prefix = split2list(prefix,split)
+    suffix = split2list(suffix,split)
+    rst = []
+    for pfx in prefix:
+        for sfx in suffix:
+            rst.append(join_nnull(by, pfx, sfx))
+    return rst
+
+
 class ConfUnit(Unit):
-    key_ns = ('id', 'namespace', 'ns')
-    key_deal_ns = "deal_id,deal_ns,deal_namespace".split(",")
-    key_env_ns = "env_id,env_ns,env_namespace".split(",")
-    key_confs_pub = "confs.pub,confs".split(",")
-    key_confs_pri = "confs.pri,confs.prv".split(",")
-    key_confs_ns = "confs.ns,confs.namespace".split(",")
-    key_envs_pub = "envs.pub,envs".split(",")
-    key_envs_pri = "envs.pri,envs.prv".split(",")
-    key_envs_ns = "envs.ns,envs.namespace".split(",")
-    key_builds = "builds,build".split(",")
+    #key_ns = ('id', 'namespace', 'ns')
+    key_ns = joins("id,namespace,ns")
+    #key_deal_ns = "deal_id,deal_ns,deal_namespace".split(",")
+    key_deal_ns = joins("deal", "id,ns,namespace", "_")
+    #key_env_ns = "env_id,env_ns,env_namespace,profile_id,profile_ns,profile_namespace".split(",")
+    key_env_ns = joins("env,profile", "id,ns,namespace", "_")
+    #key_confs_pub = "confs.pub,confs".split(",")
+    key_confs_pub = joins("confs,conf", "pub,")
+    #key_confs_pri = "confs.pri,confs.prv".split(",")
+    key_confs_pri = joins("confs,conf", "pri,prv")
+    #key_confs_ns = "confs.ns,confs.namespace".split(",")
+    key_confs_ns = joins("confs,conf", "ns,namespace")
+    #key_envs_pub = "envs.pub,envs,profiles,profiles.pub".split(",")
+    key_envs_pub = joins("envs,env,profiles,profile", "pub,Pub,P,")
+    #key_envs_pri = "envs.pri,envs.prv,profiles.pri,profiles.prv".split(",")
+    key_envs_pri = joins("envs,env,profiles,profile", "pri,prv,local,p,l")
+    #key_envs_ns = "envs.ns,envs.namespace,profiles.ns,profiles.namespace".split(",")
+    key_envs_ns = joins("envs,env,profiles,profile", "ns,namespace,n")
+    #key_builds = "builds,build".split(",")
+    key_builds = joins("builds,build")
     def init(self, conf, mg):
         if type(conf)==str:
             conf = xf.loads(conf)

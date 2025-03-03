@@ -22,7 +22,7 @@ class EnvDeal(BaseDeal):
         conf = BaseConf()
         conf.index(1, 'env', need=1)
         conf.index(2, 'default')
-        conf.key('env', "data,key".split(","), need=1)
+        conf.key('env', "data,key,profile,conf".split(","), need=1)
         self.update = conf
     def deal(self, conf, unit):
         assert 'env' in conf

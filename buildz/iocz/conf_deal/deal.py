@@ -6,8 +6,8 @@ class DealDeal(deal.DealDeal):
         super().init()
         conf = BaseConf()
         conf.index(1, 'source', need=1)
-        conf.index(2, 'tag')
-        conf.index(3, 'call')
+        conf.index(2, 'call')
+        conf.index(3, 'tag')
         conf.key('source', 'src'.split(","), need=1)
         self.update = conf
 
