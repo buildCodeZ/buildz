@@ -1,7 +1,7 @@
 AndBuild: [&&,&,and]
 OrBuild: [||,|, or]
 XorBuild: [^, xor]
-EqualBuild: ['=','==',equal]
+EqualBuild: ['=','==',equal, eq]
 BiggerBuild: ['>', bigger,bg]
 BiggerEqualBuild: ['>=', be]
 LittlerBuild: ['<', littler,lt]

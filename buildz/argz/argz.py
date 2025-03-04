@@ -1,5 +1,4 @@
-from buildz import Base, xf
-from . import build
+from .. import Base, xf, dz
 class ArgExp(Exception):
     def __repr__(self):
         return self.__str__()
@@ -13,14 +12,46 @@ class ArgExp(Exception):
         self.des = des
 
 pass
+class ArgType:
+    list = 'list'
+    dict='dict'
+    @staticmethod
+    def stand(s):
+        if ArgType.islist(s):
+            return ArgType.list
+        return ArgType.dict
+    @staticmethod
+    def islist(s):
+        return s in ('list','l','lst','args')
+    @staticmethod
+    def isdict(s):
+        return s in ('dict', 'd', 'dct', 'maps')
+
+pass
+class Params(Base):
+    def init(self, args=[], maps={}):
+        self.args = args
+        self.maps = maps
 class Args(Base):
-    def call(self, args, maps):
-        return args, maps
+    '''
+        参数映射基础类
+    '''
+    Type=ArgType
+    def call(self, params):
+        return params
+    def deal(self, args, maps):
+        params = self.call(Params(args,maps))
+        return params.args, params.maps
     def deal_exp(self, exp):
         return exp
 
 pass
 class ArrArgs(Args):
+    '''
+        参数映射类的队列，顺序处理
+    '''
+    def str(self):
+        return f"ArrArgs(args={self.args})"
     def init(self, args = None):
         if args is None:
             args = []
@@ -28,64 +59,72 @@ class ArrArgs(Args):
     def add(self, item):
         self.args.append(item)
         return self
-    def call(self, args, maps):
+    def call(self, params):
+        args, maps = params.args, params.maps
         i=0
         try:
             for i in range(len(self.args)):
                 item = self.args[i]
-                args, maps = item(args,maps)
+                params = item(params)
         except ArgExp as exp:
-            for j in range(i-1, -1, -1):
-                exp = self.args[j].deal_exp(exp)
+            exp = self.deal_exp(exp, i-1)
             raise exp
-        return args, maps
-    def deal_exp(self, exp):
-        for i in range(len(self.args)-1, -1, -1):
+        #params.args, params.maps = args, maps
+        return params
+    def deal_exp(self, exp, base=None):
+        if base is None:
+            base = len(self.args)-1
+        for i in range(base, -1, -1):
             exp = self.args[i].deal_exp(exp)
         return exp
 class RangeListArgs(Args):
-    def init(self, min = 0, max = None):
+    '''
+        范围映射
+    '''
+    def str(self):
+        return f"RangeArgs(base={self.base}, last={self.last}, min={self.min})"
+    def init(self, base = 0, last = None, min=0):
+        self.base = base
+        self.last = last
         self.min = min
-        self.max = max
     def deal_exp(self, exp):
         trs = set()
         for key, vtype in exp.trs:
-            if vtype=='list':
-                trs.add((key+self.min, vtype))
+            if ArgType.islist(vtype):
+                trs.add((key+self.base, vtype))
             else:
                 trs.add((key, vtype))
-        #exp.trs = trs
         return ArgExp(exp.stype, trs, exp.des, exp)
-    def call(self, args, maps):
-        if len(args)<self.min:
-            raise ArgExp("need", set([(self.min, 'list')]))
-        if self.max is None:
-            args = args[self.min:]
+    def call(self, params):
+        args, maps = params.args, params.maps
+        if self.last is None:
+            args = args[self.base:]
         else:
-            args = args[self.min:self.max]
-        return args, maps
-class RangeListBuild(build.Build):
-    def call(self, conf):
-        rg = xf.g(conf, range=None)
-        if rg is None:
-            return None
-        if type(rg)==int:
-            rg = [rg, None]
-        return RangeListArgs(*rg)
+            args = args[self.base:self.last]
+        if len(args)<self.min:
+            raise ArgExp("need", set([(self.base, 'list')]))
+        return Params(args, maps)
+        params.args, params.maps = args, maps
+        return params
+
+
 class ArgItem(Base):
+    '''
+        单个字段映射处理
+    '''
     # vtype = 'dict' | 'list'
-    def init(self, key, vtype="dict", need = False, default = False, value = None, des = None,remove=True):
+    def init(self, key, vtype=ArgType.dict, need = False, default = False, default_value = None, des = None,remove=True):
         self.vtype = vtype
         self.key = key
         self.need = need
         self.default = default
-        self.value = value
+        self.default_value = default_value
         self.trs = []
         self.remove = remove
         if des is None:
             des = key
         self.des = des
-    def add(self, key, vtype="dict"):
+    def add(self, key, vtype=ArgType.dict):
         self.trs.append((key, vtype))
         return self
     def deal_exp(self, exp):
@@ -95,138 +134,99 @@ class ArgItem(Base):
                 trs.update(self.trs)
             else:
                 trs.add((key, vtype))
-        #exp.trs = trs
         return ArgExp(exp.stype, trs, exp.des, exp)
-        return exp
+    def fetch(self, key, vtype, set_args, args, maps):
+        find = False
+        val=None
+        if ArgType.isdict(vtype):
+            val,find = dz.dget(maps, key)
+            if find:
+                if self.remove:
+                    dz.dremove(maps, key)
+        else:
+            if key in set_args:
+                val = args[key]
+                if self.remove:
+                    set_args.remove(key)
+                find = True
+        return val, find
     def call(self, set_args, args, maps, rst_args, rst_maps):
         val = None
         find = False
         for key, vtype in self.trs:
-            if vtype =="dict":
-                if xf.dhas(maps, key):
-                    val = xf.dget(maps, key)
-                    if self.remove:
-                        xf.dremove(maps, key)
-                    find=True
-                    break
-                #if key in maps:
-                #    val = maps[key]
-                #    if self.remove:
-                #        del maps[key]
-                #    find = True
-                #    break
-            else:
-                if key in set_args:
-                    val = args[key]
-                    if self.remove:
-                        set_args.remove(key)
-                    find = True
-                    break
-        if not find:
-            if self.default:
-                find = True
-                val = self.value
+            val, find = self.fetch(key, vtype, set_args, args, maps)
+            if find:
+                break
+        if not find and self.default:
+            find = True
+            val = self.default_value
         if not find and self.need:
             raise ArgExp("need", set(self.trs), self.des)
-        if self.vtype == 'dict':
+        if not find:
+            return
+        if ArgType.isdict(self.vtype):
             xf.dset(rst_maps, self.key, val)
-            #rst_maps[self.key] = val
         else:
             rst_args[self.key] = val
 
 pass
-class ArgItemBuild(build.Build):
-    def call(self, key, vtype, conf):
-        need = xf.g(conf, need=False)
-        default = xf.g(conf, default=False)
-        value = xf.g(conf, value=None)
-        des = xf.g(conf, des=None)
-        remove = xf.g(conf, remove=True)
-        src = xf.g(conf, src=None)
-        srcs = xf.g(conf, srcs = [])
-        if src is not None:
-            srcs.append(src)
-        src = srcs
-        item = ArgItem(key, vtype, need, default, value, des, remove)
-        for s in src:
-            if type(s) not in (list, tuple):
-                if type(s)==int:
-                    s = [s, 'list']
-                else:
-                    s = [s, 'dict']
-            if s[1] in ('l', 'args'):
-                s[1] = 'list'
-            elif s[1] in ('d', 'maps'):
-                s[1] = 'dict'
-            item.add(*s)
-        return item
+class ListFill:
+    '''
+        数组映射后，中间缺失位置如何处理
+        exp=报错
+        null=填充None
+    '''
+    exp='exp'
+    null = 'null'
+    default=exp
 class TrsArgs(Args):
+    def str(self):
+        return f"TrsArgs(args={len(self.args)}, keep={self.keep}, fill = {self.list_fill})"
+    '''
+        数据映射
+    '''
     def deal_exp(self, exp):
         for item in self.args:
             exp = item.deal_exp(exp)
         return exp
-    def init(self, args=None, keep = True):
+    def init(self, args=None, keep = False, list_fill = ListFill.default):
         super().init()
         if args is None:
             args = []
         self.args = args
         self.keep = keep
+        self.list_fill = list_fill
     def add(self, item):
         self.args.append(item)
         return self
-    def call(self, args, maps):
+    def call(self, params):
+        args, maps = params.args, params.maps
         rst_args, rst_maps = {}, {}
         set_args = set(range(len(args)))
         for item in self.args:
             item(set_args, args, maps, rst_args, rst_maps)
+        if self.keep and len(set_args)>0:
+            for i in set_args:
+                if i not in rst_args:
+                    rst_args[i] = args[i]
         l_args = 0
         if len(rst_args)>0:
-            l_args= max(rst_args.keys())
+            l_args= max(rst_args.keys())+1
         out_args = []
-        if self.keep and len(set_args)>0:
-            for i in range(max(set_args)):
-                if i in set_args:
-                    out_args.append(args[i])
-        for i in range(l_args+1):
+        for i in range(l_args):
             if i in rst_args:
-                if len(out_args)<i:
-                    raise ArgExp("need", set([(i, 'list')]))
                 out_args.append(rst_args[i])
+            else:
+                if self.list_fill == ListFill.null:
+                    out_args.append(None)
+                else:
+                    raise ArgExp("need", set([(i, ArgType.list)]))
         if self.keep:
             for k in maps:
                 if k not in rst_maps:
                     rst_maps[k] = maps[k]
-        return out_args, rst_maps
+        return Params(out_args, rst_maps)
+        params.args, params.maps = out_args, rst_maps
+        return params
 
 pass
-class TrsArgsBuild(build.Build):
-    def init(self):
-        self.item = ArgItemBuild()
-        super().init(self.item)
-    def call(self, conf):
-        keep = xf.g(conf, keep = False)
-        lst = xf.g1(conf, list={}, args={})
-        dct = xf.g1(conf, dict={}, maps={})
-        items = []
-        for k, val in lst.items():
-            items.append(self.item(k, 'list', val))
-        for k, val in dct.items():
-            items.append(self.item(k, 'dict', val))
-        if len(items)==0:
-            return None
-        return TrsArgs(items, keep)
-class ArrArgsBuild(build.Build):
-    def init(self):
-        self.range = RangeListBuild()
-        self.trs = TrsArgsBuild()
-        super().init(self.trs, self.range)
-    def call(self, conf):
-        rg = self.range(conf)
-        trs = self.trs(conf)
-        if rg is None and trs is None:
-            return None
-        arr = [rg, trs]
-        arr = [k for k in arr if k is not None]
-        if len(arr)==1:
-            return arr[0]
-        return ArrArgs(arr)

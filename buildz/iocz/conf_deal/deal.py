@@ -5,10 +5,10 @@ class DealDeal(deal.DealDeal):
     def init(self):
         super().init()
         conf = BaseConf()
-        conf.index(1, 'source', need=1)
+        conf.ikey(1, 'source', 'src'.split(","), need=1)
         conf.index(2, 'call')
-        conf.index(3, 'tag')
-        conf.key('source', 'src'.split(","), need=1)
+        conf.ikey(3, 'deals', 'deal'.split(","))
+        conf.index(4, 'tag')
         self.update = conf
 
 pass

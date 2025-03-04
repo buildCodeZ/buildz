@@ -19,10 +19,19 @@ class Conf(Base):
         return val
     def range(self, key, base, last=None, min = 0, default=None):
         self.ranges[key] = base,last,min,self.default(default)
-    def key(self, key, aliases=[], need=False, remove=True, deal = None, default=None):
-        self.aliases[key] = list(aliases), need, remove, deal, self.default(default)
+        return self
+    def ikey(self, index=None, key=None, aliases=[], need=False, remove=True, deal = None, dict_out = False, default=None):
+        if index is not None:
+            self.index(index, key, need, deal, dict_out, default)
+        if key is not None:
+            self.key(key, aliases, need, remove, deal, dict_out, default)
+        return self
+    def key(self, key, aliases=[], need=False, remove=True, deal = None, dict_out = False, default=None):
+        self.aliases[key] = list(aliases), need, remove, deal, dict_out, self.default(default)
+        return self
     def index(self, i, key=None, need=False, deal = None, dict_out = False, default=None):
         self.lists[i] = key,need,deal, dict_out, self.default(default)
+        return self
     def range_to_dict(self, rst, conf, unit=None):
         for key, item in self.ranges.items():
             base,last,min,default = item
@@ -66,7 +75,7 @@ class Conf(Base):
     def update_dict(self, conf, unit=None):
         upd = False
         for key, item in self.aliases.items():
-            aliases, need, remove, deal, default = item
+            aliases, need, remove, deal, dict_out, default = item
             if key not in conf:
                 for name in aliases:
                     if name in conf:
@@ -83,6 +92,10 @@ class Conf(Base):
             if key in conf and deal is not None:
                 conf[key], _upd = deal(conf[key], unit)
                 upd = upd or _upd
+            if key in conf:
+                val = conf[key]
+                if dz.isdict(val) and dict_out:
+                    dz.fill(val, conf, 1)
         return upd
     def call(self, conf, unit=None):
         conf, upd = self.to_dict(conf, unit)

@@ -12,19 +12,20 @@ key:{
 }
 key: [
     src, 
-    [des, need, remove]
     [default, default_value]
+    [des, need, remove]
 ]
 """
 class ArgItemConf(conf.Conf):
     def init(self):
         super().init()
-        self.index(0, 'src', need=1)
-        self.key('src', need=1)
+        self.index(0, 'src')
+        self.key('src')
         df = conf.Conf()
         df.index(0, 'default')
         df.index(1, 'default_value')
-        self.index(1, df, dict_out=1)
+        self.index(1,deal= df, dict_out=1)
+        self.key('default', deal=df, dict_out=1)
         des = conf.Conf()
         des.index(0, 'des')
         des.index(1,'need')
@@ -52,7 +53,7 @@ class ArgSrcConf(conf.Conf):
         data['type'] = ArgType.stand(vtype)
         return data, upd
 
-class TrsArgsBuild(Base):
+class TrsArgsBuilder(Base):
     def init(self):
         self.conf = ArgItemConf()
         self.src_conf = ArgSrcConf()
@@ -65,7 +66,6 @@ class TrsArgsBuild(Base):
                 srcs = [srcs]
             for src in srcs:
                 src, _ = self.src_conf(src)
-                print(f"CONF src: {src}")
                 key, vtype = src['key'], src['type']
                 it.add(key, vtype)
             obj.add(it)
@@ -80,9 +80,9 @@ class TrsArgsBuild(Base):
         self.visits(dicts, ArgType.dict, obj)
         return obj
 
-class FullArgsBuild(Base):
+class FullArgsBuilder(Base):
     def init(self):
-        self.trs_build = TrsArgsBuild()
+        self.trs_build = TrsArgsBuilder()
         cf = conf.Conf()
         rcf = conf.Conf()
         rcf.index(0, 'base')

@@ -2,6 +2,7 @@
 
 from .conf import mg
 from .. import xf
+from .ioc.base import Params
 from .wrap import wraps, default_wraps
 s_default_conf = r"""
 confs.pri: {
