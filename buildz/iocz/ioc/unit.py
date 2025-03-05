@@ -97,6 +97,9 @@ class Unit(UnitBase):
     def get_var(self, key, src=-1, tag=None):
         src, id = self.nsid(src, None)
         return self.mg.get_var(key, src, tag)
+    def push_vars(self, kvs, src=-1, tag=None):
+        src, id = self.nsid(src, None)
+        return self.mg.push_vars(kvs, src, tag)
     def get(self, key, params=None, src=-1, id=None, gfind=True, search_var=True):
         src, id = self.nsid(src, id)
         if search_var:

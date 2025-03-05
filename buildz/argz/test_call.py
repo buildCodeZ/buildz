@@ -41,19 +41,43 @@ conf = r"""
     (cvar, search_fc)
     buildz.fz.search
 ]
+[
+    (obj, search_obj)
+    buildz.fz.search
+    [(ref, dp)]
+]
+(
+    (vargz, vmain)
+    (vsearch)
+)
+{
+    type: vargz
+    id: vsearch
+    call: search_obj
+    judge: eq(args[0], search)
+    conf={
+        range: 1
+        dict: {
+            dp: ((0, dp), false, (null,1))
+            pt_fp: ((1, pt_fp), (true,null))
+            pt: ((2, pt), (true,null))
+        }
+    }
+}
 """
 def test_fc(*a, **b):
     print(f"test_fc({a}, {b})")
     return a,b
 def test():
-    args = ['env','.']
+    args = ['search','.']
     maps = {
         'pt_fp': r".*\.py$"
     }
     bd = argz.build()
     bd.adds(conf)
     bd.push_var("test_fc",test_fc)
-    rst = bd("main", args, maps)
+    #rst = bd("main", args, maps)
+    rst = bd.get("vmain", args, maps)
     print(f"rst: {rst}")
     print(bd.mg.envs)
     pass

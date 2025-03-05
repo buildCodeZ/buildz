@@ -29,6 +29,8 @@ class ArgType:
 
 pass
 class Params(Base):
+    def str(self):
+        return f"Params(args={self.args}, maps={self.maps})"
     def init(self, args=[], maps={}):
         self.args = args
         self.maps = maps

@@ -34,13 +34,45 @@ class ArgsCallEncape(BaseEncape):
             fcs = [self.ref(fc, self.unit) for fc in self.fcs]
             self.call_fc = Call(fcs, self.args, self.eval)
         return self.call_fc
+class IOCZVarCallEncape(BaseEncape):
+    def init(self, fc, args, eval, unit):
+        if not dz.islist(fc):
+            fc = [fc]
+        self.fcs = fc
+        self.args = args
+        self.eval = eval
+        self.unit = unit
+    def call(self, params=None,**maps):
+        if params is None:
+            params = iocz.Params()
+        inputs = params.inputs
+        if inputs is None:
+            inputs = argz.Params()
+        if not cal_eval(self.eval, inputs):
+            return None
+        inputs = cal_args(self.args, inputs)
+        params.inputs = inputs
+        return deal_exp(self.deal, params, self.args)
+    def deal(self, params):
+        with self.unit.push_vars(params.inputs.maps):
+            val = None
+            for fc in self.fcs:
+                if type(fc)==str:
+                    fc, _tag, find = self.unit.get_encape(fc)
+                    assert find, f"fc '{fc}' not found"
+                _val = fc(params)
+                val = pyz.nnull(_val, val)
+            return val
 class ArgsCallDeal(BaseDeal):
-    def init(self, fc=True, update_env = False):
+    def init(self, fc=True, update_env = False, fc_encape=None):
         super().init()
         _conf = BaseConf()
         index=1
         self.fc = fc
         self.update_env = update_env
+        if fc_encape is None:
+            fc_encape = ArgsCallEncape
+        self.fc_encape = fc_encape
         if fc:
             _conf.ikey(1, 'fc', 'fcs,calls,call'.split(','))
             _conf.ikey(2, 'eval', "judges,judge,evals".split(","))
@@ -69,15 +101,17 @@ class ArgsCallDeal(BaseDeal):
                 fcs = [EnvFc(unit)]
             else:
                 fcs = [RetFc()]
-        # if self.update_env and not self.fc:
-        #     return UpdateEnvEncape(_args, _eval, unit)
-        return ArgsCallEncape(fcs, _args, _eval, unit)
+        return self.fc_encape(fcs, _args, _eval, unit)
 class RetArgsDeal(ArgsCallDeal):
     def init(self):
         super().init(False)
 class UpdateEnvDeal(ArgsCallDeal):
     def init(self):
         super().init(False,True)
+
+class IOCZVarCallDeal(ArgsCallDeal):
+    def init(self):
+        super().init(fc_encape=IOCZVarCallEncape)
 confs = xf.loads(r"""
 # confs.pri: {
 #     deal_args: {
@@ -106,8 +140,14 @@ confs.pri: [
         1,
         [argz,argz_call,argz_fc]
     )
+    (
+        (deal, deal_var)
+        buildz.argz.conf_callz.IOCZVarCallDeal
+        1,
+        [vargz, argz_var]
+    )
 ]
-builds: [deal_args, deal_ret, deal_argz_env]
+builds: [deal_args, deal_ret, deal_argz_env, deal_var]
 """)
 class ConfBuilder(Base):
     def init(self, conf=None):
@@ -126,7 +166,7 @@ class ConfBuilder(Base):
             conf = xf.loads(conf)
         conf = {'confs': [conf]}
         self.mg.add_conf(conf)
-    def call(self, key, args, maps):
+    def call(self, key, args=[], maps={}):
         params = argz.Params(args, maps)
         #p = iocz.Params(params=params)
         fc, find = self.mg.get(key)
@@ -134,3 +174,9 @@ class ConfBuilder(Base):
         assert find, f"key not found: '{key}'"
         return fc(params)[0]
         return rst[0]
+    def get(self, key, args=[], maps={}, ns=None):
+        inputs = argz.Params(args, maps)
+        params = iocz.Params(inputs=inputs)
+        obj, find = self.mg.get(key, params=params)
+        assert find, f"key not found: '{key}'"
+        return obj

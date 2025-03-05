@@ -2,12 +2,12 @@
 
 from buildz import iocz,xf, pyz, Base
 profiles = xf.loads(r"""
-PYTHON_PATH=test
+xxx.test_var=profile_var_test
 """)
 wraps = iocz.build_wraps()
-ns = wraps('test').wrap
-@ns.obj(id='test')
-@ns.obj.args("env,PYTHON_PATH")
+ns = wraps().wrap
+@ns.obj(id='test_warp')
+@ns.obj.args("ref,xxx.test_var")
 class Test(Base):
     def str(self):
         return f'Test(<{id(self)}>|id={self.id})'
@@ -28,6 +28,9 @@ envs: {
     a=0
     b=1
 }
+confs: [
+    [(val,test_var), conf_var_test]
+]
 confs.ns: [
     [[obj, test1], <buildz>.iocz.test.test.Test, null,{id=[cvar, <buildz>.iocz.test.test.var]}]
     {
@@ -38,7 +41,7 @@ confs.ns: [
         args=[
             #[ref, test1]
             #[env, PATH]
-            [ref, test.test]
+            [ref, test_warp]
             
         ]
     }

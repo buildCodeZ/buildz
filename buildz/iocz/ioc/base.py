@@ -26,7 +26,7 @@ class Params(Base):
         if params is None:
             args,maps = [],{}
         else:
-            args, maps = list(self.args), dict(self.maps)
+            args, maps = list(params.args), dict(params.maps)
         maps.update(upds)
         obj = Params()
         obj.args = args

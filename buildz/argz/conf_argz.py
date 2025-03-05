@@ -27,8 +27,8 @@ class ArgItemConf(conf.Conf):
         self.index(1,deal= df, dict_out=1)
         self.key('default', deal=df, dict_out=1)
         des = conf.Conf()
-        des.index(0, 'des')
-        des.index(1,'need')
+        des.index(0,'need')
+        des.index(1, 'des')
         des.index(2, 'remove')
         self.index(2, deal=des, dict_out=1)
 

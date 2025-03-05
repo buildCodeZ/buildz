@@ -8,7 +8,7 @@ class SysEnvs(Base):
     def tget(self, key, ns=None, tag=None, id=None):
         rst = os.getenv(key)
         if rst is None and ns is not None:
-            gkey = self.ids.id(self.ids(key), self.ids(ns))
+            gkey = self.ids.id(self.ids(ns)+self.ids(key))
             rst = os.getenv(gkey)
         if rst is None:
             return None, TagData.Key.Pub, 0

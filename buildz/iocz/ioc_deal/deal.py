@@ -7,7 +7,8 @@ class DealEncape(BaseEncape):
         super().init()
         self.src, self.targets, self.tag, self.prev_call, self.unit = src, targets, tag, prev_call, unit
     def call(self, params=None, **maps):
-        src = self.src
+        #src = self.src
+        src = self.obj(self.src)
         if self.prev_call:
             src = src()
         for target in self.targets:
@@ -20,7 +21,7 @@ class DealDeal(BaseDeal):
         if type(targets) not in (list, tuple):
             targets = [targets]
         if Confs.is_conf(src):
-            src = unit.get_encape(src, unit)
+            src = self.get_encape(src, unit)
         elif type(src)==str:
             src = self.load(src)
         return DealEncape(src, targets, tag, prev_call, unit,)

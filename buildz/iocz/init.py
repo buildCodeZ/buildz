@@ -48,8 +48,30 @@ confs.pri: {
         deals: (env, profile,conf)
         call=1
     }
+    eref: {
+        type=obj
+        src: <buildz>.iocz.conf_deal.ref.RefDeal
+        args: (0)
+    }
+    deal_eref: {
+        type=deal
+        src: [ref, eref]
+        deals: (eref)
+        call=0
+    }
+    refe: {
+        type=obj
+        src: <buildz>.iocz.conf_deal.ref.RefDeal
+        args: (1)
+    }
+    deal_refe: {
+        type=deal
+        src: [ref, refe]
+        deals: (refe)
+        call=0
+    }
 }
-builds: [deal_obj,deal_val,deal_ref,deal_ioc,deal_cvar, deal_env,deal_call]
+builds: [deal_obj,deal_val,deal_ref,deal_ioc,deal_cvar, deal_env,deal_call, deal_eref, deal_refe]
 """.replace("<buildz>", "buildz")
 def build(conf = None, default_conf = True):
     global s_default_conf
