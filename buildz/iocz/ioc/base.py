@@ -21,6 +21,8 @@ class Deal(Base):
 pass
 
 class Params(Base):
+    def str(self):
+        return f"iocz.Params(args={self.args}, maps={self.maps})"
     @staticmethod
     def Clone(params, **upds):
         if params is None:

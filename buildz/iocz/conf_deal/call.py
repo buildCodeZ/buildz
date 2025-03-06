@@ -2,7 +2,7 @@
 from .base import *
 from ... import dz,pyz
 class CallEncape(BaseEncape):
-    def init(self, unit, cvar, args, maps):
+    def init(self, unit, call, args, maps):
         super().init()
         self.unit = unit
         self.params = call, args, maps
@@ -10,7 +10,8 @@ class CallEncape(BaseEncape):
         call, args, maps = self.params
         call = self.obj(call)
         if type(call)==str:
-            call = self.unit.get(call)
+            call,find = self.unit.get(call)
+        assert call is not None
         args = self.elist2obj(args)
         maps = self.edict2obj(maps)
         return call(*args, **maps)

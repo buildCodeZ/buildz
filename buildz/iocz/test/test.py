@@ -6,7 +6,7 @@ xxx.test_var=profile_var_test
 """)
 wraps = iocz.build_wraps()
 ns = wraps().wrap
-@ns.obj(id='test_warp')
+@ns.obj(id='test_wrap')
 @ns.obj.args("ref,xxx.test_var")
 class Test(Base):
     def str(self):
@@ -14,8 +14,11 @@ class Test(Base):
     def init(self, id=0):
         super().init()
         self.id = id
-    def call(self):
-        print("Test.show:", self)
+    def call(self, val=None):
+        if val is None:
+            val = self
+        print("Test.show:", val)
+        return self
 
 pass
 ns.load_profiles(profiles)
@@ -41,10 +44,11 @@ confs.ns: [
         args=[
             #[ref, test1]
             #[env, PATH]
-            [ref, test_warp]
-            
+            [method, call,test_wrap]
         ]
+        call: [method, call]
     }
+    [[call,test_call], test, (0)]
 ]
 '''.replace("<buildz>", "buildz")
 def get_env_sys(self, id, sid=None):
@@ -56,6 +60,9 @@ def test():
     print(mg)
     #unit = mg.add_conf(confs)
     unit = mg.add_conf(confs1)
+    val,find=unit.get("test_call")
+    print(f"test_call: {val,find}")
+    exit()
     with mg.push_vars({"test": 123}):
         it, find = unit.get("test")
         print(f"it: {it, id(it)}, find: {find}")

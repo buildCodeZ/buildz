@@ -29,7 +29,7 @@ class ObjectEncape(BaseEncape):
         args = self.elist2obj(self.args,params)
         _maps = self.edict2obj(self.maps,params)
         obj = src(*args, **_maps)
-        obj_conf = Params.Clone(params, target=obj)
+        obj_conf = Params.Clone(params, obj=obj)
         self.obj(self.before_set, obj_conf)
         sets = self.edict2obj(self.sets, params, False)
         for k,v in sets:

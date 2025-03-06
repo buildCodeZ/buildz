@@ -137,8 +137,12 @@ class EvalBuilder(Base):
     def init(self, default_type = None):
         self._default_type = default_type
         self.builds = {}
+        self._default_build = None
     def default_type(self, dtype):
         self._default_type = dtype
+    def default_build(self, fc):
+        self._default_build = fc
+        return self
     def set(self, key, fc):
         if type(key) not in (list, tuple):
             key = [key]
@@ -154,6 +158,8 @@ class EvalBuilder(Base):
         if type(data['data']) not in (list, tuple, set):
             data['data'] = [data['data']]
         tp = data['type']
+        if tp not in self.builds and self._default_build is not None:
+            return self._default_build(data)
         assert tp in self.builds
         return self.builds[tp](data)
     @staticmethod

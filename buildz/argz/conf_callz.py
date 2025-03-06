@@ -87,7 +87,7 @@ class ArgsCallDeal(BaseDeal):
         conf_args = dz.g(conf, conf=None)
         _eval = None
         if conf_eval is not None:
-            _eval = evalBuilder(conf_eval)
+            _eval = evalBuilder.default_build(UnitBuild(unit))(conf_eval)
         _args = None
         if conf_args is not None:
             _args = self.args_builder(conf_args)

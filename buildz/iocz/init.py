@@ -70,8 +70,20 @@ confs.pri: {
         deals: (refe)
         call=0
     }
+    deal_method: {
+        type=deal
+        src=<buildz>.iocz.conf_deal.method.MethodDeal
+        deals=(method,obj_fc,o_fc)
+        call=1
+    }
+    deal_attr: {
+        type=deal
+        src=<buildz>.iocz.conf_deal.attr.AttrDeal
+        deals=(attr, obj_var, o_var)
+        call=1
+    }
 }
-builds: [deal_obj,deal_val,deal_ref,deal_ioc,deal_cvar, deal_env,deal_call, deal_eref, deal_refe]
+builds: [deal_obj,deal_val,deal_ref,deal_ioc,deal_cvar, deal_env,deal_call, deal_eref, deal_refe,deal_method,deal_attr]
 """.replace("<buildz>", "buildz")
 def build(conf = None, default_conf = True):
     global s_default_conf

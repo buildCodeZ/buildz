@@ -50,11 +50,14 @@ conf = r"""
     (vargz, vmain)
     (vsearch)
 )
+(
+    (val, test_var),123
+)
 {
     type: vargz
     id: vsearch
     call: search_obj
-    judge: eq(args[0], search)
+    judge: and(eq(args[0], search),eq(ref(test_var),123))
     conf={
         range: 1
         dict: {

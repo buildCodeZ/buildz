@@ -32,5 +32,20 @@ class SizeEval(evalz.Eval):
 class SizeBuild(evalz.Build):
     def call(self, data):
         return SizeEval(data['data'][0])
+class UnitEval(evalz.Eval):
+    def init(self, encape):
+        self.encape = encape
+    def call(self, obj):
+        return self.encape()
+class UnitBuild(evalz.Build):
+    def init(self, unit):
+        super().init()
+        self.unit = unit
+    def call(self, data):
+        conf = [data['type']]+data['data']
+        encape, _, find = self.unit.get_encape(conf)
+        assert find
+        return UnitEval(encape)
+
 sb = SizeBuild()
 evalBuilder = evalz.EvalBuilder.Make().set(["l","list","args"], lb).set(['d','dict','maps'], db).set("size,len".split(","), sb)
