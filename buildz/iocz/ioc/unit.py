@@ -27,6 +27,13 @@ class Unit(UnitBase):
         self.builds = Builds(self)
         self.mg = None
         self.build_encapes()
+        self.vars = []
+    def deal_vars(self):
+        if self.mg is None or len(self.vars)==0:
+            return
+        for kvs, src, tag in self.vars:
+            self.push_vars(kvs, src, tag)
+        self.vars = []
     def add_build(self, conf):
         self.builds.add(conf)
     def build(self):
@@ -57,6 +64,7 @@ class Unit(UnitBase):
         self.envs.bind(mg.envs)
         self.build_encapes()
         self.encapes.bind(mg.encapes)
+        self.deal_vars()
     def lc_get_env(self, key, ns=None, tag=None, id=None):
         return self.envs.tget(key, ns, id, False)
     def get_env(self, key, src=-1, id=None, gfind=True):
@@ -98,6 +106,9 @@ class Unit(UnitBase):
         src, id = self.nsid(src, None)
         return self.mg.get_var(key, src, tag)
     def push_vars(self, kvs, src=-1, tag=None):
+        if self.mg is None:
+            self.vars.append([kvs, src, tag])
+            return
         src, id = self.nsid(src, None)
         return self.mg.push_vars(kvs, src, tag)
     def get(self, key, params=None, src=-1, id=None, gfind=True, search_var=True):

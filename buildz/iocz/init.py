@@ -85,7 +85,7 @@ confs.pri: {
 }
 builds: [deal_obj,deal_val,deal_ref,deal_ioc,deal_cvar, deal_env,deal_call, deal_eref, deal_refe,deal_method,deal_attr]
 """.replace("<buildz>", "buildz")
-def build(conf = None, default_conf = True):
+def build(conf = None, default_conf = True, default_wrap = True):
     global s_default_conf
     if default_conf and type(default_conf) not in (str, list, tuple, dict):
         default_conf = s_default_conf
@@ -94,6 +94,8 @@ def build(conf = None, default_conf = True):
     obj = mg.ConfManager(conf)
     if default_conf:
         obj.add_conf(default_conf)
+    if default_wrap:
+        get_wraps().bind(obj)
     return obj
 
 pass
@@ -103,3 +105,13 @@ def build_wraps(default=True):
     if default:
         default_wraps.build(obj)
     return obj
+
+global_wraps = None
+def get_wraps():
+    global global_wraps
+    if global_wraps is None:
+        global_wraps = build_wraps()
+    return global_wraps
+
+def get_wrap(ns=None):
+    return get_wraps()(ns)
