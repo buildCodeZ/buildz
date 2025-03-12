@@ -1,5 +1,5 @@
 
-from . import proxy,mhttp
+from . import proxy,mhttp,mhttps
 import socket, threading
 log = mhttp.log
 from buildz import xf
@@ -72,9 +72,7 @@ class CapsDealer(proxy.ProxyDealer):
     def context(self, hostname):
         if hostname not in self.contexts:
             fp_cert, fp_prv, pwd = self.sign(hostname)
-            context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            context.load_cert_chain(fp_cert, fp_prv, password=pwd)
-            self.contexts[hostname]=context
+            self.contexts[hostname]=mhttps.load_server_context(fp_cert, fp_prv, pwd)
         return self.contexts[hostname]
     def deal_channel(self, skt_cli, skt_srv):
         #self.wskt.closefile()
@@ -92,7 +90,7 @@ class CapsDealer(proxy.ProxyDealer):
                 line, headers, data_size = mhttp.http_recv(skt_cli)
                 if line is None:
                     continue
-                self.default_deal(skt_cli, line, headers, data_size, skt_srv)
+                self.deals[None](skt_cli, line, headers, data_size, skt_srv)
         except Exception as exp:
             log.debug(f"channel exp: {exp}")
             log.warn(f"traceback: {traceback.format_exc()}")
@@ -110,29 +108,9 @@ class CapsProxy(proxy.Proxy):
         # context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         # context.load_cert_chain(fp_sign, fp_prv, password=password)
         self.ca = fp_sign, fp_prv, password
-        if cafile is not None or capath is not None or cadata is not None:
-            # 导入根证书，需要单个根证书文件cafile或者根证书文件夹capath或者根证书数据cadata
-            # cadata是证书数据，不清楚能不能多个证书字节码拼在一起
-            srv_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            srv_context.load_verify_locations(cafile=cafile, capath=capath, cadata=cadata)
-            srv_context.check_hostname = check_hostname
-        else:
-            # 不会校验服务端https证书是否有效，可能有风险？
-            srv_context = ssl._create_unverified_context(ssl.PROTOCOL_TLS_CLIENT)
-        #self.context = context
-        self.srv_context = srv_context
+        self.srv_context = mhttps.load_verify_context(cafile, capath, cadata,check_hostname)
         if dp_cache is None:
             dp_cache = "./res/certs"
         self.dp_cache = dp_cache
-    def call(self):
-        self.running=True
-        skt = socket.socket()
-        skt.bind(self.addr)
-        skt.listen(self.listen)
-        self.skt = skt
-        while self.running:
-            skt,addr = self.skt.accept()
-            deal = CapsDealer(skt, self.ca, self.srv_context, record=self.record.clone(), dp_cache = self.dp_cache)
-            th = threading.Thread(target=deal,daemon=True)
-            th.start()
-            self.ths.append(th)
+    def make_dealer(self, skt, addr):
+        return CapsDealer(skt, self.ca, self.srv_context, record=self.record.clone(), dp_cache = self.dp_cache)

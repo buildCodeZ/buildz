@@ -62,17 +62,21 @@ def http_decode(line):
     #log.debug(f"http_docde: {a,b,c}")
     return a,b,c.strip()
 pass
-def http_encode_send(http_type, url, headers=None, data_size=0, protocol = "HTTP/1.1"):
+def spt_url(url):
     index = url.find("://")
     prev = url[:index]
     url = url[index+3:]
-    index = url.find("/")
-    if index>=0:
-        addr = url[:index]
-        url = url[index:]
-    else:
-        addr = url
-        url = "/"
+    addr = url.split("?")[0].split("/")[0]
+    url = url[len(addr):]
+    if len(url)==0 or url[0]!="/":
+        url = "/"+url
+    return prev, addr, url
+
+pass
+def comb_url(prev, addr, url):
+    return prev+"://"+addr+url
+def http_encode_send(http_type, url, headers=None, data_size=0, protocol = "HTTP/1.1"):
+    prev, addr, url = spt_url(url)
     addrs = addr.split(":")
     ip = addrs[0]
     if prev.upper()=="HTTP":
@@ -171,20 +175,24 @@ class SendDone(Base):
         if not self.to_rel:
             return
         self.skt.close()
-def http_send_head(http_type, url, headers=None, data_size=0,protocol='HTTP/1.1', skt=None, caches=None):
+def http_send_head(http_type, url, headers=None, data_size=0,protocol='HTTP/1.1', skt=None, caches=None, fc_connect=None):
     if caches is None:
         caches = {}
     bts, addr,keep_alive = http_encode_send(http_type, url, headers, data_size,protocol=protocol)
+    pfx = spt_url(url)[0].lower()
+    if fc_connect is None:
+        fc_connect = WSocket.Connect
     #log.debug(f"request addr: {addr}")
     #log.debug(f"http_send: {len(bts)}")
     retry=0
     use_caches=skt is None and keep_alive
     need_rel = keep_alive
+    addr_key = tuple([pfx]+list(addr))
     if skt is None:
-        if not keep_alive or addr not in caches:
-            skt = WSocket.Connect(addr)
-        elif addr in caches:
-            skt = caches[addr]
+        if not keep_alive or addr_key not in caches:
+            skt = fc_connect(addr)
+        else:
+            skt = caches[addr_key]
             retry=1
     else:
         need_rel=False
@@ -193,12 +201,12 @@ def http_send_head(http_type, url, headers=None, data_size=0,protocol='HTTP/1.1'
         skt.send(bts)
     except:
         if retry:
-            skt=WSocket.Connect(addr)
+            skt=fc_connect(addr)
             skt.send(bts)
         else:
             raise
     if use_caches:
-        caches[addr]=skt
+        caches[addr_key]=skt
     return skt,fc_done
 
 class HttpMonitor(Base):
