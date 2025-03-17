@@ -1,3 +1,6 @@
+## 2025/03/18
+pytorch+cuda实现简单的内存缓存模型，显存进行计算的代码框架，目前只实现线性模型拆分，后续可能会添加ResNet拆分
+代码例子见buildz.gpuz.test.test_middle_conv1
 ## 2025/03/12
 netz加上正向代理代码，demo在buildz.netz.test.test_gw里
 ## 2025/03/10
