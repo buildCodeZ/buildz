@@ -1,3 +1,5 @@
+## 2025/03/19
+pytorch+cuda，利用pytorch的勾子实现内存缓存模型，昨天写的有问题，今天重写了一个，类路径是buildz.gpuz.torch.DictCache，ResNet也可以拆了
 ## 2025/03/18
 pytorch+cuda实现简单的内存缓存模型，显存进行计算的代码框架，目前只实现线性模型拆分，后续可能会添加ResNet拆分
 代码例子见buildz.gpuz.test.test_middle_conv1

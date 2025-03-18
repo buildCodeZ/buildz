@@ -2,7 +2,11 @@
 import torch
 from torch import nn
 import threading as th
-class CacheModel:
+'''
+注：
+代码有误，原本以为register_full_backward_hook的勾子函数是在模型反向梯度计算之前调用的，后来发现是反向梯度计算之后调用的，本来本代码使用局限就比较多（要求拆分的模型线性连接），直接重写了个buildz.gpuz.torch.dict_middle作为代替，本代码暂时先放着，后续会做修改或者删除
+'''
+class SeqCache:
     '''
         用处：显存不够，同时模型可以拆成多个小模型线性连接的时候，可以用本代码，本代码会在forward和backward的时候自动把小的多层网络轮流放到gpu里计算，计算完再转cpu里
         需要使用者手动将多层网络拆分成多个更小一点的多层网络

@@ -8,43 +8,45 @@
     CPU: i7-13700H
     内存: 16GB
 
-1）线性层测试：
-模型: 
-    float32，120层，每层的输入输出维度都是2000，数据量1.789GB，每个线性层后面加一个LeakyReLU激活函数
-数据: 
-    60个数据，每个数据2000维度，分成两个批量（每个批量30个数据），数据量0.000447GB
+1）线性层：
+训练模式：
+python -m buildz.gpuz.test.test_linear_demo train cuda,cache,cpu
+结果：
+data size: 0.457763671875 MB
+Model Size: 1.7890334129333496 GB
+Analyze
+    mean time cost not used DictCache: 4.274392604827881 sec
+    mean time cost using DictCache: 4.48450231552124 sec
+    mean time cost using CPU: 24.141416311264038 sec
 
-训练一次（两个批量的数据）平均耗时
-纯显卡: 4.13秒
-纯CPU耗时: 14.7秒
-模型分层，轮流传显卡里计算: 3.67秒（因为显存足够，实际上等于纯显卡）
-模型分层，显卡已经被使用2.3GB: 6.5秒
-模型分层，显卡已经被使用3.9GB: 9.5秒
+用不用DictCache耗时都是4秒左右，猜测是因为显存足够，显存里自己做了缓存
+先占掉4GB显存再测试：
+占用4GB显存（开另一个命令行窗口执行）
+python -m buildz.gpuz.test.take_gpu_mem 20
+时间测试（去掉cuda是因为显存不够，全部用cuda会直接报错显存不足，根本用不了）：
+python -m buildz.gpuz.test.test_linear_demo train cache,cpu
+Analyze
+    mean time cost using DictCache: 12.55063670873642 sec
+    mean time cost using CPU: 23.80371403694153 sec
 
-2）卷积测试：
-模型：
-    float32，60层，卷积核输入输出channel都是3，卷积核大小5，数据量0.00005GB，每个线性层后面加一个LeakyReLU激活函数
-数据：
-    20个数据，每个数据3个通道*512宽*512高，分成两个批量（每个批量10个数据），数据量0.059GB
+用DictCache要12.6秒左右，性能推测是全部用显存的1/3，但起码比CPU快
 
-训练一次（两个批量的数据）平均耗时
-纯显卡: 1.52秒
-纯CPU耗时: 41秒
-模型分层，轮流传显卡里计算: 3.36秒（因为显存足够，实际上等于纯显卡）
-纯显卡，显卡已经被使用3.9GB: 23秒（cuda+torch奇葩的地方出现了，猜测是在显存不够的时候，舍弃一些计算反向梯度要用的缓存，反向梯度的时候重新计算，导致时间开销增大很多）
-模型分层，显卡已经被使用3.9GB: 3.3秒
+测试模式：
+python -m buildz.gpuz.test.test_linear_demo eval cuda,cache,cpu
+Analyze
+    mean time cost not used DictCache: 0.022499561309814453 sec
+    mean time cost using DictCache: 1.3205116987228394 sec
+    mean time cost using CPU: 0.3452974557876587 sec
 
+测试模式DictCache比CPU还慢，没啥好说的，以测试结果为准，结论是测试模式线性层有显存用显存，没显存用CPU，尽量别用DictCache，猜测是因为测试模式下每个小模型的计算量很小，速度很快，这时候就显得显存和内存之间的传输很消耗时间
 
-
-3）卷积测试1(test_middle_conv1.py)：
-模型：
-    float32，22层网络，卷积核大小5，每层网络两层卷积（30通道到60通道一层卷积，60通道回到30通道一层卷积）再加一个LeakyReLU激活函数，数据量0.0074GB，每个线性层后面加一个LeakyReLU激活函数
-数据：
-    6个数据，每个数据30个通道*512宽*512高，分成三个批量（每个批量2个数据），数据量0.059GB
-
-训练一次（两个批量的数据）平均耗时
-纯显卡: 3.73秒
-纯CPU耗时: 44秒
-模型分层，轮流传显卡里计算: 7.5秒（因为显存足够，实际上等于纯显卡）
-纯显卡，显卡已经被使用3.9GB: 116秒
-模型分层，显卡已经被使用3.9GB: 7.7秒
+2）卷积层：
+python -m buildz.gpuz.test.test_resnet_demo train cuda,cache,cpu
+结果：
+data size: 60.0 MB
+Model Size: 2.75390625 MB
+Analyze
+    mean time cost not used DictCache: 4.0497170554267035 sec
+    mean time cost using DictCache: 8.11503267288208 sec
+    mean time cost using CPU: 60.47528860304091 sec
+CPU模式下卷积一直很慢，另外别看模型参数很小，全放显存的时候8GB显卡直接占满了
