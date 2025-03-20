@@ -1,3 +1,5 @@
+## 2025/03/20
+写了个tcp端口转发代码,buildz.netz.tcp
 ## 2025/03/19
 pytorch+cuda，利用pytorch的勾子实现内存缓存模型，昨天写的有问题，今天重写了一个，类路径是buildz.gpuz.torch.DictCache，ResNet也可以拆了
 ## 2025/03/18

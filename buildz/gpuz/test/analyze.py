@@ -32,16 +32,24 @@ def default_fc_opt(net, opt):
     torch.nn.utils.clip_grad_norm_(net.parameters(), max_norm=1.0)
     opt.step()
 def analyze(use_cache, use_cuda, mark_train, loop, fc_gen, dataloader, loss_fn, fc_opt, win_size):
-    mds, gmodel, opts, gopt = fc_gen()
+    tmp = list(fc_gen())
+    mds = tmp.pop(0)
+    gmodel = tmp.pop(0)
+    opts = tmp.pop(0)
+    gopt = tmp.pop(0)
+    dvs_nets = None
+    if len(tmp)>0:
+        dvs_nets = tmp.pop(0)
     dv = cuda
     if not use_cuda:
         use_cache = False
     cache = None
     if use_cache:
-        cache = DictCache([cuda, cpu], mds, opts, win_size, fc_opt)
+        cache = DictCache([cuda, cpu], mds, opts, win_size, fc_opt, dvs_nets)
     if not use_cuda:
         dv = cpu
-    gmodel = gmodel.to(dv)
+    if not use_cache:
+        gmodel = gmodel.to(dv)
     s_val = "mean loss"
     if mark_train:
         if not use_cache:
@@ -59,23 +67,24 @@ def analyze(use_cache, use_cuda, mark_train, loop, fc_gen, dataloader, loss_fn, 
         total_loss = 0
         curr=time.time()
         if mark_train:
-            for dt in dataloader:
+            for dt,tgt in dataloader:
                 dt=dt.to(dv)
+                tgt = tgt.to(dv)
                 if not use_cache:
                     gopt.zero_grad()
                     out = gmodel(dt)
-                    loss = loss_fn(out, dt)
+                    loss = loss_fn(out, tgt)
                     loss.backward()
                     fc_opt(gmodel, gopt)
                 else:
                     [opt.zero_grad() for opt in opts] #写gopt.zero_grad()应该也可以，只是删掉之前计算的梯度
                     out = cache.do_forward(lambda :gmodel(dt)) # 其实只是加了勾子函数，实际的计算还是模型计算
-                    loss = loss_fn(out, dt)
+                    loss = loss_fn(out, tgt)
                     cache.do_backward(lambda : loss.backward()) # 加勾子函数
                 total_loss+=loss.item()
         else:
             with torch.no_grad():
-                for dt in dataloader:
+                for dt,tgt in dataloader:
                     dt=dt.to(dv)
                     if not use_cache:
                         out = gmodel(dt)
@@ -102,6 +111,7 @@ def analyzes(mark_train, loop, fc_gen, dataloader, loss_fn = None, fc_opt = None
         fc_opt = default_fc_opt
     if 'gpu' in modes:
         modes = list(modes)+['cuda']
+    print(f"modes: {modes}")
     # 正常做法：只用显卡
     if 'cuda' in modes:
         print("No Used DictCache")

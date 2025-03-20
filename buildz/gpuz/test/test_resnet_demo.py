@@ -40,7 +40,7 @@ class TestDataset(Dataset):
     def __len__(self):
         return self.n
     def __getitem__(self, i):
-        return self.datas[i]
+        return self.datas[i], self.datas[i]
 
 pass
 def gen(dims, nets_num, channels, middle_channels, num_conv, lr):
@@ -99,6 +99,6 @@ def test():
     loss_fn = torch.nn.MSELoss()
     def fc_gen():
         return gen(dims, nets, channels, middle_channels, num_conv, lr)
-    analyze.analyzes(mark_train, loop, fc_gen, dl, loss_fn, fc_opt, win_size, 'cuda,cache,cpu')
+    analyze.analyzes(mark_train, loop, fc_gen, dl, loss_fn, fc_opt, win_size, modes)
 
 pyz.lc(locals(),test)

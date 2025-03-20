@@ -33,7 +33,7 @@ class TestDataset(Dataset):
     def __len__(self):
         return self.n
     def __getitem__(self, i):
-        return self.datas[i]
+        return self.datas[i], self.datas[i]
 
 pass
 

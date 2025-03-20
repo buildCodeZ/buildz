@@ -7,7 +7,7 @@ import ssl,re
 from os.path import join, isfile
 import traceback
 from ...iocz.conf import conf as confz
-from ... import dz
+from ... import dz,pyz
 class GWDealer(proxy.ProxyDealer):
     conf = confz.Conf()
     conf.ikey(0, 'match', need=1)
@@ -88,3 +88,18 @@ class Gateway(proxy.Proxy):
         self.context = None if fp_cert is None else mhttps.load_server_context(fp_cert, fp_prv, password)
     def make_dealer(self, skt, addr):
         return GWDealer(skt, self.rules, self.verify_context, self.context, record=self.record.clone())
+
+def test():
+    import sys,time
+    from buildz import xf
+    conf_fp = sys.argv[1]
+    conf = xf.loadf(conf_fp)
+    addr = tuple(conf['addr'])
+    rules = conf['rules']
+    px = Gateway(addr, rules)
+    th = threading.Thread(target=px,daemon=True)
+    th.start()
+    print(f"start on {(ip, port)}")
+    while px.running:
+        time.sleep(1)
+pyz.lc(locals(), test)

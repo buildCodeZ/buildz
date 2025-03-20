@@ -33,7 +33,7 @@ def test():
     mds,gmodel,opts,gop=fc_gen()
     ds = TestDataset(datas, dims)
     dl = DataLoader(ds, batch)
-    dt = list(dl)[0]
+    dt = list(dl)[0][0]
     gmodel = gmodel.cuda()
     with torch.no_grad():
         dt=dt.cuda()
