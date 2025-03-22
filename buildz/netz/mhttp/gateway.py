@@ -79,7 +79,7 @@ class GWDealer(proxy.ProxyDealer):
 
 class Gateway(proxy.Proxy):
     '''
-        类似nginx的前向代理
+        类似nginx的反向代理
     '''
     def init(self, addr, rules, fp_cert=None, fp_prv=None, password = None,listen=5, record=None, cafile=None, capath=None, cadata=None,check_hostname=True):
         super().init(addr, listen, record)

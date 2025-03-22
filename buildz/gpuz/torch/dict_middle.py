@@ -16,9 +16,14 @@ pass
 class DictCache(Base):
     '''
         用处：显存不够的时候，可以用本代码框架，代码会在forward和backward的时候自动把nets列表里需要计算的模型放入显存，不需要计算的放到内存，需要进行卷积训练的时候用处比较大（卷积计算显卡比CPU强太多）
-        使用本框架需要传入手动拆分成多个小模型的模型列表nets
+        暂不支持多显卡，因为开发者的电脑没有多显卡
+        DictCache实际提供两个功能：
+            1，缓存功能：模型需要使用的时候放显存，不需要的时候放内存
+            2，部分模型全放显存，部分模型全放内存，DictCache内部做传入数据的显存和内存的转换
+            两个功能可以同时使用，即部分模型用的时候放显存，不用的时候放内存，部分模型全放显存，部分模型全放内存
+        使用本框架需要使用者手动把模型拆成多个小模型，把小模型列表nets传入DictCache
         训练时大概有纯显卡二分之一到三分之一的性能，起码比CPU好，尤其是进行卷积计算，比cpu好太多
-        训练完使用时的线性层则比CPU还慢，但卷积还是比CPU好，所以非训练情况下，线性层最好都放gpu或cpu
+        训练完使用时的线性层则比CPU还慢，感觉没必要用，不过DictCache也提供了部分模型全放显存，部分模型全放内存的功能，显存不够的时候可以使用
         DictCache里的Dict意思是传入的模型列表nets会存字典里，Cache就是用内存作为显存的缓存
         代码实现原理是利用pytorch的几个勾子函数：
             model.register_forward_pre_hook会在模型forward之前调用
@@ -29,6 +34,7 @@ class DictCache(Base):
                 hook_unpack是在反向梯度计算的时候取回forward存储的tensor
         代码例子:
         code in buildz.gpuz.test.demo:
+
             from buildz.gpuz.torch import DictCache
             import torch
             from torch import nn,optim
@@ -69,6 +75,7 @@ class DictCache(Base):
                 torch.nn.utils.clip_grad_norm_(net.parameters(), max_norm=1.0)
                 opt.step()
             cache = DictCache([torch.device('cuda'), torch.device('cpu')],models,opts,3,opt_step, [cuda_models,cpu_models])
+
             # 训练:
             [md.train() for md in models]
             for inputs,targets in dataloader:
@@ -84,6 +91,7 @@ class DictCache(Base):
             with torch.no_grad():
                 outputs = cache.do_forward(lambda:real_model(inputs))
             print(outputs)
+            
             # 对比不用DictCache的时候
             # 注意：模型放入DictCache之后会挂上勾子函数，不再用DictCache的时要先调用DictCache的remove方法
             cache.remove()
@@ -100,7 +108,6 @@ class DictCache(Base):
                 torch.nn.utils.clip_grad_norm_(real_model.parameters(), max_norm=1.0)
                 full_opt.step()
                 print(loss.item())
-
             # 测试:
             inputs = torch.rand(1, dims).cuda()
             with torch.no_grad():

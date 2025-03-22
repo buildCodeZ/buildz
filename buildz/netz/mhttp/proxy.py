@@ -49,7 +49,6 @@ class ProxyDealer(Base):
         self.record.response(line, headers, data_size)
         protocol, code, rsp_text = line
         bts = mhttp.http_encode_rsp(code, rsp_text, headers, data_size, protocol)
-        print(f"[TESTZ] bts send: {bts}")
         skt_cli.send(bts)
         if data_size>0:
             data = skt.read(data_size)
@@ -166,15 +165,20 @@ class Proxy(Base):
         self.skt.close()
     def make_dealer(self, skt, addr):
         return ProxyDealer(skt, record=self.record.clone())
-    def call(self):
+    def call(self, wait_time=0.1):
         self.running=True
         skt = socket.socket()
         skt.bind(self.addr)
         skt.listen(self.listen)
         self.skt = skt
-        while self.running:
-            skt,addr = self.skt.accept()
-            deal = self.make_dealer(skt, addr)
-            th = threading.Thread(target=deal,daemon=True)
-            th.start()
-            self.ths.append(th)
+        try:
+            while self.running:
+                while not mhttp.readable(self.skt,wait_time):
+                    pass
+                skt,addr = self.skt.accept()
+                deal = self.make_dealer(skt, addr)
+                th = threading.Thread(target=deal,daemon=True)
+                th.start()
+                self.ths.append(th)
+        finally:
+            self.close()

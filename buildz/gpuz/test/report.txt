@@ -1,6 +1,6 @@
 
 测试结果: 
-结论是：大概能达到纯显卡（75W，更高的没测）二分之一或三分之一的性能，显存不够的可以用用，主要是卷积层，卷积层cpu计算耗时很大，并且神经网络参数相对较少，线性层感觉cpu和显卡本来就差不太多
+训练模式大概能达到纯显卡（75W，更高的没测）二分之一或三分之一的性能，显存不够的可以用用
 
 环境: 
     笔记本（游戏本）
@@ -78,6 +78,7 @@ Analyze
     mean time cost using CPU: 16.668074309825897 sec
 显存扣掉3GB
 python -m buildz.gpuz.test.take_gpu_mem 12
+python -m buildz.gpuz.test.test_resnet_demo train cuda,cache,cpu
 No Used DictCache
  train: 0 mean loss: 7.049219369888306 time: 32.67351007461548
  train: 1 mean loss: 6.776383876800537 time: 26.468174934387207
@@ -99,8 +100,8 @@ Analyze
     mean time cost using CPU: 6.312976717948914 sec
 
 
-如果是注意力、卷积和线性层混合模型，测试模式，并且显卡不够，建议注意力和卷积全放显存，线性层全放内存，线性层显卡和CPU差距不大
+如果是测试模式，显存不够的时候，可以部分模型全放显存，部分全放内存，建议是卷积和注意力多放显存，线性层多放内存，因为线性层占用空间大
 convs = [...]
 linears = [...]
-cache = DictCache(dvs_nets = [convs, linears])
+cache = DictCache(dvs=[torch.device('cuda'), torch.device('cpu')], dvs_nets = [convs, linears])
 ...

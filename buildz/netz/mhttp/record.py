@@ -6,6 +6,12 @@ class MsgRecord(Base):
         要多线程安全，可以考虑：
             1，修改clone方法，新建一个MsgRecord实例而非返回self，并且自己加锁
             2，通过threading.current_thread().ident获取线程id，然后做相应处理
+        需要实现的方法：
+            _start: 新的请求/响应报文进来时调用，传入头部信息等
+            _add: 传入报文体数据
+            _add_chunk: 传入chunk数据
+            _finish: 请求/响应报文数据已全部传入，看是否需要做什么处理
+            实现可参考MsgLog
     """
     TypeReq ="request"
     TypeRsp = "response"
@@ -17,6 +23,10 @@ class MsgRecord(Base):
         self.ssl = False
         self.ssl_update()
     def set_ssl(self, ssl=True):
+        '''
+            声明当前连接转ssl或者从ssl转tcp，看是否需要在ssl_update做什么处理
+            不管连接是ssl还是tcp，传入start，add，add_chunk方法里的数据都是明文
+        '''
         self.ssl = ssl
         self.ssl_update()
     def start(self, msg_type, line, headers, data_size):
@@ -47,7 +57,7 @@ class MsgRecord(Base):
             protocol: 应该都是HTTP/1.1或HTTP/1.0
             code: 响应数据编码,200、404等
             rsp_text: 响应数据文本, OK, Not Found等
-        headers: http头部信息
+        headers: http头部信息, dict（字典）数据
         data_size: 当前报文的报文体数据大小（不包括chunk部分）
         """
         pass

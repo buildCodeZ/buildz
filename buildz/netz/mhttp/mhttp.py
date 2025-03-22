@@ -87,7 +87,7 @@ def http_encode_send(http_type, url, headers=None, data_size=0, protocol = "HTTP
         port = 0
     if len(addrs)>1:
         port = int(addrs[1])
-    quest= f"{http_type.upper()} {url} {protocol}".encode("utf-8") #HTTPS TODO
+    quest= f"{http_type.upper()} {url} {protocol}".encode("utf-8")
     if headers is None:
         headers = {}
     if 'Host' not in headers:
@@ -103,8 +103,8 @@ pass
 def chunked_encode(data):
     n = hex(len(data))[2:].encode()
     return n+b"\r\n"+data+b"\r\n"
-def readable(skt):
-    (rlist,wlist,elist)=select.select([skt],[],[],0)
+def readable(skt,timeout=0):
+    (rlist,wlist,elist)=select.select([skt],[],[],timeout)
     return len(rlist)>0
 def chunked_data(skt):
     dt = skt.readline().strip().decode()
@@ -250,4 +250,4 @@ class HttpMonitor(Base):
                 if n==0:
                     break
         fc_done()
-        return bak
+        return line, headers, data

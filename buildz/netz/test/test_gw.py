@@ -31,3 +31,11 @@ def gw():
 #pyz.lc(locals(), caps)
 pyz.lc(locals(), gw)
 
+'''
+cli:
+import requests as rq
+url="http://127.0.0.1:9999/baidu"
+rp = rq.get(url)
+print(rp)
+
+'''
