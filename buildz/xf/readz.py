@@ -2,7 +2,7 @@
 from .loaderz import mg, buffer, base
 from . import file
 import os
-from .loaderz.deal import nextz, spt, strz, listz, spc, setz, mapz, reval, lrval, listmapz
+from .loaderz.deal import nextz, spt, strz, listz, setz, mapz, reval, lrval, listmapz
 class BoolFc:
     def __init__(self, mg):
         trues = [mg.like(k) for k in ["true", "True", "1"]]   
@@ -153,6 +153,14 @@ def loads(s):
     #input = buffer.BufferInput(s)
     return mgs.loads(s)
 
+pass
+try:
+    # C++加速代码
+    from .cpp.pcxf import loads, loadx
+    loads_args = loadx
+except Exception as exp:
+    #print("init not cpp:",exp,"use python instead")
+    pass
 pass
 
 def loadf(fp, bts = False, **maps):

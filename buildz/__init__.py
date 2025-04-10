@@ -22,4 +22,4 @@ buildz.pathz: 简化文件路径相关的代码编写
 '''
 
 from .argx import fetch as args
-from .base import Base, WBase
+from .base import Base, WBase,Args

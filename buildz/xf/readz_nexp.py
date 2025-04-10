@@ -2,7 +2,7 @@
 from .loaderz_nexp import mg, buffer, base
 from . import file
 import os
-from .loaderz_nexp.deal import nextz, spt, strz, listz, spc, setz, mapz, reval, lrval, listmapz
+from .loaderz_nexp.deal import nextz, spt, strz, listz, setz, mapz, reval, lrval, listmapz
 class BoolFc:
     def __init__(self, mg):
         trues = [mg.like(k) for k in ["true", "True", "1"]]   

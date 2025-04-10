@@ -35,16 +35,6 @@ class PrevStrDeal(lr.LRDeal):
         self.as_bytes = True
         self.octs = None
         self.hexs = None
-    def json_loads(self, s):
-        import json
-        x = s
-        cd = None
-        if type(x)==bytes:
-            x, cd = file.decode_c(x)
-        rs = json.loads(x)
-        if type(s)==bytes:
-            rs = rs.encode(cd)
-        return rs
     def do_translate(self, s):
         """
             取巧用python的eval来生成字符表
