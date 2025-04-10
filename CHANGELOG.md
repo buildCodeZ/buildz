@@ -1,3 +1,9 @@
+## 2025/04/11
+增加c++版xf.load*编译指令：
+linux/windows:
+python -m buildz.xf.cpp.setup
+windows+mingw-x64:
+python -m buildz.xf.cpp.setup_mingw32
 ## 2025/04/10
 增加C++版的xf.load*，不过只提供了源码，需要使用者自己在buildz/xf/cpp目录下手动编译，见buildz/xf/cpp/README.txt
 ## 2025/03/22

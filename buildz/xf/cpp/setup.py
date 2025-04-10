@@ -1,10 +1,14 @@
 #coding=utf-8
 import sys
+import os
+curr_dir = os.path.dirname(__file__)
 mark_msvc = False
 mark_mingw32 = False
 if len(sys.argv)==1:
     sys.argv.append("build_ext")
-    sys.argv.append("--inplace")
+    #sys.argv.append("--inplace")
+    sys.argv.append('--build-lib')
+    sys.argv.append(f"{curr_dir}")
 if sys.platform=='win32':
     mark_msvc = True
     for k in sys.argv[1:]:
@@ -15,14 +19,12 @@ if sys.platform=='win32':
             break
 from distutils.core import setup, Extension
 from Cython.Build import cythonize
-import os
-import sys
 extra_link_args = []
 define_macros=[]
 extra_compile_args = []
-sources = ["pcxf.pyx","pc.cpp"]
+sources = [os.path.join(curr_dir, "pcxf.pyx"),os.path.join(curr_dir, "pc.cpp")]
 from buildz import fz
-cpps = fz.search("./loaderz",".*\.cpp")
+cpps = fz.search(os.path.join(curr_dir,"loaderz"),".*\.cpp")
 sources+=cpps
 if not mark_msvc:
     extra_link_args = ["-lstdc++", "-O3"]
@@ -44,7 +46,7 @@ setup(
         "pcxf",
         language="c++",
         sources = sources,
-        include_dirs=["./loaderz","."],
+        include_dirs=[os.path.join(curr_dir,"loaderz"),curr_dir],
         extra_compile_args=extra_compile_args,
         extra_link_args=extra_link_args,  # 链接 C++ 标准库
         define_macros=define_macros,
