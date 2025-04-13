@@ -143,6 +143,34 @@ void* loadx_fcs(const char* s, fptr_create fc_create, fptr_dict_set fc_set, fptr
     obj_loadx.buildx();
     return obj_loadx.loads(s, callback);
 }
-int tests(const char* s){
-    return 123;
+struct MethodCallback:public Callback{
+    mptr_create fc_create; 
+    mptr_dict_set fc_set; 
+    mptr_list_add fc_add; 
+    mptr_exp fc_exp;
+    void* obj;
+    MethodCallback(void* obj, mptr_create fc_create, mptr_dict_set fc_set, mptr_list_add fc_add, mptr_exp fc_exp):obj(obj),
+    fc_create(fc_create),fc_set(fc_set),fc_add(fc_add),fc_exp(fc_exp){}
+    void* create(int type, void* val=NULL, int ival=0){
+        return fc_create(obj, type, val, ival);
+    }
+    void dict_set(void* dict, void* key, void *val){
+        fc_set(obj, dict, key, val);
+    }
+    void list_add(void* list, void* val){
+        fc_add(obj, list, val);
+    }
+    void* exp(const char* s){
+        return fc_exp(obj, s);
+    }
+};
+void* loads_mtds(const char* s, void* obj, mptr_create fc_create, mptr_dict_set fc_set, mptr_list_add fc_add, mptr_exp fc_exp){
+    MethodCallback callback(obj, fc_create, fc_set, fc_add, fc_exp);
+    obj_loads.build();
+    return obj_loads.loads(s, callback);
+}
+void* loadx_mtds(const char* s, void* obj, mptr_create fc_create, mptr_dict_set fc_set, mptr_list_add fc_add, mptr_exp fc_exp){
+    MethodCallback callback(obj, fc_create, fc_set, fc_add, fc_exp);
+    obj_loadx.buildx();
+    return obj_loadx.loads(s, callback);
 }

@@ -1,7 +1,6 @@
 #codig=utf-8
 import os
 import re
-import numpy as np
 import base64
 ACT_ADD = "add_prev"
 ACT_DEL = "del_curr"
