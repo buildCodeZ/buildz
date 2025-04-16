@@ -54,6 +54,13 @@ cdef object fCreate(int type, void* dt, int ival)noexcept:
         return Args(list(),dict())
     return None
 pass
+def fetchArgs(val):
+    if type(val)==Args:
+        if val.size()==len(val.lists):
+            val = val.lists
+        elif val.size()==len(val.dicts):
+            val = val.dicts
+    return val
 cdef void fListAdd(object lst, object data)noexcept:
     #print("fListAdd:", lst, data)
     lst.append(data)
@@ -61,6 +68,7 @@ cdef void fListAddx(object lst, object data)noexcept:
     #print("fListAdd:", lst, data)
     if type(lst)==Args:
         lst = lst.args
+    data = fetchArgs(data)
     lst.append(data)
 cdef void fMapSet(object map, object key, object val)noexcept:
     #print("fMapSet:", map, key, val)
@@ -71,6 +79,8 @@ cdef void fMapSetx(object map, object key, object val)noexcept:
     #print("fMapSet:", map, key, val)
     if type(map)==Args:
         map = map.maps
+    key = fetchArgs(key)
+    val = fetchArgs(val)
     if type(key)==list:
         key = tuple(key)
     map[key]=val

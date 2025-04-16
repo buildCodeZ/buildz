@@ -90,8 +90,8 @@ class Db(SimpleDv):
             rst = rst[1:]
             rst = [{k:v for k,v in zip(keys, dt)} for dt in rst]
         return rst
-    def iou_sql(self, table, ks, vs, sets):
-        sql = f"insert into {table}({ks}) values({vs}) ON CONFLICT DO UPDATE SET {sets}"
+    def iou_sql(self, table, ks, vs, sets, qs):
+        sql = f"insert into {table}({ks}) values({vs}) ON CONFLICT({','.join(qs)}) DO UPDATE SET {sets}"
         return sql
     def insert_or_updatexxx(self, maps, table, keys = None, update_keys = None):
         if type(maps)!=dict:

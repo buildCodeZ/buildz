@@ -60,7 +60,7 @@ def make(data, table=None, data_keys = "sql_key,sql_def,py_key".split(","), py_n
                     key:
                         table: 表名
                         query_keys: 默认null，orm做插入/更新时，判断数据是插入还是更新的查询方式
-                        auto_translate: 默认true，如果没有配置“转py后字段名”，是否自动转(a_b=>aB)
+                        auto_translate: 默认false，如果没有配置“转py后字段名”，是否自动转(a_b=>aB)
                         sql_before: 新增一条建表前sql语句
                         sql_after: 新增一条建表后sql语句
                         sql_delete_before: 新增一条删表前sql语句
@@ -78,7 +78,7 @@ def make(data, table=None, data_keys = "sql_key,sql_def,py_key".split(","), py_n
     elif type(data) == dict:
         data = dict2list(data)
     conf = {}
-    xf.s(conf, sql_before = [], sql_after = [], sql_delete_before=[], sql_delete_after=[],auto_translate=True,table=table,keys=[],py2sqls={},query_keys=None, data_keys = data_keys, vars=[], py_name = py_name)
+    xf.s(conf, sql_before = [], sql_after = [], sql_delete_before=[], sql_delete_after=[],auto_translate=False,table=table,keys=[],py2sqls={},query_keys=None, data_keys = data_keys, vars=[], py_name = py_name)
     for it in data:
         if len(it)==1 and type(it[0]) in (list, tuple):
             deal_item(it[0], conf)
@@ -99,7 +99,7 @@ def make(data, table=None, data_keys = "sql_key,sql_def,py_key".split(","), py_n
     sqls_del = sqls[2]+[sql_del]+sqls[3]
     sqls = [sqls_crt, sqls_del]
     sqls = [(";\n".join(k)+";").replace(";;",";") for k in sqls]
-    obj = TableObject(*xf.g(conf, keys=[], table=table, py2sqls = None, query_keys=None,auto_translate=True), sql_create = sqls[0], sql_delete = sqls[1], py_name = py_name)
+    obj = TableObject(*xf.g(conf, keys=[], table=table, py2sqls = None, query_keys=None,auto_translate=False), sql_create = sqls[0], sql_delete = sqls[1], py_name = py_name)
     return sqls, obj
 
 pass
@@ -119,7 +119,7 @@ class TableObject(Base):
         auto_translate:
             对于没有在py2sqls自定义映射的表字段，是否自动转换(py|autoTran<=>auto_tran|sql)
     """
-    def init(self, keys, table=None, py2sqls=None, query_keys=None, auto_translate=True, dv = None, sql_create=None, sql_delete=None, py_name = None):
+    def init(self, keys, table=None, py2sqls=None, query_keys=None, auto_translate=False, dv = None, sql_create=None, sql_delete=None, py_name = None):
         self.src_py2sqls = py2sqls
         if table is None:
             table = tls.lower(self.__class__.__name__)
@@ -148,7 +148,7 @@ class TableObject(Base):
             query_keys = []
         self.query_keys = query_keys
         self.dv = dv
-        self.py2sql=self.toSql
+        self.py2sql=self.to_sql
         self.sql2py = self.toPy
         self.sql_create = sql_create
         self.sql_delete = sql_delete
@@ -160,7 +160,7 @@ class TableObject(Base):
         #print(f"[TESTZ] sql_create: {self.sql_create}")
         dv = self.rdv(dv)
         dv.executes(self.sql_create)
-    def delete(self, dv=None):
+    def drop(self, dv=None):
         assert self.sql_delete is not None
         if self.sql_delete.find("<table>")>=0:
             print(f"[WARN] not delete template table by {self.sql_delete}")
@@ -168,7 +168,7 @@ class TableObject(Base):
         self.rdv(dv).execute(self.sql_delete)
     def bind(self, dv):
         self.dv = dv
-    def toSql(self, obj):
+    def to_sql(self, obj):
         if type(obj)!=dict:
             tmp = {}
             for k in self.py2sqls:
@@ -177,7 +177,7 @@ class TableObject(Base):
             obj = tmp
         obj = {self.py2sqls[k]:v for k,v in obj.items() if k in self.py2sqls}
         return obj
-    def toSqlKeys(self, keys):
+    def to_sql_keys(self, keys):
         obj = [k for k in keys if k in self.py2sqls]
         return obj
     def toPy(self, obj):
@@ -200,10 +200,10 @@ class TableObject(Base):
         if sql2py:
             rst = [self.sql2py(it) for it in rst]
         return rst
-    def queryAll(self, dv=None, sql2py=True):
+    def query_all(self, dv=None, sql2py=True):
         sql = f"select * from {self.table};"
         return self.query(sql, dv, sql2py)
-    def filterSql(self, obj):
+    def filter_sql(self, obj):
         if type(obj)!=dict:
             tmp = {}
             for k in self.sql2py:
@@ -219,11 +219,11 @@ class TableObject(Base):
         if type(obj) not in [list, tuple]:
             obj = [obj]
         if py2sql:
-            obj = [self.toSql(k) for k in obj]
+            obj = [self.to_sql(k) for k in obj]
             if update_keys is not None:
-                update_keys = self.toSqlKeys(update_keys)#[self.toSqlKeys(k) for k in update_keys]
+                update_keys = self.to_sql_keys(update_keys)#[self.to_sql_keys(k) for k in update_keys]
         else:
-            obj = [self.filterSql(k) for k in obj]
+            obj = [self.filter_sql(k) for k in obj]
         query_keys = self.query_keys
         if not check:
             query_keys = None

@@ -85,6 +85,8 @@ class SimpleDv(ItDv):
         self.as_map = as_map
         self.init(*argv, **maps)
     def begin(self):
+        if self.con is not None:
+            return
         self.con = self.new_con()
         self.cursor = self.new_cursor()
     def open(self):
@@ -122,7 +124,7 @@ class SimpleDv(ItDv):
         if commit:
             self.cursor.execute("commit;")
         return tmp
-    def iou_sql(self, table, ks, vs, sets):
+    def iou_sql(self, table, ks, vs, sets, qs):
         sql = f"insert into {table}({ks}) values({vs}) on duplicate key update {sets}"
         return sql
     def insert_or_update(self, maps, table, keys = None, update_keys = None):
@@ -162,7 +164,7 @@ class SimpleDv(ItDv):
         sets = ",".join(sets)
         ks = ",".join([kv[0] for kv in kvs])
         vs = ",".join([str(kv[1]) for kv in kvs])
-        sql = self.iou_sql(table, ks, vs, sets)
+        sql = self.iou_sql(table, ks, vs, sets, keys)
         #sql = f"insert into {table}({ks}) values({vs}) on duplicate key update {sets}"
         return self.execute(sql)
         if update:
