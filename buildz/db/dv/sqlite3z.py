@@ -20,6 +20,8 @@ class Db(SimpleDv):
         return sqlite3.connect(self.fp)
     def new_cursor(self):
         return self.con.cursor()
+    def clone(self):
+        return Db(self.fp, self.as_map)
     def __init__(self, fp, as_map=False, *argv, **maps):
         #def __init__(self, fp):
         self.con = None

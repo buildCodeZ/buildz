@@ -88,11 +88,11 @@ def mstr(s):
 @ns.obj(id="formatLog")
 @ns.obj_args("ref, buildz.logz.shows, null", "ref, buildz.logz.tag, null", "ref, buildz.logz.format, null")
 class FormatLog(Log):
-    def init(self, shows =None, tag=None, format=None, lock = False):
+    def init(self, shows =None, tag=None, format=None, base=None, lock = False):
         if format is None:
             format = "[{LEVEL}] %Y-%m-%d %H:%M:%S [{tag}] {msg}\n"
         self.format=format
-        super().init(shows, tag, lock)
+        super().init(shows, tag, base, lock)
     def output(self, msg):
         raise Exception("impl")
     def do_log(self, level, tag, *args):
@@ -107,8 +107,8 @@ class FormatLog(Log):
         msg = replaces(rst, "{Level}", x_level, "{level}", m_level, "{LEVEL}", u_level, "{tag}", tag, "{msg}", msg)
         self.output(msg)
 class FpLog(FormatLog):
-    def init(self, fp = None,shows =None, tag=None, format=None, lock = False):
-        super().init(shows, tag, format, lock)
+    def init(self, fp = None,shows =None, tag=None, format=None, base=None, lock = False):
+        super().init(shows, tag, format, base, lock)
         self.fp = fp
     def output(self, msg):
         #sys.stdout.write(msg)

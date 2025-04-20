@@ -172,6 +172,8 @@ class Caches(Base):
         self.set_currents = cache.set_currents
         self.set_basedir = cache.set_basedir
         self.get_basedir = cache.get_basedir
+        self.save = cache.save
+        self.load = cache.load
         self.has_file = cache.has
         self.has_mem = mem.has
     def get_file(self, key):

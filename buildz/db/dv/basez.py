@@ -74,6 +74,8 @@ class SimpleDv(ItDv):
             rst = rst[1:]
             rst = [{k:v for k,v in zip(keys, dt)} for dt in rst]
         return rst
+    def clone(self):
+        return type(self)(self.host, self.port, self.user, sel.pwd, self.db, self.as_map, *self.argv, **self.maps)
     def __init__(self, host, port, user, pwd, db, as_map=False, *argv, **maps):
         self.host = host
         self.port = port
@@ -83,6 +85,8 @@ class SimpleDv(ItDv):
         self.con = None
         self.cursor = None
         self.as_map = as_map
+        self.argv = argv
+        self.maps = maps
         self.init(*argv, **maps)
     def begin(self):
         if self.con is not None:
