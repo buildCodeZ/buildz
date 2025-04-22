@@ -1,6 +1,7 @@
 
 #include"dict.h"
 #include"../mg.h"
+#include<iostream>
 Item* DictDeal::build(Item* obj, Manager& mg) {
     ItemList& list = *(ItemList*)obj->val;
     int size = list.size();
@@ -16,6 +17,9 @@ Item* DictDeal::build_arr(ItemList& arr, Int2& arr_pos, Manager& mg){
     if (size%3!=0){
         std::stringstream errs;
         errs<<"u f in map: "<<arr.size();
+        // for(int i=0;i<size;i++){
+        //     std::cout<<"index:"<<i<<":"<<arr[i]->str()<<std::endl;
+        // }
         throw Exp(errs.str(), arr_pos);
     }
     void* rst = mg.callback->create(TYPE_DICT, NULL, (size/3));

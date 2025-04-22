@@ -105,7 +105,7 @@ def loads(s,coding="utf-8"):
     return rst
 
 pass
-def loadx(s,coding="utf-8"):
+def loadx(s,coding="utf-8", out_args=False):
     """
         和python版loadx区别：
             cpp版没有dict和list，全是Args
@@ -123,6 +123,11 @@ def loadx(s,coding="utf-8"):
     #     rst = rst[0]
     if type(rst)==Args and rst.size()==1 and len(rst.args)==1:
         rst = rst.args[0]
+    if type(rst)==Args and not out_args:
+        if rst.size()==len(rst.args):
+            rst = rst.args
+        elif rst.size()==len(rst.maps):
+            rst = rst.maps
     return rst
 
 pass

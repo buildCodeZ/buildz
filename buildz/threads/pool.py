@@ -4,7 +4,7 @@ from .. import Base
 class Task(Base):
     def run(self):
         pass
-    def deal_exp(self, exp):
+    def deal_exp(self, exp, traceback_exp):
         pass
 class BasePool(Base):
     def check_run(self):
@@ -47,8 +47,9 @@ class Worker(Base):
             try:
                 task.run()
             except Exception as exp:
+                import traceback
                 try:
-                    task.deal_exp(exp)
+                    task.deal_exp(exp, traceback.format_exc())
                 except Exception as _exp:
                     print(f"deal_exp on {exp} get except: {_exp}")
             finish = time.time()

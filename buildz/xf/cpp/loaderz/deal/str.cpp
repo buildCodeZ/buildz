@@ -17,16 +17,16 @@ bool StrDeal::deal(BufferBase& buffer, ItemList& rst, Manager& mg){
     buffer.pos(rm_pos);
     buffer.clean2read(ll);
     //ItemList* arr = new ItemList();
-    ItemList arr, mg_arr;
-    arr.reserve(16);
-    mg_arr.reserve(16);
+    // ItemList arr, mg_arr;
+    // arr.reserve(16);
+    // mg_arr.reserve(16);
     if (rm_size>0){
         if (!note){
             std::stringstream errs;
             errs<<"unexcept char before string: "<<rm;
             throw Exp(errs.str(), rm_pos);
         } else {
-            arr.push_back(new Item(rm, rm_pos, BUILD_TYPE_STR, false));
+            rst.push_back(new Item(rm, rm_pos, BUILD_TYPE_STR, false));
         }
     }
     bool do_judge = true;
@@ -77,9 +77,9 @@ bool StrDeal::deal(BufferBase& buffer, ItemList& rst, Manager& mg){
     buffer.clean();
     int build_type = TYPE_STR;
     if (translate&&mark_l2) {
-	char* tdata = do_translate(data);
-	delete data;
-	data=tdata;
+        char* tdata = do_translate(data);
+        delete data;
+        data=tdata;
         //build_type = TYPE_STR_TRANSLATE;
     }
     void* real_obj = mg.callback->create(build_type, data);

@@ -10,10 +10,11 @@ class FcTask(Task):
         self.fc_exp = fc_exp
     def run(self):
         return self.fc(*self.args, **self.maps)
-    def deal_exp(self, exp):
+    def deal_exp(self, exp, traceback_exp):
         if self.fc_exp is not None:
-            return self.fc_exp(exp)
+            return self.fc_exp(exp, traceback_exp)
         print("FcTask exp:", exp)
+        print("traceback:", traceback_exp)
 class SimpleTasks(Tasks):
     def init(self, wait_sec = 0.1):
         self.condition = threading.Condition()

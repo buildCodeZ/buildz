@@ -105,10 +105,8 @@ def make(data, table=None, data_keys = "sql_key,sql_def,py_key".split(","), py_n
 pass
 
 class TableObject(Base):
-    def clone(self, table_name, py_name = None):
-        sql_create = self.sql_create.replace("<table>", table_name)
-        sql_delete = self.sql_delete.replace("<table>", table_name)
-        obj = TableObject(self.keys, table_name, self.src_py2sqls, self.query_keys, self.auto_translate, self.dv, sql_create, sql_delete, py_name)
+    def clone(self):
+        obj = TableObject(self.keys, self.table, self.src_py2sqls, self.query_keys, self.auto_translate, self.dv, self.sql_create, self.sql_delete, self.py_name)
         return obj
     """
         字段映射
@@ -149,9 +147,10 @@ class TableObject(Base):
         self.query_keys = query_keys
         self.dv = dv
         self.py2sql=self.to_sql
-        self.sql2py = self.toPy
+        self.sql2py = self.to_py
         self.sql_create = sql_create
         self.sql_delete = sql_delete
+        self.auto_translate = auto_translate
     def create(self, dv=None):
         assert self.sql_create is not None
         if self.sql_create.find("<table>")>=0:
@@ -180,7 +179,7 @@ class TableObject(Base):
     def to_sql_keys(self, keys):
         obj = [k for k in keys if k in self.py2sqls]
         return obj
-    def toPy(self, obj):
+    def to_py(self, obj):
         if type(obj)!=dict:
             tmp = {}
             for k in self.sql2pys:
@@ -203,6 +202,9 @@ class TableObject(Base):
     def query_all(self, dv=None, sql2py=True):
         sql = f"select * from {self.table};"
         return self.query(sql, dv, sql2py)
+    def execute(self, sql, dv=None):
+        dv=self.rdv(dv)
+        return dv.execute(sql)
     def filter_sql(self, obj):
         if type(obj)!=dict:
             tmp = {}
@@ -212,6 +214,9 @@ class TableObject(Base):
             obj = tmp
         obj = {k:v for k,v in obj.items() if k in self.keys}
         return obj
+    def commit(self, dv=None):
+        dv = self.rdv(dv)
+        dv.execute("commit")
     def save(self, obj, dv=None, py2sql = True, commit=False, check = True, update_keys = None):
         dv = self.rdv(dv)
         if type(update_keys)==str:

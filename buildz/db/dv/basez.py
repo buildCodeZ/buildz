@@ -129,7 +129,10 @@ class SimpleDv(ItDv):
             self.cursor.execute("commit;")
         return tmp
     def iou_sql(self, table, ks, vs, sets, qs):
-        sql = f"insert into {table}({ks}) values({vs}) on duplicate key update {sets}"
+        if len(sq)==0:
+            sql = f"insert into {table}({ks}) values({vs})"
+        else:
+            sql = f"insert into {table}({ks}) values({vs}) on duplicate key update {sets}"
         return sql
     def insert_or_update(self, maps, table, keys = None, update_keys = None):
         if type(update_keys)==str:

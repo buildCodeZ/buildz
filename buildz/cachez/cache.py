@@ -6,7 +6,7 @@ from ..base import Base
 from ..ioc import wrap
 from .. import logz
 ns = wrap.ns("buildz.cache")
-import os,re
+import os,re,json
 
 
 @ns.obj(id="cache.save")
@@ -70,7 +70,8 @@ class Cache(Base):
             self.save()
     def remove(self, key):
         xf.removes(self.data, key.split(self.spt))
-    def init(self, fps="cache.js", log=None, current_first=False, spt = ".", key_currents = "buildz.cache.path.currents", key_basedir = "buildz.cache.path.basedir", save_index = -1, auto_save = False):
+    def init(self, fps="cache.js", log=None, current_first=False, spt = ".", key_currents = "buildz.cache.path.currents", key_basedir = "buildz.cache.path.basedir", save_index = -1, auto_save = False, load_replace=False, save_json = False):
+        self.save_json = save_json
         if type(fps) not in (tuple, list):
             fps = [fps]
         self.fps = fps
@@ -80,6 +81,7 @@ class Cache(Base):
         self.key_currents = key_currents
         self.key_basedir = key_basedir
         self.save_index = save_index
+        self.load_replace = load_replace
         self.data = {}
         self.auto_save = auto_save
     def set_currents(self, dp):
@@ -127,13 +129,18 @@ class Cache(Base):
         if basedir is not None:
             fp = os.path.join(basedir, fp)
         return fp
-    def save(self, fp = None):
+    def save(self, fp = None, save_json=None):
         if fp is None:
             fp = self.fps[self.save_index]
         fp = self.rfp(fp)
         fz.makefdir(fp)
-        rst  = self.data
-        rs = xf.dumps(rst, format=True).encode("utf-8")
+        rst = self.data
+        if save_json is None:
+            save_json = self.save_json
+        if save_json:
+            rs = json.dumps(rst, indent=4, ensure_ascii= False).encode("utf-8")
+        else:
+            rs = xf.dumps(rst, format=True).encode("utf-8")
         fz.write(rs, fp, 'wb')
     def load(self, fps = None):
         if fps is None:
@@ -144,7 +151,7 @@ class Cache(Base):
             if os.path.isfile(fp):
                 self.log.info(f"load cache from {fp}")
                 xdata = xf.flush_maps(xf.loadf(fp),visit_list=True)
-                xf.fill(xdata, data, replace=1)
+                xf.fill(xdata, data, replace=self.load_replace)
         xf.fill(data, self.data, replace=0)
 
 pass
