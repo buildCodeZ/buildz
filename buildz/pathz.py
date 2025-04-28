@@ -32,6 +32,7 @@ class Path(Base):
         return os.path.join(*a)
     @staticmethod
     def rjoin(path, *a):
+        a = [k.strip() for k in a if k.strip()!=""]
         if path is None:
             return os.path.join(*a)
         return os.path.join(path, *a)
@@ -39,7 +40,7 @@ class Path(Base):
     def rfp(paths, *a, last=-1, check_abs=False):
         if check_abs and len(a)>0:
             f = a[0]
-            if f[0]=="/" or f.find(":")>0:
+            if f[:1]=="/" or f.find(":")>0:
                 return Path.join(*a)
         #print(f"[TESTZ] a: {a}, paths: {paths}")
         #fp = os.path.join(*a)

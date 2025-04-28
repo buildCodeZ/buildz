@@ -23,6 +23,7 @@ class Worker(Base):
         self.work_time=0
         self.th = None
     def start(self):
+        assert self.th is None
         self.th = threading.Thread(target=self.run,daemon=True)
         self.th.start()
     def safe_stop(self):
@@ -56,6 +57,7 @@ class Worker(Base):
             self.wait_time+=task_start-start
             self.work_time+=finish-task_start
         self.running = False
+        self.th = None
 
 pass
 class Tasks(Base):
