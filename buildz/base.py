@@ -1,6 +1,14 @@
 #coding=utf-8
 from . import pyz
-def fcBase(cls, lst=0, keys = tuple()):
+def fc_s2l(s):
+    if type(s)!=str:
+        return s
+    arr = s.split(",")
+    arr = [k.strip() for k in arr]
+    return arr
+def fcBase(cls, lst=0, keys = tuple(), fcs = tuple()):
+    keys = fc_s2l(keys)
+    fcs = fc_s2l(fcs)
     class _Base(cls):
         def str(self):
             return str(self.__class__)
@@ -10,10 +18,10 @@ def fcBase(cls, lst=0, keys = tuple()):
             return self.str()
         def __repr__(self):
             return self.repr()
-        def __call__(self, *a, **b):
-            return self.call(*a, **b)
-        def call(self, *a, **b):
-            return None
+        # def __call__(self, *a, **b):
+        #     return self.call(*a, **b)
+        # def call(self, *a, **b):
+        #     return None
         def init(self, *a, **b):
             pass
         def __init__(self, *a, **b):
@@ -26,6 +34,11 @@ def fcBase(cls, lst=0, keys = tuple()):
                     del b[k]
             super().__init__(*sa, **sb)
             self.init(*a, **b)
+    for fc in fcs:
+        base_fc = "__"+fc+"__"
+        def _base_fc(obj, *a, **b):
+            return getattr(obj, fc)(*a, **b)
+        setattr(_Base, base_fc, _base_fc)
     return _Base
 
 class Base:
