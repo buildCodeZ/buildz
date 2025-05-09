@@ -1,10 +1,19 @@
 #coding=utf-8
 from . import runz
-from .. import Base, xf
+from .. import Base, xf, pyz
 
 
+from ..sc.subrun import Runner
 from ..sc.lst import FcFpsListener
 from buildz.db import runz
+from buildz import dz
+class ScRunner(Runner):
+    def loadf(self, fp):
+        conf = xf.loadf(fp)
+        dz.s(conf, fps=[dz.g(conf, src=None)])
+        return conf
+    def process_command(self):
+        return f"python -m buildz.db.subsc {self.fp}"
 class DbRunner(Base):
     def init(self, conf_fp, listener):
         self.fp = conf_fp
@@ -39,6 +48,14 @@ def run():
     lst.run()
 
 pass
+def test():
+    import sys
+    fp = runz.FP
+    if len(sys.argv)>1:
+        fp = sys.argv[1]
+    lst = FcFpsListener()
+    runner = ScRunner(fp, lst)
+    lst.run()
 
-
+pyz.lc(locals(), test)
 

@@ -1,5 +1,10 @@
+## 2025/05/09
+修改buildz.db和buildz.sc
+buildz.db.orm默认不做字段转换
+buildz.db.sc运行改成子进程模式，这样sql如果运行太慢，重新跑的时候可以不用等原sql跑完
+buildz.sc把部分代码改成独立方法，方便扩展
 ## 2025/05/08
-buildz.base.fcBaes
+buildz.base.fcBase
 ## 2025/04/29
 脚本写好，通过"python -m buildz.sc 配置文件"调用，监听文件修改，修改后就重新运行配置文件指定代码(通过subprocess创建进程实现)
 ## 2025/04/28

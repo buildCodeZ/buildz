@@ -193,13 +193,13 @@ class TableObject(Base):
             dv = self.dv
         assert dv is not None
         return dv
-    def query(self, sql, dv=None, sql2py=True):
+    def query(self, sql, dv=None, sql2py=False):
         dv=self.rdv(dv)
         rst = dv.query(sql, as_map=1)
         if sql2py:
             rst = [self.sql2py(it) for it in rst]
         return rst
-    def query_all(self, dv=None, sql2py=True):
+    def query_all(self, dv=None, sql2py=False):
         sql = f"select * from {self.table};"
         return self.query(sql, dv, sql2py)
     def execute(self, sql, dv=None):

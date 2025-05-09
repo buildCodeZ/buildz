@@ -6,6 +6,12 @@ import os, sys
 from multiprocessing import Process
 import subprocess
 class Runner(Base):
+    """
+        监听目标文件的修改来运行目标代码，本代码通过子进程来运行目标代码，每次目标文件修改后，都会新建子进程运行目标代码，通过子进程运行目标代码主要考虑两点：
+            1，目标文件可能就是包含目标代码的文件，或者是目标代码import的文件，当前进程已经import的模块是不会随着模块文件的修改而改变的，新建子进程来运行则不会有该问题
+            2，python的线程无法被kill，在更新目标文件后，运行目标代码的线程如果没结束，要等其结束才能重新运行，子进程则可以被kill，监听到目标文件修改后，可以直接把子进程kill后重新创建子进程来运行目标代码
+    """
+    argv = []
     def init(self, fp, lst):
         fp = os.path.abspath(fp)
         self.dp = os.path.dirname(fp)
@@ -17,8 +23,10 @@ class Runner(Base):
         self.process = None
         self.exist_psutil = True
         self.reset()
+    def loadf(self, fp):
+        return xf.loadf(fp)
     def reset(self,last_update=False):
-        conf = xf.loadf(self.fp)
+        conf = self.loadf(self.fp)
         fps, target, dp = dz.g(conf, fps = [], run=None, dp="")
         dp = self.path.fp(dp)
         sys.path.append(dp)
@@ -30,11 +38,15 @@ class Runner(Base):
         self.target=target
         self.conf = conf
     @staticmethod
+    def process_argv():
+        return Runner.argv
+    @staticmethod
     def process_update(conf):
         target, sc_path, args, stdin, stdout, stderr = dz.g(conf, run=None,sc_path=__file__, args=[], stdin = "std", stdout = "std", stderr="std")
         encoding = dz.g(conf, encoding="utf-8")
         import sys, os
         args = [sc_path]+args
+        Runner.argv = sys.argv
         sys.argv = args
         stds = [stdin, stdout, stderr]
         stds = [list(k) if type(k) in (list, tuple) else [k] for k in stds]
@@ -82,13 +94,15 @@ class Runner(Base):
         children = parent_process.children(recursive=True)
         for child in children:
             child.kill()
+    def process_command(self):
+        return f"python -m buildz.sc.subchild {self.fp}"
     def update(self, fps):
         if self.process is not None:
             self.kill_chs(self.process.pid)
             self.process.kill()
             self.process = None
         self.reset(True)
-        p = subprocess.Popen(f"python -m buildz.sc.subchild {self.fp}")
+        p = subprocess.Popen(self.process_command())
         #p = Process(target = self.process_update,args=[self.conf], daemon=True)
         #p.start()
         self.process = p
