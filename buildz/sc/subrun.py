@@ -95,7 +95,8 @@ class Runner(Base):
         for child in children:
             child.kill()
     def process_command(self):
-        return f"python -m buildz.sc.subchild {self.fp}"
+        cmd = f"python -m buildz.sc.subchild {self.fp}"
+        return cmd.split(" ")
     def update(self, fps):
         if self.process is not None:
             self.kill_chs(self.process.pid)

@@ -1,3 +1,5 @@
+## 2025/05/10
+修改buildz.db和buildz.sc的子进程的运行指令，使其适配linux下运行
 ## 2025/05/09
 修改buildz.db和buildz.sc
 buildz.db.orm默认不做字段转换

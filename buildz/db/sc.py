@@ -13,7 +13,8 @@ class ScRunner(Runner):
         dz.s(conf, fps=[dz.g(conf, src=None)])
         return conf
     def process_command(self):
-        return f"python -m buildz.db.subsc {self.fp}"
+        cmd = f"python -m buildz.db.subsc {self.fp}"
+        return cmd.split(" ")
 class DbRunner(Base):
     def init(self, conf_fp, listener):
         self.fp = conf_fp
