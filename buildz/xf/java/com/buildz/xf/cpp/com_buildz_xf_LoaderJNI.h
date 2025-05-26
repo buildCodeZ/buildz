@@ -18,10 +18,10 @@ JNIEXPORT jobject JNICALL Java_com_buildz_xf_LoaderJNI_jloads
 /*
  * Class:     com_buildz_xf_LoaderJNI
  * Method:    jloadx
- * Signature: (Ljava/lang/String;)Ljava/lang/Object;
+ * Signature: (Ljava/lang/String;Z)Ljava/lang/Object;
  */
 JNIEXPORT jobject JNICALL Java_com_buildz_xf_LoaderJNI_jloadx
-  (JNIEnv *, jobject, jstring);
+  (JNIEnv *, jobject, jstring, jboolean);
 
 #ifdef __cplusplus
 }

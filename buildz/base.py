@@ -96,6 +96,49 @@ class With(Base):
 pass
 
 class Args(Base):
+    def __len__(self):
+        return self.size()
+    def as_dict(self, deep=False):
+        mps = dict(self.dicts)
+        if deep:
+            rst = {}
+            for k,v in mps.items():
+                if isinstance(k, Args):
+                    k = k.as_dict(deep)
+                if isinstance(v, Args):
+                    v = v.as_dict(deep)
+                rst[k]=v
+            mps = rst
+        for it in self.lists:
+            if isinstance(it, Args):
+                if len(it.lists)!=len(it):
+                    continue
+                it = it.lists
+            if len(it)!=2:
+                continue
+            if deep:
+                it = [k if not isinstance(k, Args) else k.as_dict(deep) for k in it]
+            mps[it[0]] = it[1]
+        return mps
+    def as_list(self, cmb=0, item_args = True, deep=False):
+        lst = list(self.args)
+        if deep:
+            lst = [it if not isinstance(it, Args) else it.as_list(cmb, item_args, deep) for it in lst]
+        mps = dict(self.dicts)
+        for k,v in mps.items():
+            if deep and isinstance(v, Args):
+                v = v.as_list(cmb, item_args, deep)
+            if isinstance(k, Args):
+                k = k.as_list(cmb, item_args, deep)
+            if cmb==0 or type(v)!=list:
+                it = [k,v]
+            else:
+                v = list(v)
+                v.append(k)
+            if item_args:
+                it = Args(v)
+            lst.append(it)
+        return lst
     def size(self):
         return len(self.args)+len(self.maps)
     def str(self):

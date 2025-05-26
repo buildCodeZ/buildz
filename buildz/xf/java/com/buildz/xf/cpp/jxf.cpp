@@ -116,6 +116,6 @@ JNIEXPORT jobject JNICALL Java_com_buildz_xf_LoaderJNI_jloads
   }
 
 JNIEXPORT jobject JNICALL Java_com_buildz_xf_LoaderJNI_jloadx
-  (JNIEnv *env, jobject it, jstring s){
-    return (jobject)loadx_mtds(env->GetStringUTFChars(s, nullptr), (void*)env, fc_create, fc_dict_setx, fc_list_addx, fc_exp);
+  (JNIEnv *env, jobject it, jstring s, jboolean spc){
+    return (jobject)loadx_mtds(env->GetStringUTFChars(s, nullptr), (void*)env, fc_create, fc_dict_setx, fc_list_addx, fc_exp, spc);
   }

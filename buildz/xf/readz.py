@@ -81,9 +81,10 @@ def build(as_bytes=False):
 pass
 g_mgx = None
 g_colon = None
-def build_args(as_bytes=False, as_args = False, colon = True):
-    global g_mgx,g_colon
-    if g_mgx is not None and g_mgx.as_bytes == as_bytes and g_colon == colon:
+g_spc = None
+def build_args(as_bytes=False, as_args = False, colon = True, spc=True):
+    global g_mgx,g_colon, g_spc
+    if g_mgx is not None and g_mgx.as_bytes == as_bytes and g_colon == colon and g_spc == spc:
         return g_mgx
     mgs = mg.Manager(as_bytes)
     if colon:
@@ -92,7 +93,8 @@ def build_args(as_bytes=False, as_args = False, colon = True):
     mgs.add(spt.PrevSptDeal(",",1))
     mgs.add(spt.PrevSptDeal(';',1))
     mgs.add(spt.PrevSptDeal('\n'))
-    mgs.add(spt.PrevSptDeal(' '))
+    if spc:
+        mgs.add(spt.PrevSptDeal(' '))
     build_lrval(mgs)
     # mgs.add(listz.ListDeal("(", ")"))
     # mgs.add(listz.ListDeal("[", "]"))
@@ -130,8 +132,8 @@ def is_args(obj):
     return type(obj)==listmapz.Args
 
 pass
-def loads_args(s, as_args = False, out_args=False, colon = True):
-    mgs = build_args(type(s)==bytes, as_args, colon)
+def loads_args(s, as_args = False, out_args=False, colon = True, spc=True):
+    mgs = build_args(type(s)==bytes, as_args, colon, spc)
     #input = buffer.BufferInput(s)
     rst = mgs.loads(s)
     if not out_args:
@@ -167,21 +169,25 @@ def loadf(fp, bts = False, **maps):
     if not os.path.isfile(fp):
         if 'default' in maps:
             return maps['default']
+    if 'default' in maps:
+        del maps['default']
     if bts:
         s = file.bread(fp)
     else:
         s = file.fread(fp)
-    return loads(s)
+    return loads(s, **maps)
 
 pass
 def loadxf(fp, bts = False, **maps):
     if not os.path.isfile(fp):
         if 'default' in maps:
             return maps['default']
+    if 'default' in maps:
+        del maps['default']
     if bts:
         s = file.bread(fp)
     else:
         s = file.fread(fp)
-    return loadx(s)
+    return loadx(s, **maps)
 
 pass

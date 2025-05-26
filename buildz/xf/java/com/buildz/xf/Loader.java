@@ -16,7 +16,10 @@ public class Loader {
         return obj;
     }
     public Object loadx(String s)throws Exception{
-        Object obj = jni.jloadx(s);
+        return loadx(s, true);
+    }
+    public Object loadx(String s, boolean spc)throws Exception{
+        Object obj = jni.jloadx(s,spc);
         if (obj instanceof Exception)throw (Exception)obj;
         if ((obj instanceof Args)&&((Args)obj).size()==0){
             return "";

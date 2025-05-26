@@ -36,6 +36,8 @@ class ListMapDeal(lr.LRDeal):
                 if i+2>=len(arr):
                     raise exp.Exp(f"u f in listmap: {arr}", arr_pos)
                 val = arr[i+2]
+                if type(obj.val)==list:
+                    obj.val = tuple(obj.val)
                 mp[obj.val]=val.val
                 i+=3
             else:

@@ -69,7 +69,7 @@ void Loads::build(){
     mg.add(new StrDeal("\"","\"",true,false,true));
     mg.add(new PrevNextDeal());
 }
-void Loads::buildx(){
+void Loads::buildx(bool spc){
     if (mark_init)return;
     mark_init = true;
     mg.add(new KeyValDeal(":"));
@@ -77,7 +77,7 @@ void Loads::buildx(){
     mg.add(new PrevSptDeal(",",true));
     mg.add(new PrevSptDeal(";",true));
     mg.add(new PrevSptDeal("\n",false));
-    mg.add(new PrevSptDeal(" ",false));
+    if (spc)mg.add(new PrevSptDeal(" ",false));
     add_lrval(mg);
     mg.add(new ListDictDeal("[","]"));
     mg.add(new ListDictDeal("(",")"));
@@ -123,25 +123,38 @@ struct FcCallback:public Callback{
 };
 static Loads obj_loads;
 static Loads obj_loadx;
+static Loads obj_loadx_spc;
 void* loads(const char* s, void* callback){
     Callback* cb = (Callback*)callback;
     obj_loads.build();
     return obj_loads.loads(s, *cb);
 }
-void* loadx(const char* s, void* callback){
+void* loadx(const char* s, void* callback, bool spc){
     Callback* cb = (Callback*)callback;
-    obj_loadx.buildx();
-    return obj_loadx.loads(s, *cb);
+    Loads* obj_ld = NULL;
+    if(spc){
+        obj_ld = &obj_loadx_spc;
+    } else {
+        obj_ld = &obj_loadx;
+    }
+    obj_ld->buildx(spc);
+    return obj_ld->loads(s, *cb);
 }
 void* loads_fcs(const char* s, fptr_create fc_create, fptr_dict_set fc_set, fptr_list_add fc_add, fptr_exp fc_exp){
     FcCallback callback(fc_create, fc_set, fc_add, fc_exp);
     obj_loads.build();
     return obj_loads.loads(s, callback);
 }
-void* loadx_fcs(const char* s, fptr_create fc_create, fptr_dict_set fc_set, fptr_list_add fc_add, fptr_exp fc_exp){
+void* loadx_fcs(const char* s, fptr_create fc_create, fptr_dict_set fc_set, fptr_list_add fc_add, fptr_exp fc_exp, bool spc){
     FcCallback callback(fc_create, fc_set, fc_add, fc_exp);
-    obj_loadx.buildx();
-    return obj_loadx.loads(s, callback);
+    Loads* obj_ld = NULL;
+    if(spc){
+        obj_ld = &obj_loadx_spc;
+    } else {
+        obj_ld = &obj_loadx;
+    }
+    obj_ld->buildx(spc);
+    return obj_ld->loads(s, callback);
 }
 struct MethodCallback:public Callback{
     mptr_create fc_create; 
@@ -169,8 +182,14 @@ void* loads_mtds(const char* s, void* obj, mptr_create fc_create, mptr_dict_set 
     obj_loads.build();
     return obj_loads.loads(s, callback);
 }
-void* loadx_mtds(const char* s, void* obj, mptr_create fc_create, mptr_dict_set fc_set, mptr_list_add fc_add, mptr_exp fc_exp){
+void* loadx_mtds(const char* s, void* obj, mptr_create fc_create, mptr_dict_set fc_set, mptr_list_add fc_add, mptr_exp fc_exp, bool spc){
     MethodCallback callback(obj, fc_create, fc_set, fc_add, fc_exp);
-    obj_loadx.buildx();
-    return obj_loadx.loads(s, callback);
+    Loads* obj_ld = NULL;
+    if(spc){
+        obj_ld = &obj_loadx_spc;
+    } else {
+        obj_ld = &obj_loadx;
+    }
+    obj_ld->buildx(spc);
+    return obj_ld->loads(s, callback);
 }

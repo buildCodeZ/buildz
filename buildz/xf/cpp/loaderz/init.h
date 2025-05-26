@@ -7,7 +7,7 @@ struct Loads{
     bool mark_init;
     Loads();
     void build();
-    void buildx();
+    void buildx(bool spc=true);
     void* loads(const char* s, Callback& callback){
         return mg.loads(s, &callback);
     }

@@ -25,7 +25,7 @@ cdef extern from "pc.h":
     ctypedef void (*fptr_dict_set)(object map, object key, object val)
     ctypedef object (*fptr_exp)(const char* msg)
     object ploads_fcs(const char* s, fptr_create fc_create, fptr_dict_set fc_set, fptr_list_add fc_add, fptr_exp fc_error)
-    object ploadx_fcs(const char* s, fptr_create fc_create, fptr_dict_set fc_set, fptr_list_add fc_add, fptr_exp fc_error)
+    object ploadx_fcs(const char* s, fptr_create fc_create, fptr_dict_set fc_set, fptr_list_add fc_add, fptr_exp fc_error, bint spc)
 
 # pass
 cdef object fCreate(int type, void* dt, int ival)noexcept:
@@ -54,7 +54,11 @@ cdef object fCreate(int type, void* dt, int ival)noexcept:
         return Args(list(),dict())
     return None
 pass
+g_as_args = False
 def fetchArgs(val):
+    global g_as_args
+    if g_as_args:
+        return val
     if type(val)==Args:
         if val.size()==len(val.lists):
             val = val.lists
@@ -105,14 +109,16 @@ def loads(s,coding="utf-8"):
     return rst
 
 pass
-def loadx(s,coding="utf-8", out_args=False):
+def loadx(s,coding="utf-8", out_args=False, as_args=False, spc = True):
     """
         和python版loadx区别：
             cpp版没有dict和list，全是Args
     """
+    global g_as_args
+    g_as_args = as_args
     if type(s)==str:
         s = s.encode(coding)
-    rst = ploadx_fcs(s, fCreate,fMapSetx,fListAddx,fError)
+    rst = ploadx_fcs(s, fCreate,fMapSetx,fListAddx,fError, spc)
     if type(rst)==Exception:
         raise rst
     # if type(rst)==list and len(rst)==0:
