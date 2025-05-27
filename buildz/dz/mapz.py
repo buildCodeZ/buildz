@@ -1,4 +1,5 @@
 from buildz import pyz
+from ..base import Args
 def isdict(obj):
     return type(obj)==dict
 def islist(obj):
@@ -257,6 +258,38 @@ def l2m(arr, **maps):
     return rst
 
 pass
+def deep_fill_argx(src, target, replace=1):
+    # print(f"src:{src}")
+    # print(f"target:{target}")
+    if not isinstance(src, Args):
+        if type(src) in (list, tuple):
+            src = Args(src)
+        elif type(src)==dict:
+            src = Args([], src)
+        else:
+            return
+    tp = type(target)
+    if not isinstance(target, Args):
+        if tp == list:
+            target = Args(target)
+        elif tp == dict:
+            target = Args([], target)
+        else:
+            return
+    for it in src.lists:
+        target.args.append(it)
+    for k,v in src.dicts.items():
+        if k not in target.dicts:
+            target.dicts[k] = v
+            continue
+        tv = target.dicts[k]
+        if Args.is_collect(tv) and Args.is_collect(v):
+            deep_fill_argx(v, tv, replace)
+        elif replace:
+            #print(f"[TESTZ] replace: {k}:{tv} to {v}")
+            target.dicts[k] = v
+
+
 
 def deep_update(target, src, replace=1):
     """

@@ -1,3 +1,5 @@
+## 2025/05/27_1
+修改对dict和list的处理工具代码(buildz.dz, buildz.argx)
 ## 2025/05/27
 buildz.xf的loadx输入增加空格间隔符可选
 ## 2025/05/10

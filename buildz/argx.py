@@ -43,12 +43,15 @@ class Fetch:
             rst[key] = args[i]
         for key in maps:
             rst[key] = maps[key]
-        for key in self.maps:
-            rkey = self.maps[key]
-            if key in rst:
-                val = rst[key]
-                rst[rkey] = val
-                del rst[key]
+        keys = list(rst.keys())
+        for key in keys:
+            while key in self.maps:
+                rkey = self.maps[key]
+                if key in rst:
+                    val = rst[key]
+                    rst[rkey] = val
+                    del rst[key]
+                key = rkey
         return rst
 
 pass

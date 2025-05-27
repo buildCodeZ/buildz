@@ -32,7 +32,9 @@ class Path(Base):
         return os.path.join(*a)
     @staticmethod
     def rjoin(path, *a):
-        a = [k.strip() for k in a if k.strip()!=""]
+        a = [k.strip() for k in a if k is not None and k.strip()!=""]
+        if len(a)==0:
+            return None
         if path is None:
             return os.path.join(*a)
         return os.path.join(path, *a)
@@ -69,6 +71,7 @@ class Path(Base):
     def __getattr__(self, name):
         return self.fcs[name]
     def call(self, *obj):
+        return self.fcs[None](*obj)
         it = obj[0]
         fc = Path.join
         if type(it) in (list, tuple):

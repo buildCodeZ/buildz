@@ -96,6 +96,12 @@ class With(Base):
 pass
 
 class Args(Base):
+    @staticmethod
+    def is_args(obj):
+        return isinstance(obj, Args)
+    @staticmethod
+    def is_collect(obj):
+        return Args.is_args(obj) or type(obj) in (list, tuple, dict)
     def __len__(self):
         return self.size()
     def as_dict(self, deep=False):
