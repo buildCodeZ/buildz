@@ -40,6 +40,9 @@ class Path(Base):
         return os.path.join(path, *a)
     @staticmethod
     def rfp(paths, *a, last=-1, check_abs=False):
+        a = [k.strip() for k in a if k is not None and k.strip()!=""]
+        if len(a)==0:
+            return None
         if check_abs and len(a)>0:
             f = a[0]
             if f[:1]=="/" or f.find(":")>0:
