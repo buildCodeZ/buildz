@@ -1,3 +1,0 @@
-#
-
-from .mapz import *
