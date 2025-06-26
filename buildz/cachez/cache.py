@@ -153,6 +153,9 @@ class Cache(Base):
                 xdata = xf.flush_maps(xf.loadf(fp),visit_list=True)
                 xf.fill(xdata, data, replace=self.load_replace)
         xf.fill(data, self.data, replace=0)
+    def update(self, conf):
+        conf = xf.flush_maps(conf,visit_list=True)
+        xf.fill(conf, self.data, replace=1)
 
 pass
 
@@ -171,6 +174,7 @@ class Caches(Base):
         self.mem = mem
         self.caches = [mem, cache]
         self.set = mem.set
+        self.update = mem.update
         self.remove = cache.remove
         self.call=cache.call
         self.rfp = cache.rfp

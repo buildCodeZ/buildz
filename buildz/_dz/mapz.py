@@ -184,6 +184,14 @@ def dhas(maps, keys):
 
 pass
 
+def keys(key, spt='.', code='utf-8'):
+    if type(key) not in (list, tuple):
+        if type(key)==bytes:
+            key = key.decode(code)
+        if type(key)!=str:
+            key = str(key)
+        key = key.split(spt)
+    return key
 def dget(maps, keys, default = None):
     if type(keys) not in (list,tuple):
         keys = [keys]

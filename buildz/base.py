@@ -170,5 +170,13 @@ class Args(Base):
     def init(self, args, maps):
         self.args = args
         self.maps = maps
+    def full(self, list_key = "list", dict_key = "dict"):
+        rst = {}
+        rst[list_key] = self.args
+        rst[dict_key] = self.maps
+        return rst
+    def call(self, *a,**b):
+        return self.full(*a,**b)
+
 
 pass

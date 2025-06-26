@@ -72,6 +72,8 @@ class Log(Base):
         if "error" not in self.shows:
             return
         self.log("error", self._tag, *args)
+    def clean(self):
+        pass
 
 pass
 def replaces(s, *args):
@@ -110,6 +112,8 @@ class FpLog(FormatLog):
     def init(self, fp = None,shows =None, tag=None, format=None, base=None, lock = False):
         super().init(shows, tag, format, base, lock)
         self.fp = fp
+    def clean(self):
+        fz.removes(self.fp)
     def output(self, msg):
         #sys.stdout.write(msg)
         if self.fp is not None:
@@ -134,6 +138,9 @@ class Logs(Log):
     def do_log(self, level, tag, *args):
         for _log in self.logs:
             _log.log(level, tag, *args)
+    def clean(self):
+        for log in self.logs:
+            log.clean()
 
 pass
 def simple(fp=None,std=True, shows=None, tag=None, format=None,lock=False):
