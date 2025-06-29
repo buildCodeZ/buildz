@@ -1,16 +1,18 @@
 from .dz import Conf
 from . import xf, pathz, pyz, argx
 import sys, os
-def load_conf(conf, dp=None, dp_key = ''):
+def load_conf(conf, dp=None, dp_key = 'dp', src_key = 'src.conf'):
     fps, base = conf.gets('fps, conf', [], {})
     if type(fps)==str:
         fps = [fps]
     conf_first,replace,flush,visit_list = conf.gets('conf_first,replace,flush,visit_list',1, 1,1,0)
     spt, spts = conf.gets('spt, spts','.',',')
-    dp = conf.get('dp', dp)
+    dp = conf.get(dp_key, dp)
     path = pathz.Path()
     path.set("dp", dp)
     rst = Conf(spt, spts)
+    if src_key is not None:
+        rst.set(src_key, conf)
     if conf_first:
         rst.update(base, flush, replace, visit_list)
     for fp in fps:
@@ -20,11 +22,6 @@ def load_conf(conf, dp=None, dp_key = ''):
         rst.update(base, flush, replace, visit_list)
     return rst
 # using
-def simple(conf):
-    fc = conf.get('fc')
-    assert fc is not None
-    fc = pyz.load(fc)
-    return fc(conf)
 def calls(conf):
     calls = conf.get("calls", [])
     if type(calls)==str:
@@ -32,6 +29,14 @@ def calls(conf):
     for key in calls:
         assert conf.has(key)
         simple(conf(key))
+def simple(conf):
+    fc = conf.get('fc')
+    if fc is None:
+        fc = calls
+    else:
+        #assert fc is not None
+        fc = pyz.load(fc)
+    return fc(conf)
 def get_sys_conf(conf = []):
     if type(conf) == str:
         conf = xf.loadf(conf)
@@ -52,7 +57,7 @@ def run(dp = None, fp = None, init_conf = {}):
     conf = Conf().update(conf)
     init = conf.get(conf.get("key.init", "init"), {})
     conf = load_conf(conf, dp).update(init)
-    calls(conf)
+    simple(conf)
 def test():
     run()
 pyz.lc(locals(), test)

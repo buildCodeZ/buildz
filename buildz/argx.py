@@ -1,5 +1,6 @@
 #coding=utf-8
-import sys
+import sys,re
+from .base import Base
 class Fetch:
     """
     命令行参数读取
@@ -60,6 +61,45 @@ class FetchX(Fetch):
         super().__init__(a,b)
 
 pass
+
+def build_pt(pt, fc):
+    st = "^"
+    ed = "$"
+    if pt[0]!=st:
+        pt = st+pt
+    if pt[-1]!=ed:
+        pt = pt+ed
+    def wfc(val):
+        if re.match(pt, val) is None:
+            return None, 0
+        val = fc(val)
+        return val, 1
+    return wfc
+
+pass
+class ValDeals(Base):
+    def init(self):
+        self.deals = []
+    def add(self, fc):
+        self.deals.append(fc)
+    def call(self, val):
+        if type(val)!=str:
+            return val
+        for deal in self.deals:
+            rst, done = deal(val)
+            if done:
+                return rst
+        return val
+
+pass
+to_val = ValDeals()
+to_val.add(build_pt("[\+\-]?\d+", int))
+to_val.add(build_pt("[\+\-]?\d*\.\d+", float))
+to_val.add(build_pt("[\+\-]?\d*(?:\.\d+)?e[\+\-]?\d+", float))
+to_val.add(build_pt("null", lambda x:None))
+to_val.add(build_pt("true", lambda x:True))
+to_val.add(build_pt("false", lambda x:False))
+
 def fetch(argv = None):
     r"""
     format: a b c -a 123 -b456 --c=789 +d  -x"??? ???" y z
@@ -107,6 +147,7 @@ def fetch(argv = None):
         for key in keys:
             if key not in maps:
                 maps[key] = []
+            val = to_val(val)
             maps[key].append(val)
         i+=1
     for k in maps:

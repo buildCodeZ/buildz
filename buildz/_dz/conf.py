@@ -11,6 +11,10 @@ def dzkeys(key, spt):
         key = [key]
     return key
 class Conf(Base):
+    def val(self):
+        return self.get_conf()
+    def top(self):
+        return self.root or self
     def get_conf(self):
         if self.domain:
             key = self.domain
@@ -20,7 +24,9 @@ class Conf(Base):
         return obj.conf
     def str(self):
         return str(self.get_conf())
-    def call(self, domain):
+    def call(self, domain=None):
+        if domain is None:
+            return self.top()
         if self.domain:
             domain = self.domain+self.spt+domain
         obj = self.root or self
@@ -33,6 +39,7 @@ class Conf(Base):
         if root is None:
             self.conf = {}
         self.dr_bind('_get', 'get')
+        self.dr_bind('_hget', 'hget')
         self.dr_bind('_set', 'set')
         self.dr_bind('_has', 'has')
     def clean(self):
@@ -65,7 +72,11 @@ class Conf(Base):
     def _set(self, key, val):
         keys = dzkeys(key, self.spt)
         mapz.dset(self.conf, keys, val)
+    def _hget(self, key, default=None):
+        keys = dzkeys(key, self.spt)
+        return mapz.dget(self.conf, keys, default)
     def _get(self, key, default=None):
+        return self._hget(key, default)[0]
         keys = dzkeys(key, self.spt)
         return mapz.dget(self.conf, keys, default)[0]
     def _has(self, key):
