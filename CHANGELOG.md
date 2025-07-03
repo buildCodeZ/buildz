@@ -1,3 +1,5 @@
+## 2025/07/04
+little change,buildz.dz.Conf增加更多方便使用的方法
 ## 2025/06/30
 little change
 ## 2025/06/27

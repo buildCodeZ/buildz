@@ -2,6 +2,8 @@ from .dz import Conf
 from . import xf, pathz, pyz, argx
 import sys, os
 def load_conf(conf, dp=None, dp_key = 'dp', src_key = 'src.conf'):
+    if type(conf)==dict:
+        conf = Conf().update(conf)
     fps, base = conf.gets('fps, conf', [], {})
     if type(fps)==str:
         fps = [fps]
@@ -27,7 +29,7 @@ def calls(conf):
     if type(calls)==str:
         calls = [calls]
     for key in calls:
-        assert conf.has(key)
+        assert conf.has(key), f"not has key: '{key}'"
         simple(conf(key))
 def simple(conf):
     fc = conf.get('fc')

@@ -42,6 +42,7 @@ class Conf(Base):
         self.dr_bind('_hget', 'hget')
         self.dr_bind('_set', 'set')
         self.dr_bind('_has', 'has')
+        self.dr_bind('_remove', 'remove')
     def clean(self):
         obj = self.root or self
         obj.conf = {}
@@ -79,6 +80,9 @@ class Conf(Base):
         return self._hget(key, default)[0]
         keys = dzkeys(key, self.spt)
         return mapz.dget(self.conf, keys, default)[0]
+    def _remove(self, key):
+        keys = dzkeys(key, self.spt)
+        return mapz.dremove(self.conf, keys)
     def _has(self, key):
         keys = dzkeys(key, self.spt)
         return mapz.dhas(self.conf, keys)
@@ -93,6 +97,17 @@ class Conf(Base):
             val = self.get(keys[i], defaults[i] if i<len(defaults) else None)
             rst.append(val)
         return rst
+    def g(self, **maps):
+        return [self.get(k, v) for k,v in maps.items()]
+    def s(self, **maps):
+        [self.set(k,v) for k,v in maps.items()]
     def sets(self, keys, *vals):
         keys = self.spts_ks(keys)
         rst = [self.set(key, val) for key, val in zip(keys, vals)]
+    def removes(self, keys):
+        keys = self.spts_ks(keys)
+        rst = [self.remove(key) for key in keys]
+    def have_all(self, keys):
+        keys = self.spts_ks(keys)
+        rst = [1-self.has(key) for key in keys]
+        return sum(rst)==0
