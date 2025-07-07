@@ -65,20 +65,26 @@ def load(md, fc = None):
     """
     mds = md.split(".")
     arr = mds[1:]
+    tr_exp = ''
     while len(mds)>0:
         try:
             md = __import__(".".join(mds))
             break
         except ModuleNotFoundError as exp:
+            import traceback
+            tr_exp = traceback.format_exc()
             mds = mds[:-1]
     if len(mds)==0:
-        raise Exception("can't import package from "+md)
-    for k in arr:
-        md = getattr(md, k)
-    if fc is not None:
-        fc = getattr(md, fc)
-    else:
-        fc = md
+        raise Exception("can't import package from "+md+":"+tr_exp)
+    try:
+        for k in arr:
+            md = getattr(md, k)
+        if fc is not None:
+            fc = getattr(md, fc)
+        else:
+            fc = md
+    except Exception as exp:
+        raise Exception(f"get exp: {exp}, traceback: {tr_exp}")
     return fc
 
 pass

@@ -1,3 +1,5 @@
+## 2025/07/08
+little change,buildz.dz.Conf增加更多方便使用的方法, buildz.pyz.load增加更详细报错信息
 ## 2025/07/04
 little change,buildz.dz.Conf增加更多方便使用的方法
 ## 2025/06/30

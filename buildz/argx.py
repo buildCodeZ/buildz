@@ -45,14 +45,29 @@ class Fetch:
         for key in maps:
             rst[key] = maps[key]
         keys = list(rst.keys())
-        for key in keys:
-            while key in self.maps:
-                rkey = self.maps[key]
-                if key in rst:
+        while len(keys)>0:
+            key = keys.pop(0)
+            if key in self.maps:
+                rkeys = self.maps[key]
+                if type(rkeys) not in (list, tuple):
+                    rkeys = [rkeys]
+                for rkey in rkeys:
+                    assert rkey!=key, f'error rkey==key: {key}'
                     val = rst[key]
                     rst[rkey] = val
-                    del rst[key]
-                key = rkey
+                    keys.append(rkey)
+                del rst[key]
+        # for key in keys:
+        #     while key in self.maps:
+        #         rkeys = self.maps[key]
+        #         if type(rkeys) not in (list, tuple):
+        #             rkeys = [rkeys]
+        #         for rkey in rkeys:
+        #             if key in rst:
+        #                 val = rst[key]
+        #                 rst[rkey] = val
+        #                 del rst[key]
+        #         key = rkey
         return rst
 
 pass

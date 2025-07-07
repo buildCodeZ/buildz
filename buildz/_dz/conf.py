@@ -13,8 +13,12 @@ def dzkeys(key, spt):
 class Conf(Base):
     def val(self):
         return self.get_conf()
-    def top(self):
-        return self.root or self
+    def top(self, domain = None):
+        root = self.root or self
+        if domain is not None:
+            root = root(domain)
+        return root
+        # return self.root or self
     def get_conf(self):
         if self.domain:
             key = self.domain
@@ -43,6 +47,7 @@ class Conf(Base):
         self.dr_bind('_set', 'set')
         self.dr_bind('_has', 'has')
         self.dr_bind('_remove', 'remove')
+        self.have_all = self.has_all
     def clean(self):
         obj = self.root or self
         obj.conf = {}
@@ -107,7 +112,13 @@ class Conf(Base):
     def removes(self, keys):
         keys = self.spts_ks(keys)
         rst = [self.remove(key) for key in keys]
-    def have_all(self, keys):
+    def has_all(self, keys):
         keys = self.spts_ks(keys)
         rst = [1-self.has(key) for key in keys]
         return sum(rst)==0
+    def has_any(self, keys):
+        keys = self.spts_ks(keys)
+        for key in keys:
+            if self.has(key):
+                return True
+        return False

@@ -1,5 +1,5 @@
 from .dz import Conf
-from . import xf, pathz, pyz, argx
+from . import xf, pathz, pyz, argx, dz
 import sys, os
 def load_conf(conf, dp=None, dp_key = 'dp', src_key = 'src.conf'):
     if type(conf)==dict:
@@ -26,6 +26,21 @@ def load_conf(conf, dp=None, dp_key = 'dp', src_key = 'src.conf'):
 # using
 def calls(conf):
     calls = conf.get("calls", [])
+    root = conf.top()
+    if type(calls)==dict:
+        target = dz.g(calls, target='run')
+        if target in calls:
+            calls = dz.get(calls, target, [])
+        else:
+            calls = root.get(target, [])
+    if type(calls)==dict:
+        dm, init, calls = dz.g(calls, domain=None, init = {},calls=[])
+        if len(init)>0:
+            init_conf = conf.top("confz.init")
+            if dm is not None:
+                init_conf = init_conf(dm)
+            init_conf.update(init, replace=0)
+            root.update(init_conf.val())
     if type(calls)==str:
         calls = [calls]
     for key in calls:
@@ -59,7 +74,9 @@ def run(dp = None, fp = None, init_conf = {}):
     conf = Conf().update(conf)
     init = conf.get(conf.get("key.init", "init"), {})
     conf = load_conf(conf, dp).update(init)
+    conf.set("confz.init", init)
     simple(conf)
+    return conf
 def test():
     run()
 pyz.lc(locals(), test)
