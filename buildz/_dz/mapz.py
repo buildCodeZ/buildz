@@ -213,6 +213,30 @@ def dget(maps, keys, default = None):
     return maps,1
 
 pass
+def dmatch(maps, keys, fc_map = lambda x:x):
+    if type(keys) not in (list,tuple):
+        keys = [keys]
+    deep=0
+    src = maps
+    for key in keys:
+        find = 1
+        maps = fc_map(maps)
+        if type(maps)==dict:
+            find = key in maps
+        elif type(maps) in (list, tuple):
+            try:
+                key = int(key)
+            except:
+                key = len(maps)
+            find = key<len(maps)
+        else:
+            find = False
+        if not find:
+            break
+        deep+=1
+        src = maps[key]
+    return src,deep
+
 def dremove(maps, keys):
     if type(keys) not in (list,tuple):
         keys = [keys]

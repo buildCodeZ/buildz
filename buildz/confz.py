@@ -48,11 +48,17 @@ def calls(conf):
         simple(conf(key))
 def simple(conf):
     fc = conf.get('fc')
+    up = conf.get('up', loop=0)
+    if up:
+        conf().link(conf.domain, up)
     if fc is None:
         fc = calls
     else:
+        # import time
+        # print(time.strftime(f"%Y-%m-%d %H:%M:%S start load: {fc}"))
         #assert fc is not None
         fc = pyz.load(fc)
+        # print(time.strftime(f"%Y-%m-%d %H:%M:%S done load: {fc}"))
     return fc(conf)
 def get_sys_conf(conf = []):
     if type(conf) == str:
