@@ -1,3 +1,5 @@
+## 2025/07/15
+添加java版的confz，添加文件夹比较和打包更新内容的代码(buildz.tz.filediff)
 ## 2025/07/09
 little change, buildz.dz.Conf添加链接，临时数据修改,buildz.confz添加up字段
 ## 2025/07/08

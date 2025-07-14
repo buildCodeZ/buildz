@@ -29,23 +29,25 @@ def calls(conf):
     root = conf.top()
     if type(calls)==dict:
         target = dz.g(calls, target='run')
-        if target in calls:
-            calls = dz.get(calls, target, [])
-        else:
-            calls = root.get(target, [])
+        calls = dz.get(calls, target, [])
+        # if target in calls:
+        #     calls = dz.get(calls, target, [])
+        # else:
+        #     calls = root.get(target, [])
     if type(calls)==dict:
-        dm, init, calls = dz.g(calls, domain=None, init = {},calls=[])
+        dm, init, calls, init_cover = dz.g(calls, domain=None, init = {},calls=[], init_cover=False)
         if len(init)>0:
             init_conf = conf.top("confz.init")
             if dm is not None:
                 init_conf = init_conf(dm)
-            init_conf.update(init, replace=0)
+            init_conf.update(init, replace=init_cover)
             root.update(init_conf.val())
     if type(calls)==str:
         calls = [calls]
     for key in calls:
         assert conf.has(key), f"not has key: '{key}'"
         simple(conf(key))
+    return conf
 def simple(conf):
     fc = conf.get('fc')
     up = conf.get('up', loop=0)
@@ -81,8 +83,8 @@ def run(dp = None, fp = None, init_conf = {}):
     init = conf.get(conf.get("key.init", "init"), {})
     conf = load_conf(conf, dp).update(init)
     conf.set("confz.init", init)
-    simple(conf)
-    return conf
+    return simple(conf)
+    #return conf
 def test():
     run()
 pyz.lc(locals(), test)

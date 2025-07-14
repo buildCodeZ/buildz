@@ -36,6 +36,8 @@ class Fetch:
         return rst
     def __call__(self, argv = None):
         args, maps = fetch(argv)
+        return self.fetch(args, maps)
+    def fetch(self, args, maps):
         rst = {}
         for i in range(len(args)):
             if i >= len(self.args):

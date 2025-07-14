@@ -2,16 +2,6 @@
 #coding=utf-8
 #from buildz.xf import code as codez
 from buildz.base import Args
-# class Args:
-#     def size(self):
-#         return len(self.args)+len(self.maps)
-#     def str(self):
-#         return f"<Args args={self.args}, maps={self.maps}>"
-#     def __init__(self, args, maps):
-#         self.args = args
-#         self.maps = maps
-
-# pass
 
 
 cdef extern from "Python.h":
@@ -55,6 +45,37 @@ cdef object fCreate(int type, void* dt, int ival)noexcept:
     return None
 pass
 g_as_args = False
+cdef object fCreatex(int type, void* dt, int ival)noexcept:
+    global g_as_args
+    #print("fCreate:")
+    if type == 0:
+        return None
+    elif type == 1:
+        return ival!=0
+    # elif type == 101:
+    #     return True
+    # elif type == 102:
+    #     return False
+    elif type == 2:
+        return int(PyBytes_FromString(<const char*>dt))
+    elif type == 3:
+        return float(PyBytes_FromString(<const char*>dt))
+    elif type == 4:
+        return PyBytes_FromString(<const char*>dt).decode("utf-8")
+    #elif type == 401:
+    #    return codez.ub2s(PyBytes_FromString(<const char*>dt))
+    elif type == 5:
+        if g_as_args:
+            return Args(list(),dict())
+        return []
+    elif type == 6:
+        if g_as_args:
+            return Args(list(),dict())
+        return {}
+    elif type == 7:
+        return Args(list(),dict())
+    return None
+pass
 def fetchArgs(val):
     global g_as_args
     if g_as_args:
@@ -118,7 +139,7 @@ def loadx(s,coding="utf-8", out_args=False, as_args=False, spc = True):
     g_as_args = as_args
     if type(s)==str:
         s = s.encode(coding)
-    rst = ploadx_fcs(s, fCreate,fMapSetx,fListAddx,fError, spc)
+    rst = ploadx_fcs(s, fCreatex,fMapSetx,fListAddx,fError, spc)
     if type(rst)==Exception:
         raise rst
     # if type(rst)==list and len(rst)==0:
@@ -129,7 +150,15 @@ def loadx(s,coding="utf-8", out_args=False, as_args=False, spc = True):
     #     rst = rst[0]
     if type(rst)==Args and rst.size()==1 and len(rst.args)==1:
         rst = rst.args[0]
-    if type(rst)==Args and not out_args:
+    if out_args and type(rst)!=Args:
+        if type(rst) not in [list, dict]:
+            rst = [rst]
+        if type(rst)==list:
+            rst = [rst, {}]
+        else:
+            rst = [[], rst]
+        rst = Args(*rst)
+    if not out_args and type(rst)==Args:
         if rst.size()==len(rst.args):
             rst = rst.args
         elif rst.size()==len(rst.maps):

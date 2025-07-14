@@ -200,29 +200,13 @@ class Conf(Base):
         keys = dzkeys(keys, self.spts)
         keys = [k.strip() if type(k) == str else k for k in keys]
         return keys
-    # def gets(self, keys, *defaults):
-    #     keys = self.spts_ks(keys)
-    #     rst = []
-    #     for i in range(len(keys)):
-    #         val = self.get(keys[i], defaults[i] if i<len(defaults) else None)
-    #         rst.append(val)
-    #     return rst
-    # def pushs(self, keys, *vals):
-    #     keys = self.spts_ks(keys)
-    #     rst = [self.push(key, val) for key, val in zip(keys, vals)]
-    # def pops(self, keys):
-    #     keys = self.spts_ks(keys)
-    #     return [self.pop(key) for key in keys]
     def g(self, **maps):
-        return [self.get(k, v) for k,v in maps.items()]
+        rst = [self.get(k, v) for k,v in maps.items()]
+        if len(rst)==1:
+            rst = rst[0]
+        return rst
     def s(self, **maps):
         [self.set(k,v) for k,v in maps.items()]
-    # def sets(self, keys, *vals):
-    #     keys = self.spts_ks(keys)
-    #     rst = [self.set(key, val) for key, val in zip(keys, vals)]
-    # def removes(self, keys):
-    #     keys = self.spts_ks(keys)
-    #     rst = [self.remove(key) for key in keys]
     def has_all(self, keys, loop = 0):
         keys = self.spts_ks(keys)
         rst = [1-self.has(key, loop) for key in keys]
