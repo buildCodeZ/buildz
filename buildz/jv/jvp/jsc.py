@@ -14,11 +14,11 @@ def rps_lst(s, *args):
 pt_param = ""
 def has_body(s):
     return s.find("(")>=0
-fc_pt = r'((?:public|protected|private){0,1}(?:static|\s)*(?:\<\w+\>){0,1}\s*[\w\<\>\[\]]*)\s+([\w]+)\s*\(([^)]*)\)\s*\{'
+fc_pt = r'((?:public|protected|private){0,1}(?:static|\s)*(?:\<\w+\>){0,1}\s*[\w\<\>\[\]]*)\s+([\w]+)\s*\(([^)]*)\)\s*((?:throws\s+[^\{\}\[\]\(\)\;]+){0,1})\s*\{'
 def fetch_method(s):
     pt = fc_pt#r'((?:public|protected|private|static|\s)*[\w\<\>\[\]]*)\s+([\w]+)\s*\(([^)]*)\)\s*\{'
-    _type, method, params = [k.strip() for k in re.findall(pt, s)[0]]
-    return _type, method, params
+    _type, method, params, exp = [k.strip() for k in re.findall(pt, s)[0]]
+    return _type, method, params,exp
 def fetch_methods(s):
     pt = fc_pt#r'((?:public|protected|private|static|\s)*[\w\<\>\[\]]*)\s+([\w]+)\s*\(([^)]*)\)\s*\{'
     return re.findall(pt, s)

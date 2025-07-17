@@ -5,7 +5,7 @@ from .jsc import fetch_methods_text, rps_dct, fetch_vals,fetch_vars
 from .util import make_fcs
 
 sc_dm = """
-    <type> <method>(<params>) {
+    <type> <method>(<params>) <exp>{
         <key> = dmKey(<key>);
         Conf obj = this;
         if (root != null) {
@@ -22,7 +22,7 @@ sc_dm = """
 #     for _type, method, params in fcs:
 #         rst+=domain(_type, method, params, args)
 #     return rst
-def domain(_type, method, params, args):
+def domain(_type, method, params, exp, args):
     rst = []
     args = fetch_vals(args)
     ret = "return " if _type.find("void")<0 else ""
@@ -36,7 +36,7 @@ def domain(_type, method, params, args):
     # if len(args)>1:
     #     key =args[1]
     key = vars[0]
-    rs = rps_dct(sc_dm, type =_type,method=wmethod,params=', '.join(params), key=key, call=method, vars = ', '.join(vars), ret = ret)
+    rs = rps_dct(sc_dm, type =_type,method=wmethod,params=', '.join(params), key=key, call=method, vars = ', '.join(vars), ret = ret, exp=exp)
     rst.append(rs)
     #rst.reverse()
     return rst, []

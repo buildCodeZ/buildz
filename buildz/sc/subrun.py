@@ -90,10 +90,14 @@ class Runner(Base):
             print(f"[WARN] if children processes exists and need to be killed, do 'pip install psutil' by yourself and restart")
             print(f"[警告] 没有装psutil，本代码无法删除目标进程的子进程，如果需要本代码删除子进程，需要装psutil然后重启: pip install psutil")
             return
-        parent_process = psutil.Process(pid)
-        children = parent_process.children(recursive=True)
-        for child in children:
-            child.kill()
+        try:
+            parent_process = psutil.Process(pid)
+            children = parent_process.children(recursive=True)
+            for child in children:
+                child.kill()
+        except psutil.NoSuchProcess as exp:
+            pass
+            #print(f"[WARN] Process {pid} kill error: {exp}, maybe process already end")
     def process_command(self):
         cmd = f"python -m buildz.sc.subchild {self.fp}"
         return cmd.split(" ")

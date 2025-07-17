@@ -11,8 +11,8 @@ def make_fcs(fc, add_src=True):
                 rst.append(codes.rstrip())
             else:
                 others.append(codes.rstrip())
-        for _type, method, params in fcs:
-            a, b = fc(_type, method, params, args)
+        for _type, method, params, exp in fcs:
+            a, b = fc(_type, method, params, exp, args)
             rst+=a
             others+=b
         return rst, others

@@ -1,5 +1,9 @@
 ## 2025/07/15
-添加java版的confz，添加文件夹比较和打包更新内容的代码(buildz.tz.filediff)
+buildz.sc修复bug：对于无限循环子进程进行判断是否存在，存在再kill
+buildz.dz.conf修改push/pop实现逻辑
+buildz.confz添加更多默认方法
+## 2025/07/15
+添加java版的confz；添加文件夹比较和打包更新内容的代码(buildz.tz.filediff)
 ## 2025/07/09
 little change, buildz.dz.Conf添加链接，临时数据修改,buildz.confz添加up字段
 ## 2025/07/08

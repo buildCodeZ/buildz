@@ -5,7 +5,7 @@ from .jsc import fetch_methods_text, rps_dct, fetch_vals,fetch_vars
 
 from .util import make_fcs
 sc_rename = """
-    <type> <method>(<params>) {
+    <type> <method>(<params>)<exp> {
         <ret><call>(<vars>);
     }
 """.rstrip()
@@ -14,7 +14,7 @@ sc_rename = """
 #     rst = []
 #     if has_def:
 #         rst.append(codes.rstrip())
-def rename(_type, method, params, args):
+def rename(_type, method, params, exp, args):
     rst = []
     args = fetch_vals(args)
     ret = "return " if _type.find("void")<0 else ""
@@ -24,7 +24,7 @@ def rename(_type, method, params, args):
     key = 'key'
     if len(args)>1:
         key =args[1]
-    rs = rps_dct(sc_rename, type =_type,method=wmethod,params=', '.join(params), call=method, vars = ', '.join(vars), ret = ret)
+    rs = rps_dct(sc_rename, type =_type,method=wmethod,params=', '.join(params), call=method, vars = ', '.join(vars), ret = ret,exp=exp)
     rst.append(rs)
     rst.reverse()
     return rst, []

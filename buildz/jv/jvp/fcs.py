@@ -24,7 +24,7 @@ sc_nval = '''
 <get_val><call>(ks[i]<others>);
 '''.strip()
 sc_fcs = """
-    <type> <method>(<params>) {
+    <type> <method>(<params>)<exp> {
         String[] ks = sptsKeys(keys);
         <align><def_rst>
         for (int i=0;i<ks.length;i++) {
@@ -38,7 +38,7 @@ sc_fcs = """
 '''
 methods(method_name, val, ret, align, null_default)
 '''
-def _fcs(_type, method, params, args):
+def _fcs(_type, method, params, exp, args):
     rst = []
     args = xf.loadx(args, out_args=True, as_args=False)
     lst,maps = args.lists, args.dicts
@@ -54,6 +54,7 @@ def _fcs(_type, method, params, args):
         val_type = ' '.join(param.split(" ")[:-1])
     else:
         val_type = None
+        align = False
     vars = [k.split(" ")[-1].strip() for k in params]
     if len(params)==1:
         val_type = None
@@ -63,7 +64,7 @@ def _fcs(_type, method, params, args):
         ret = unit_type not in ('void','')
     check_align = ''
     if align:
-        assert val_type is not None
+        assert val_type is not None, f"_fcs({_type}, {method}, {params}, {args})"
         check_align = 'if(ks.length>vals.length)throw new RuntimeException("not enough vals");'
     if (val_type is not None):
         outs_params = ["String keys", f"{val_type}[] vals"]+params[2:]
@@ -92,6 +93,6 @@ def _fcs(_type, method, params, args):
         get_val = "val="
         add_val = "rst[i] = val;"
     sc_v = rps_dct(sc_v, get_val=get_val, call=method, others = others, null_default = null_default)
-    s = rps_dct(sc_fcs, type=out_type, method = wmethod, params = outs_params, align = check_align, def_rst = def_rst, def_val = def_val, call = sc_v, add_val = add_val, ret_rst = ret_rst)
+    s = rps_dct(sc_fcs, type=out_type, method = wmethod, params = outs_params, align = check_align, def_rst = def_rst, def_val = def_val, call = sc_v, add_val = add_val, ret_rst = ret_rst, exp=exp)
     return [s], []
 fcs = make_fcs(_fcs, False)

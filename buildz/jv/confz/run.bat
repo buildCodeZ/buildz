@@ -1,1 +1,1 @@
-./jvc Test.java && ./jv Test
+jvc.bat Test.java && jv.bat Test

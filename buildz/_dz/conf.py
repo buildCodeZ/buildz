@@ -15,11 +15,18 @@ def dzkeys(key, spt):
 class Conf(Base):
     def val(self):
         return self.get_conf()
-    def top(self, domain = None):
+    def get_type(self):
+        return type(self.val())
+    def has_val(self):
+        obj = self.root or self
+        return obj.has(self.domain)
+    def top(self, domain = None, loop=0, link=0):
         root = self.root or self
         if domain is not None:
-            root = root(domain)
+            root = root(domain, loop, link)
         return root
+    def ltop(self, domain=None, loop=-1,link=0):
+        return self.top(domain,loop,link)
         # return self.root or self
     def get_conf(self):
         if self.domain:
@@ -30,12 +37,20 @@ class Conf(Base):
         return obj.conf
     def str(self):
         return str(self.get_conf())
-    def call(self, domain=None):
+    def l(self, domain=None, loop=-1,link=0):
+        return self(domain,loop,link)
+    def call(self, domain=None, loop=0, link=0):
         if domain is None:
             return self.top()
         if self.domain:
             domain = self.domain+self.spt+domain
         obj = self.root or self
+        if loop!=0:
+            val, find = obj.hget(domain,link=link)
+            while loop!=0 and find and type(val)==str:
+                domain = val
+                val,find = obj.hget(domain,link=link)
+                loop-=1
         return Conf(self.spt, self.spts, domain, obj)
     def init(self, spt='.', spts=',', domain=None, root = None):
         self.spt = spt
@@ -44,10 +59,12 @@ class Conf(Base):
         self.root = root
         if root is None:
             self.conf = {}
-            self.stacks = {}
-            self._links = [{},None]
+            self.history = {}
+            self._links = [{},None,0]
         self.dr_bind('_get', 'get')
         self.dr_bind('_hget', 'hget')
+        self.dr_bind('_lget', 'lget')
+        self.dr_bind('_lhget', 'lhget')
         self.dr_bind('_set', 'set')
         self.dr_bind('_has', 'has')
         self.dr_bind('_remove', 'remove')
@@ -58,10 +75,11 @@ class Conf(Base):
         self.dr_bind('_stack_set', 'stack_set')
         self.dr_bind('_stack_unset', 'stack_unset')
         self.fcs_bind('get', 'gets', False, True)
+        self.fcs_bind('lget', 'lgets', False, True)
         self.fcs_bind('set', 'sets', True)
         self.fcs_bind('remove', 'removes')
         self.fcs_bind('push', 'pushs', True)
-        self.fcs_bind('pop', 'pops')
+        #self.fcs_bind('pop', 'pops')
         self.fcs_bind('stack_set', 'stack_sets', True)
         self.fcs_bind('stack_unset', 'stack_unsets')
         self.fcs_bind('link', 'links', True)
@@ -72,8 +90,8 @@ class Conf(Base):
     def clean(self):
         obj = self.root or self
         obj.conf = {}
-        obj.stacks = {}
-        obj._links = [{}, None]
+        obj.history = {}
+        obj._links = [{}, None, 0]
         return self
     def dkey(self, key):
         if self.domain:
@@ -116,84 +134,131 @@ class Conf(Base):
                 rst.append(val)
             return rst
         setattr(self, wfn, wfc)
-    def _stack_set(self, key, val):
-        if key not in self.stacks:
-            self.stacks[key] = []
-        self.stacks[key] = [val]
-    def _stack_unset(self, key, val):
-        if key not in self.stacks:
-            return False
-        del self.stacks[key]
-        return True
-    def _push(self, key, val):
-        if key not in self.stacks:
-            self.stacks[key] = []
-        self.stacks[key].append(val)
-    def _pop(self, key):
-        if key not in self.stacks:
-            return False
-        stk = self.stacks[key]
-        if len(stk)==0:
-            return False
-        stk.pop(-1)
-        return True
-    def _link(self, src, target):
-        keys = dzkeys(src, self.spt)
-        links = self._links
-        for key in keys:
-            if key not in links[0]:
-                links[0][key] = [{},None]
-            links = links[0][key]
-        links[1] = target
-    def _unlink(self, key):
+    def _stack_set(self, key, value, flush = 1, update=0):
+        return self._push(key, value, flush, update, 1)
+    def _stack_unset(self, key):
+        return self._pop(key, 1)
+    def _push(self, key, value, flush = 1, update=0, clean_history = 0):
         keys = dzkeys(key, self.spt)
-        links = self._links
+        val, find = mapz.dget(self.conf, keys)
+        val = mapz.deep_clone(val)
+        if clean_history or key not in self.history:
+            self.history[key] = []
+        self.history[key].append([val, find, update])
+        if flush and type(value)==dict:
+            value = xf.flush_maps(value, lambda x:x.split(self.spt) if type(x)==str else [x], 0)
+        if type(value)==dict and update:
+            self(key).update(value,flush=0)
+        else:
+            self._set(key, value)
+    def _pop(self, key, clean_history = 0):
+        if key not in self.history:
+            return False
+        lst = self.history[key]
+        if len(lst)==0:
+            return False
+        rst = lst.pop(-1)
+        if clean_history:
+            self.history[key] = []
+        if not rst[1]:
+            self._remove(key)
+            return True
+        self._set(key, rst[0])
+        return True
+    def pops(self, keys, *a, **b):
+        keys = self.spts_ks(keys)
+        keys.reverse()
         for key in keys:
-            if key not in links[0]:
-                return False
-            links = links[0][key]
+            self.pop(key)
+    def with_push(self, key, *a, **b):
+        self.push(key, *a, **b)
+        def out():
+            self.pop(key)
+        return pyz.with_out(out)
+    def with_pushs(self, keys, *a, **b):
+        self.pushs(keys, *a, **b)
+        def out():
+            self.pops(keys)
+        return pyz.with_out(out)
+    def ld_get(self, obj, key, fc_init=None):
+        keys = dzkeys(key, self.spt)
+        for key in keys:
+            if key not in obj[0]:
+                if fc_init is None:
+                    return None
+                obj[0][key] = fc_init()
+            obj = obj[0][key]
+        return obj
+    def ld_visit(self, obj, key, fc):
+        keys = dzkeys(key, self.spt)
+        deep = 0
+        fc(obj, deep, len(keys))
+        for key in keys:
+            if key not in obj[0]:
+                break
+            deep+=1
+            obj = obj[0][key]
+            fc(obj, deep, len(keys))
+    def _link(self, src, target):
+        links = self.ld_get(self._links, src, lambda :[{}, None, 0])
+        links[1] = target
+        links[2] =1
+    def _unlink(self, key):
+        links = self.ld_get(self._links, key)
+        if links is None:
+            return False
         links[1] = None
+        links[2] = 0
         return True
     def link_match(self, keys):
         obj = self.root or self
-        links = obj._links
-        deep = 0
-        for key in keys:
-            if key not in links[0]:
-                break
-            deep+=1
-            links = links[0][key]
-        return links[1], deep
+        rst = [[None,0,0]]
+        def fc_match(val, deep, size):
+            if not val[2]:
+                return
+            rst[0] = val[1], val[2], deep
+        self.ld_visit(obj._links, keys, fc_match)
+        return rst[0]
     def _set(self, key, val):
         keys = dzkeys(key, self.spt)
         mapz.dset(self.conf, keys, val)
-    def _hget(self, key, default=None, loop=-1):
-        #print(f"_hget: {key}, {default}, {loop}")
-        stk = mapz.get(self.stacks, key, [])
-        if len(stk)>0:
-            return stk[-1],1
+    def _lhget(self, key, default=None, loop=-1, link=-1):
+        a,b = self._hget(key, default, link)
+        bak = a, b
+        while b and type(a)==str and loop!=0:
+            a,b = self._hget(a, default, link)
+            if b:
+                bak = a,b
+            loop-=1
+        return bak
+    def _lget(self, key, default=None, loop=-1, link=-1):
+        return self._lhget(key, default, loop, link)[0]
+    def _hget(self, key, default=None, link=-1):
+        #print(f"_hget: {key}, {default}, {link}")
         keys = dzkeys(key, self.spt)
         val, find = mapz.dget(self.conf, keys, default)
-        if find or loop==0:
+        if find or link==0:
             return val, find
-        lnk, deep = self.link_match(keys)
-        if lnk is None:
+        lnk, has_lnk, deep = self.link_match(keys)
+        if not has_lnk:
             return val, find
         keys = keys[deep:]
-        keys = self.spt.join(keys)
-        key = lnk+self.spt+keys
-        if loop>0:
-            loop-=1
-        return self._hget(key, default, loop)
-    def _get(self, key, default=None, loop=-1):
-        return self._hget(key, default,loop)[0]
+        key = self.spt.join(keys)
+        if lnk is not None:
+            key = lnk+self.spt+key
+        if link>0:
+            link-=1
+        return self._hget(key, default, link)
+    def _get(self, key, default=None, link=-1):
+        return self._hget(key, default,link)[0]
         keys = dzkeys(key, self.spt)
         return mapz.dget(self.conf, keys, default)[0]
     def _remove(self, key):
+        # TODO
         keys = dzkeys(key, self.spt)
         return mapz.dremove(self.conf, keys)
-    def _has(self, key, loop=0):
-        return self._hget(key, None, loop)[1]
+    def _has(self, key, link=0):
+        return self._hget(key, None, link)[1]
         keys = dzkeys(key, self.spt)
         return mapz.dhas(self.conf, keys)
     def spts_ks(self, keys):
@@ -207,13 +272,13 @@ class Conf(Base):
         return rst
     def s(self, **maps):
         [self.set(k,v) for k,v in maps.items()]
-    def has_all(self, keys, loop = 0):
+    def has_all(self, keys, link = 0):
         keys = self.spts_ks(keys)
-        rst = [1-self.has(key, loop) for key in keys]
+        rst = [1-self.has(key, link) for key in keys]
         return sum(rst)==0
-    def has_any(self, keys, loop=0):
+    def has_any(self, keys, link=0):
         keys = self.spts_ks(keys)
         for key in keys:
-            if self.has(key, loop):
+            if self.has(key, link):
                 return True
         return False

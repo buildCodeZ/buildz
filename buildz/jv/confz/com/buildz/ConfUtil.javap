@@ -30,8 +30,8 @@ import java.lang.annotation.*;
 @interface Source {
 }
 public class ConfUtil {
-    
-    public static <T> T fill(Conf conf, Class<T> targetClass) 
+    <<default(-1,-1)||
+    public static <T> T fill(Conf conf, Class<T> targetClass, int loop, int link)
             throws IllegalAccessException, InstantiationException, 
                    NoSuchMethodException, InvocationTargetException,
                    IllegalArgumentException {
@@ -63,8 +63,8 @@ public class ConfUtil {
                 fieldName = note.value();
             }
             
-            if (conf.has(fieldName)) {
-                Object value = conf.get(fieldName);
+            if (conf.has(fieldName, link)) {
+                Object value = conf.lget(fieldName,null,loop,link);
                 Class<?> fieldType = field.getType();
                 
                 // 处理基本类型和包装类型的兼容性
@@ -80,7 +80,7 @@ public class ConfUtil {
             }
         }
         return instance;
-    }
+    }>>
     
     private static Object convertType(Object value, Class<?> targetType) {
         if (targetType == int.class || targetType == Integer.class) {

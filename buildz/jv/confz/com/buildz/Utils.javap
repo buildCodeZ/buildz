@@ -13,6 +13,27 @@ class Result{
     }
 }
 public class Utils {
+    public static Object deepClone(Object obj) {
+        Object rst;
+        if (obj instanceof List) {
+            List lst = (List) obj;
+            List lrst = new ArrayList(lst.size());
+            for(Object it:lst) {
+                lrst.add(deepClone(it));
+            }
+            rst = lrst;
+        } else if (obj instanceof Map) {
+            Map mp = (Map) obj;
+            Map mrst = new HashMap(mp.size());
+            for(Object key:mp.keySet()) {
+                mrst.put(key, deepClone(mp.get(key)));
+            }
+            rst = mrst;
+        } else {
+            rst = obj;
+        }
+        return rst;
+    }
     public static Map flushMaps(Map maps, String spt) {
         Map rst = new HashMap();
         for(Object key:maps.keySet()) {

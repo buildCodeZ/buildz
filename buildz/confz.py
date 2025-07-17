@@ -26,6 +26,7 @@ def load_conf(conf, dp=None, dp_key = 'dp', src_key = 'src.conf'):
 # using
 def calls(conf):
     calls = conf.get("calls", [])
+    local = conf.get("local", False)
     root = conf.top()
     if type(calls)==dict:
         target = dz.g(calls, target='run')
@@ -44,23 +45,52 @@ def calls(conf):
             root.update(init_conf.val())
     if type(calls)==str:
         calls = [calls]
+    obj = conf
+    if not local:
+        obj = root
     for key in calls:
-        assert conf.has(key), f"not has key: '{key}'"
-        simple(conf(key))
+        assert obj.has(key), f"not has key: '{key}'"
+        simple(obj.l(key))
+    return conf
+fn_key = "confz.fns"
+fn_cache_key = "confz.fn.caches"
+default_fn_key = "confz.fn.default"
+def fn2fc(conf, key = 'fn', default_fn = None, default_fc = None):
+    fn = conf.get(key)
+    conf = conf()
+    if fn is None:
+        if default_fc is not None:
+            return default_fc
+        fn = default_fn or conf.get(default_fn_key, 'calls')
+    fc = conf(fn_cache_key).get(fn)
+    if fc is not None:
+        return fc
+    path =conf(fn_key).get(fn)
+    if path is None:
+        return None
+    fc = pyz.load(path)
+    conf(fn_cache_key).set(fn,fc)
+    return fc
+def get_fc(conf, fc_key='fc', fn_key='fn', default_fn = None, default_fc = None):
+    fc = conf.get(fc_key)
+    if fc is None:
+        fc = fn2fc(conf, fn_key, default_fn, default_fc)
+    else:
+        fc = pyz.load(fc)
+    return fc
+def conf_update(conf):
+    if conf.get_type()==str:
+        conf = conf.ltop(conf.domain)
+    up = conf.get('up', link=0)
     return conf
 def simple(conf):
-    fc = conf.get('fc')
-    up = conf.get('up', loop=0)
+    if conf.get_type()==str:
+        conf = conf.ltop(conf.domain)
+    up = conf.get('up', link=0)
     if up:
         conf().link(conf.domain, up)
-    if fc is None:
-        fc = calls
-    else:
-        # import time
-        # print(time.strftime(f"%Y-%m-%d %H:%M:%S start load: {fc}"))
-        #assert fc is not None
-        fc = pyz.load(fc)
-        # print(time.strftime(f"%Y-%m-%d %H:%M:%S done load: {fc}"))
+    fc = get_fc(conf)
+    assert fc is not None, f"conf has not setted deal fc: {conf}"
     return fc(conf)
 def get_sys_conf(conf = []):
     if type(conf) == str:
@@ -69,6 +99,51 @@ def get_sys_conf(conf = []):
         conf = []
     fetch = argx.Fetch(*conf)
     return fetch()
+def fc_set(conf):
+    """
+        fn: set
+        // domain: default=None
+        // replace: default=1
+        // flush: default=1
+        conf: {
+
+        }
+    """
+    maps,domain,flush,replace = conf.gets("conf, domain,flush,replace",None,None,1,1)
+    if maps is None:
+        return conf
+    conf.top(domain).update(maps, flush=flush, replace=replace)
+    return conf
+def judge_fc(conf):
+    fc = get_fc(conf, "judge_fc", "judge")
+    rst = fc(conf)
+    if rst:
+        if not conf.has("yes"):
+            return None
+        conf = conf.l("yes")
+    else:
+        if not conf.has("no"):
+            return None
+        conf = conf.l("no")
+    return simple(conf)
+def switch_fc(conf):
+    fc = get_fc(conf, "cal_fc", "cal", "get")
+    val = fc(conf)
+    deal_conf = conf("vals")(val)
+    deal = get_fc(conf, "deal_fc", "deal", "mset")
+    return deal(deal_conf)
+def init_fn(conf):
+    maps = {
+        "calls": calls,
+        "set": fc_set,
+        "judge": judge_fc,
+        "switch": switch_fc,
+        "has_set": lambda conf:conf.top().has(conf.get("key")),
+        "equal": lambda conf:conf.top().get(conf.get("key"))==conf.get("val"),
+        "get": lambda conf: conf.top().get(conf.get("key")),
+        "mset": lambda conf:conf.top().update(conf.val()) if conf.has_val() else conf
+    }
+    conf(fn_cache_key).update(maps, replace=False)
 def run(dp = None, fp = None, init_conf = {}):
     if dp is None:
         dp = os.path.dirname(__file__)
@@ -83,6 +158,7 @@ def run(dp = None, fp = None, init_conf = {}):
     init = conf.get(conf.get("key.init", "init"), {})
     conf = load_conf(conf, dp).update(init)
     conf.set("confz.init", init)
+    init_fn(conf)
     return simple(conf)
     #return conf
 def test():
