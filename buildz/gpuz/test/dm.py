@@ -47,47 +47,37 @@ def opt_step(net, opt):
 cache = DictCache([torch.device('cuda'), torch.device('cpu')],models,opts,3,opt_step)#, [cuda_models,cpu_models])
 
 # 训练:
-[md.train() for md in models]
-for inputs,targets in dataloader:
-    inputs,targets = inputs.cuda(),targets.cuda()
-    [opt.zero_grad() for opt in opts]
-    outs = cache.do_forward(lambda:real_model(inputs))
-    loss = loss_fn(outs, targets)
-    cache.do_backward(lambda: loss.backward())
-    # opt.step()在do_backward里会自动调用
-    print(loss.item())
-    break
+def train():
+    [md.train() for md in models]
+    for inputs,targets in dataloader:
+        inputs,targets = inputs.cuda(),targets.cuda()
+        [opt.zero_grad() for opt in opts]
+        outs = cache.do_forward(lambda:real_model(inputs))
+        loss = loss_fn(outs, targets)
+        cache.do_backward(lambda: loss.backward())
+        # opt.step()在do_backward里会自动调用
+        print(loss.item())
+        #break
+pass
 
-exit()
+"""
+from buildz.gpuz.test import dm
 
-# 测试:
-inputs = torch.rand(1, dims).cuda()
-with torch.no_grad():
-    outputs = cache.do_forward(lambda:real_model(inputs))
-print(outputs)
-
-# 对比不用DictCache的时候
-# 注意：模型放入DictCache之后会挂上勾子函数，不再用DictCache的时要先调用DictCache的remove方法
-cache.remove()
-full_opt = optim.Adam(real_model.parameters(), lr=0.001)
-# 训练:
-real_model.cuda()
-real_model.train()
-for inputs,targets in dataloader:
-    inputs,targets = inputs.cuda(),targets.cuda()
-    full_opt.zero_grad()
-    outs = real_model(inputs)
-    loss = loss_fn(outs, targets)
-    loss.backward()
-    torch.nn.utils.clip_grad_norm_(real_model.parameters(), max_norm=1.0)
-    full_opt.step()
-    print(loss.item())
+ws = []
+for md in dm.models:
+    for net in md.nets:
+        ws.append(net.weight.cpu().detach().clone())
 
 pass
 
-# 测试:
-inputs = torch.rand(1, dims).cuda()
-with torch.no_grad():
-    outputs = real_model(inputs)
-print(outputs)
+dm.train()
 
+nws = []
+for md in dm.models:
+    for net in md.nets:
+        nws.append(net.weight.cpu().detach().clone())
+
+pass
+subs = [(a-b).sum() for a,b in zip(ws, nws)]
+
+"""
