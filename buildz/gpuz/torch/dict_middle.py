@@ -227,7 +227,7 @@ class DictCache(Base):
     def hook_forward_pre(self, model, ins):
         self.no_caches = False
         nid = id(model)
-        print(f"hook_forward_pre {nid}")
+        #print(f"hook_forward_pre {nid}")
         if nid not in self.pools:
             self.copy_forward(nid, model)
         if self.curr>=0:
@@ -235,12 +235,12 @@ class DictCache(Base):
         self.curr = nid
         return self.fc_inputs_to(ins, self.gdv)
     def do_forward(self, fc):
-        print("FWD")
+        #print("FWD")
         self.no_caches = True
         self.ctxs = {k:[] for k in self.nets}
         with torch.autograd.graph.saved_tensors_hooks(self.hook_pack, self.hook_unpack):
             rst = fc()
-        print("DFWD")
+        #print("DFWD")
         return rst.to(self.gdv)
     def wrap_backward_deal(self, net_id):
         if self.backward_deal is None:
@@ -248,10 +248,10 @@ class DictCache(Base):
         self.backward_deal(self.nets[net_id], self.opts[net_id])
     def hook_backward(self, model, grad_ins, grad_outs):
         nid = id(model)
-        print(f"hook_backward {nid}")
+        #print(f"hook_backward {nid}")
         self.wrap_backward_deal(nid)
     def hook_pack(self, dt):
-        print(f"pack")
+        #print(f"pack")
         if self.no_caches:
             # 不做缓存，数据不处理
             return -1, dt
@@ -261,7 +261,7 @@ class DictCache(Base):
         return index, len(self.ctxs[index])-1
     def hook_unpack(self, x):
         nid = x[0]
-        print(f"unpack {nid}")
+        #print(f"unpack {nid}")
         if nid<0:
             return x[1]
         if nid not in self.pools:

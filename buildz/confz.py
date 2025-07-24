@@ -19,6 +19,8 @@ def load_conf(conf, dp=None, dp_key = 'dp', src_key = 'src.conf'):
         rst.update(base, flush, replace, visit_list)
     for fp in fps:
         tmp = xf.loadf(path.dp(fp))
+        if type(tmp)!=dict:
+            continue
         rst.update(tmp, flush, replace, visit_list)
     if not conf_first:
         rst.update(base, flush, replace, visit_list)

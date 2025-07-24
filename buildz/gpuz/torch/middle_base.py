@@ -50,27 +50,27 @@ class MiddleBase(Base):
     def unhook(self):
         [hook.remove() for hook in self.hooks]
     def do_forward(self, fc):
-        with self.warp_forward():
+        with self.wrap_forward():
             return fc()
     def do_backward(self, fc):
-        with self.warp_backward():
+        with self.wrap_backward():
             return fc()
     def wrap_backward(self):
-        def warp_enter():
+        def wrap_enter():
             self.before_backward()
-        def warp_out(exc_type, exc_val, exc_tb):
+        def wrap_out(exc_type, exc_val, exc_tb):
             self.hook_backward_after(self.start_net)
             self.after_backward()
-        return pyz.With(warp_enter, warp_out, True)
+        return pyz.With(wrap_enter, wrap_out, True)
     def wrap_forward(self):
         obj = torch.autograd.graph.saved_tensors_hooks(self.tensor_save, self.tensor_load)
-        def warp_enter():
+        def wrap_enter():
             self.before_forward()
             obj.__enter__()
-        def warp_out(exc_type, exc_val, exc_tb):
+        def wrap_out(exc_type, exc_val, exc_tb):
             obj.__exit__(exc_type, exc_val, exc_tb)
             self.after_forward()
-        return pyz.With(warp_enter, warp_out, True)
+        return pyz.With(wrap_enter, wrap_out, True)
     def native_hook_backward_after(self, model, grad_up, grad_src):
         if id(model)==self.start_id:
             return

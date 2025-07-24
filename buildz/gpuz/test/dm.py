@@ -13,15 +13,15 @@ class TestDataset(Dataset):
         return self.num
     def __getitem__(self, i):
         return self.datas[i], self.targets[i]
-dims = 3
+dims = 64
 """
 cd D:\rootz\python\gits\buildz_upd\buildz\gpuz\test
 D:
 python -m buildz.gpuz.test.demo > demo.txt
 
 """
-dataset = TestDataset(30, dims)
-dataloader = DataLoader(dataset, 10)
+dataset = TestDataset(90, dims)
+dataloader = DataLoader(dataset, 30)
 class MiniModel(nn.Module):
     def __init__(self, dims, mdims, num):
         super().__init__()
@@ -31,7 +31,7 @@ class MiniModel(nn.Module):
         self.nets = nn.Sequential(*nets)
     def forward(self, inputs):
         return self.nets(inputs)
-models = [MiniModel(dims, 6, 3) for i in range(6)]
+models = [MiniModel(dims, 32, 3) for i in range(6)]
 opts = [optim.Adam(model.parameters(), lr=0.001) for model in models]
 #可以指定哪些模型全部放cuda或者全部放cpu
 cuda_models = [models[1],models[2]]
@@ -56,10 +56,16 @@ def train():
         loss = loss_fn(outs, targets)
         cache.do_backward(lambda: loss.backward())
         # opt.step()在do_backward里会自动调用
-        print(loss.item())
+        #print(loss.item())
         #break
 pass
-
+import time
+print("start")
+start = time.time()
+for i in range(50):
+    train()
+sec = time.time()-start
+print("time cost:", sec)
 """
 from buildz.gpuz.test import dm
 

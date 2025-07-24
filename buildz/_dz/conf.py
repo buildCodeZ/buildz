@@ -257,7 +257,7 @@ class Conf(Base):
         # TODO
         keys = dzkeys(key, self.spt)
         return mapz.dremove(self.conf, keys)
-    def _has(self, key, link=0):
+    def _has(self, key, link=-1):
         return self._hget(key, None, link)[1]
         keys = dzkeys(key, self.spt)
         return mapz.dhas(self.conf, keys)
@@ -272,7 +272,7 @@ class Conf(Base):
         return rst
     def s(self, **maps):
         [self.set(k,v) for k,v in maps.items()]
-    def has_all(self, keys, link = 0):
+    def has_all(self, keys, link = -1):
         keys = self.spts_ks(keys)
         rst = [1-self.has(key, link) for key in keys]
         return sum(rst)==0

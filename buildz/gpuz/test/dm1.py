@@ -39,12 +39,13 @@ opt = optim.Adam(real_model.parameters(), lr=0.001)
 cuda_models = [models[1],models[2]]
 cpu_models = [models[-1]]
 loss_fn = torch.nn.MSELoss()
-cache = MiddleCache(models, 2, cal_dv = "cpu", cal_nets = cuda_models, cache_nets = cpu_models)#, [torch.device('cuda'), torch.device('cpu')],models,opts,3,opt_step)#, [cuda_models,cpu_models])
+cache = MiddleCache(models, 3)#, cal_dv = "cpu", cal_nets = cuda_models, cache_nets = cpu_models)#, [torch.device('cuda'), torch.device('cpu')],models,opts,3,opt_step)#, [cuda_models,cpu_models])
 
 # 训练:
 def train():
     cache.train()
     for inputs,targets in dataloader:
+        targets = targets.cuda()
         #inputs,targets = inputs.cuda(),targets.cuda()
         opt.zero_grad()
         with cache.wrap_forward():
@@ -56,13 +57,17 @@ def train():
         opt.step()
         #cache.do_backward(lambda: loss.backward())
         # opt.step()在do_backward里会自动调用
-        print(loss.item())
-        break
+        # print(loss.item())
+        # break
         #break
 pass
-for i in range(5):
+import time
+print("start")
+start = time.time()
+for i in range(50):
     train()
-pass
+sec = time.time()-start
+print("time cost:", sec)
 
 """
 python -m buildz.gpuz.test.dm1
