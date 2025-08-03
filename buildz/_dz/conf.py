@@ -52,11 +52,12 @@ class Conf(Base):
                 val,find = obj.hget(domain,link=link)
                 loop-=1
         return Conf(self.spt, self.spts, domain, obj)
-    def init(self, spt='.', spts=',', domain=None, root = None):
+    def init(self, spt='.', spts=',', domain=None, root = None, src = None):
         self.spt = spt
         self.spts = spts
         self.domain = domain
         self.root = root
+        self.src = src
         if root is None:
             self.conf = {}
             self.history = {}
@@ -231,6 +232,10 @@ class Conf(Base):
                 bak = a,b
             loop-=1
         return bak
+    def src_hget(self, key, default, link=-1):
+        if self.src is None:
+            return default, 0
+        return self.src.hget(key, default, loop, link)
     def _lget(self, key, default=None, loop=-1, link=-1):
         return self._lhget(key, default, loop, link)[0]
     def _hget(self, key, default=None, link=-1):
@@ -238,10 +243,13 @@ class Conf(Base):
         keys = dzkeys(key, self.spt)
         val, find = mapz.dget(self.conf, keys, default)
         if find or link==0:
+            if not find:
+                val, find = self.src_hget(key, default, link)
             return val, find
         lnk, has_lnk, deep = self.link_match(keys)
         if not has_lnk:
-            return val, find
+            return self.src_hget(key, default, link)
+            #return val, find
         keys = keys[deep:]
         key = self.spt.join(keys)
         if lnk is not None:

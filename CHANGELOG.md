@@ -1,3 +1,5 @@
+## 2025/08/03
+buildz.confz添加只读数据
 ## 2025/07/25
 buildz.gpuz bug fix
 ## 2025/07/19
