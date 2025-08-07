@@ -7,6 +7,10 @@ class PrevSptDeal(base.BaseDeal):
     def types(self):
         return [self.type]
     def build(self, obj):
+        if self.ret is not None:
+            obj.val = self.ret
+            obj.is_val = 1
+            return obj
         return item.null
     def prepare(self, mgs):
         self.spt = mgs.like(self.spt)
@@ -31,10 +35,11 @@ class PrevSptDeal(base.BaseDeal):
     """
         分隔符，有分隔符后将缓存的数据当作字符串
     """
-    def init(self, spt, allow_empty = False, type = "spt"):
+    def init(self, spt, allow_empty = False, type = "spt", ret=None):
         self.spt = spt
         self.allow_empty = allow_empty
         self.l = len(spt)
         self.type = type
+        self.ret = ret
 
 pass

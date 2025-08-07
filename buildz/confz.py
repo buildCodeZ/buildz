@@ -85,12 +85,25 @@ def conf_update(conf):
         conf = conf.ltop(conf.domain)
     up = conf.get('up', link=0)
     return conf
+def deep_link(conf):
+    up = conf.get('up', link=0)
+    if not up:
+        return
+    deep_link(conf.top(up))
+    conf().link(conf.domain, up)
+    #conf.remove('up')
+def deep_copy(conf):
+    src = conf.get('copy', link=0)
+    if not src:
+        return
+    deep_copy(conf.top(src))
+    conf.update(conf.top(src).val(),replace=0)
+    #conf.remove('copy')
 def simple(conf):
     if conf.get_type()==str:
         conf = conf.ltop(conf.domain)
-    up = conf.get('up', link=0)
-    if up:
-        conf().link(conf.domain, up)
+    deep_link(conf)
+    deep_copy(conf)
     fc = get_fc(conf)
     assert fc is not None, f"conf has not setted deal fc: {conf}"
     return fc(conf)
@@ -134,6 +147,24 @@ def switch_fc(conf):
     deal_conf = conf("vals")(val)
     deal = get_fc(conf, "deal_fc", "deal", "mset")
     return deal(deal_conf)
+def sub_conf(conf):
+    deal = get_fc(conf, "deal_fc", "deal", "mset")
+    val = conf("val")
+    return deal(val)
+def msets(conf, keys = []):
+    # if not conf.has_val():
+    #     return conf
+    for k,v in conf.val().items():
+        ks = keys+[k]
+        if type(v)==str:
+            val = conf.top(v).val()
+            conf().set(conf.key(ks), val)
+            #conf().top(conf.key(ks)).update(val)
+            pass
+        else:
+            msets(conf(k), ks)
+            #conf().top(k).update(v)
+    return conf
 def init_fn(conf):
     maps = {
         "calls": calls,
@@ -143,7 +174,9 @@ def init_fn(conf):
         "has_set": lambda conf:conf.top().has(conf.get("key")),
         "equal": lambda conf:conf.top().get(conf.get("key"))==conf.get("val"),
         "get": lambda conf: conf.top().get(conf.get("key")),
-        "mset": lambda conf:conf.top().update(conf.val()) if conf.has_val() else conf
+        "mset": lambda conf:conf.top().update(conf.val()) if conf.has_val() else conf,
+        "deal_val":sub_conf,
+        "msets": msets
     }
     conf(fn_cache_key).update(maps, replace=False)
 def run(dp = None, fp = None, init_conf = {}):

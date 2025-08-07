@@ -201,6 +201,7 @@ class Conf(Base):
             obj = obj[0][key]
             fc(obj, deep, len(keys))
     def _link(self, src, target):
+        #print(f"[LINK] {src}->{target}")
         links = self.ld_get(self._links, src, lambda :[{}, None, 0])
         links[1] = target
         links[2] =1
@@ -232,6 +233,8 @@ class Conf(Base):
                 bak = a,b
             loop-=1
         return bak
+    def key(self, ks):
+        return self.spt.join(ks)
     def src_hget(self, key, default, link=-1):
         if self.src is None:
             return default, 0
