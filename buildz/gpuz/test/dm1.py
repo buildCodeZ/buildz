@@ -44,6 +44,7 @@ cache = MiddleCache(models, 3)#, cal_dv = "cpu", cal_nets = cuda_models, cache_n
 # 训练:
 def train():
     cache.train()
+    _loss = 0
     for inputs,targets in dataloader:
         targets = targets.cuda()
         #inputs,targets = inputs.cuda(),targets.cuda()
@@ -55,17 +56,19 @@ def train():
             loss.backward()
         torch.nn.utils.clip_grad_norm_(real_model.parameters(), max_norm=1.0)
         opt.step()
+        _loss+=loss.cpu().item()
         #cache.do_backward(lambda: loss.backward())
         # opt.step()在do_backward里会自动调用
         # print(loss.item())
         # break
         #break
+    return _loss / (len(dataloader))
 pass
 import time
 print("start")
 start = time.time()
 for i in range(50):
-    train()
+    print(train())
 sec = time.time()-start
 print("time cost:", sec)
 

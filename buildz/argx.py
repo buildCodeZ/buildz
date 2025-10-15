@@ -132,6 +132,7 @@ def fetch(argv = None):
         v = argv[i]
         make_plus = 0
         if v in ["-", "--", "+"]or v[0] not in "+-":
+            v = to_val(v)
             lists.append(v)
             i+=1
             continue

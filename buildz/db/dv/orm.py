@@ -13,10 +13,14 @@ def dict2list(data):
     return rst
 def deal_item(item, conf):
     key = item[0]
-    if key in "sql_before,sql_after,sql_delete_before,sql_delete_after".split(","):
-        conf[key].append(item[1])
+    if len(item)==2:
+        obj = item[1]
     else:
-        conf[key] = item[1]
+        obj = item[1:]
+    if key in "sql_before,sql_after,sql_delete_before,sql_delete_after,index.unique".split(","):
+        conf[key].append(obj)
+    else:
+        conf[key] = obj
 def deal_key(it, conf):
     data_keys = xf.g(conf, data_keys=[])
     tmp = {}
@@ -78,7 +82,7 @@ def make(data, table=None, data_keys = "sql_key,sql_def,py_key".split(","), py_n
     elif type(data) == dict:
         data = dict2list(data)
     conf = {}
-    xf.s(conf, sql_before = [], sql_after = [], sql_delete_before=[], sql_delete_after=[],auto_translate=False,table=table,keys=[],py2sqls={},query_keys=None, data_keys = data_keys, vars=[], py_name = py_name)
+    xf.s(conf, sql_before = [], sql_after = [], sql_delete_before=[], sql_delete_after=[],auto_translate=False,table=table,keys=[],py2sqls={},query_keys=None, data_keys = data_keys, vars=[], py_name = py_name, index=[], unique=[])
     for it in data:
         if len(it)==1 and type(it[0]) in (list, tuple):
             deal_item(it[0], conf)
@@ -93,9 +97,22 @@ def make(data, table=None, data_keys = "sql_key,sql_def,py_key".split(","), py_n
     assert table is not None
     sql = f"create table if not exists {table}({vars})"
     sql_del = f"drop table if exists {table}"
+    indexes,uniques =xf.g(conf, index=[], unique=[])
+    i_u = len(indexes)
+    indexes+=uniques
+    idx_sqls =[]
+    for i in range(len(indexes)):
+        keys = indexes[i]
+        unique = i>=i_u
+        s_u = "unique" if unique else ""
+        if type(keys) not in (list,tuple):
+            keys = [keys]
+        index_name = f"idx_{table}_idx_{'_'.join(keys)}"
+        idx_sql = f"create {s_u} index if not exists {index_name} on {table}({','.join(keys)});"
+        idx_sqls.append(idx_sql)
     sqls = xf.g(conf, sql_before=[], sql_after=[], sql_delete_before=[], sql_delete_after=[])
     #sqls = [";".join(k) for k in sqls]
-    sqls_crt = sqls[0]+[sql]+sqls[1]
+    sqls_crt = sqls[0]+[sql]+idx_sqls+sqls[1]
     sqls_del = sqls[2]+[sql_del]+sqls[3]
     sqls = [sqls_crt, sqls_del]
     sqls = [(";\n".join(k)+";").replace(";;",";") for k in sqls]
@@ -202,6 +219,34 @@ class TableObject(Base):
     def query_all(self, dv=None, sql2py=False):
         sql = f"select * from {self.table};"
         return self.query(sql, dv, sql2py)
+    def sql_where(self, maps, py2sql=True):
+        rst = []
+        for key,val in maps:
+            if py2sql:
+                key = self.py2sqls[key]
+            opt = "="
+            if type(val) in (list, tuple):
+                opt = val[0]
+                val = val[1]
+            if type(val)==str:
+                val = f"'{val}'"
+            if type(val) in (list, tuple):
+                val = [k if type(k)!=str else f"'{k}'" for k in val]
+                val = f"({','.join(val)})"
+            rst.append(f"{key}{opt}{val}")
+        return " and ".join(rst)
+    def find(self, **maps):
+        rst = self.find_all(**maps)
+        if len(rst)==0:
+            return None
+        return rst[0]
+    def find_all(self, **maps):
+        sql_where = self.sql_where(maps)
+        sql = f"find * from {self.table}"
+        if sql_where!="":
+            sql += f"where {sql_where}"
+        sql+=";"
+        return self.query(sql)
     def execute(self, sql, dv=None):
         dv=self.rdv(dv)
         return dv.execute(sql)

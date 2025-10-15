@@ -11,3 +11,12 @@ from .middle_cache import MiddleCache
 from .dict_middle import DictCache, Fcs
 #from .dict_middle import *
 Dict = DictCache
+
+'''
+20250917
+写好的是MiddleCache
+暂时别用DictCache，没测过
+
+20251016
+测试发现，数据在内存和显存间传输消耗太多，显存不足用此代码未必能提升多少性能，还不如加显存，或者把模型改小，不建议用
+'''

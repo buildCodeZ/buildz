@@ -2,6 +2,9 @@
 
 from .middle_base import MiddleBase
 import torch
+from buildz import logz
+log = logz.simple("middle_cache.log")("GPUZ_CACHE")
+log.show("debug", 0)
 class MiddleCache(MiddleBase):
     '''
         nets: 模型列表
@@ -43,6 +46,7 @@ class MiddleCache(MiddleBase):
         self.nexts = {}
         self.prevs = {}
         self.curr = -1
+        #self.caches = set()
         self.mark_static = None
         self.win_size = win_size
         self.preload = preload
@@ -57,28 +61,56 @@ class MiddleCache(MiddleBase):
         # assert datas is not None, "inputs datas is null"
         inputs = tuple([k.to(dv) for k in datas])
         return inputs
+    @staticmethod
+    def deep_inputs_to(datas, dv):
+        '''
+            数据比较复杂用这个，会递归搜索list，tuple和dict病做转换
+        '''
+        log.debug(f"deep_inputs_to")
+        if isinstance(datas, torch.Tensor):
+            return datas.to(dv)
+        if type(datas) in (list, tuple):
+            rst = [MiddleCache.deep_inputs_to(k, dv) for k in datas]
+            if type(datas)==tuple:
+                rst = tuple(rst)
+            return rst
+        if type(datas) == dict:
+            rst = {k:MiddleCache.deep_inputs_to(v, dv) for k,v in datas.items()}
+            return rst
+        assert 0, f"undealable datas type: {type(datas)}"
     def before_forward(self):
+        log.debug(f"before_forward")
         self.curr = -1
+        #self.caches = set()
         for mid in self.datas:
             self.datas[mid] = []
     def after_forward(self):
         pass
     def before_backward(self):
+        log.debug(f"before_backward")
         self.curr = -1
+    def backupable(self, model):
+        mid = id(model)
+        return mid in self.cal_ids or mid in self.static_dv
+        #return mid not in self.caches
     def after_backward(self):
         pass
     def to_dv(self, mid, dv):
         self.nets[mid].to(dv)
         self.datas[mid] = [self.inputs_to(k, dv) if k is not None else k for k in self.datas[mid]]
     def to_cal(self, mid, pop = 0):
+        log.debug(f"to_cal")
         if mid in self.cal_ids:
             return 0
         if len(self.cal_ids)>=self.win_size:
             xid = self.cal_ids.pop(pop)
             #print(f"model_{self.indexes[xid]} to CPU device")
             self.to_dv(xid, self.cache_dv)
+            #self.caches.add(xid)
         #print(f"model_{self.indexes[mid]} to CUDA device")
         self.to_dv(mid, self.cal_dv)
+        # if mid in self.caches:
+        #     self.caches.remove(mid)
         if pop==-1:
             self.cal_ids = [mid]+self.cal_ids
         else:
@@ -86,6 +118,7 @@ class MiddleCache(MiddleBase):
         return 1
     def hook_forward_before(self, model, ins):
         mid = id(model)
+        log.debug(f"hook_forward_before", model, id(model))
         self.mark_static = mid in self.static_dv
         if self.mark_static:
             # assert ins is not None, "hook_forward_before A"
@@ -100,8 +133,12 @@ class MiddleCache(MiddleBase):
         # assert ins is not None, "hook_forward_before B"
         return self.inputs_to(ins, self.cal_dv)
     def hook_forward_after(self, model):
+        log.debug(f"hook_forward_after", model, id(model))
         pass
     def hook_backward_after(self, model):
+        log.debug(f"hook_backward_after", model, id(model))
+        #print(f"hook_backward_after", model, id(model))
+        assert self.backupable(model)
         mid = id(model)
         if self.deal_after_backup is not None:
             self.deal_after_backup(model)
@@ -112,12 +149,15 @@ class MiddleCache(MiddleBase):
             self.prevs[after] = mid
         self.curr = mid
     def tensor_save(self, tuple_data):
+        log.debug(f"tensor_save")
         if self.mark_static:
             return -1, tuple_data
         index = len(self.datas[self.curr])
         self.datas[self.curr].append(tuple_data)
+        log.debug(f"done tensor_save", self.curr, index)
         return self.curr, index
     def tensor_load(self, obj):
+        log.debug(f"tensor_load", obj)
         if obj[0]<0:
             return obj[1]
         curr, index = obj
@@ -127,6 +167,7 @@ class MiddleCache(MiddleBase):
         self.datas[curr][index] = None
         return tuple_data
     def loop_to_cal(self, mid, pop, nexts):
+        log.debug(f"loop_to_cal")
         if mid in self.cal_ids:
             return
         self.to_cal(mid, pop)

@@ -1,5 +1,7 @@
 from . import Base
 import os,sys,json,time
+dirname = os.path.dirname
+join = os.path.join
 class Key:
     first='first'
     ifirst = 0
@@ -13,17 +15,19 @@ class Key:
         return val in (Key.last, Key.ilast)
 class Path(Base):
     Key = Key
-    def init(self, **maps):
+    def init(self, *args, **maps):
         self.paths = {}
         self.fcs = {}
         self.lasts = {}
         k = "check_abs"
         self.check_abs = True
+        if len(args)>0:
+            self.set(args)
         if k in maps:
             self.check_abs = maps[k]
             del maps[k]
         for k, v in maps.items():
-            self.set(k, v)
+            self.set(v, k)
     @staticmethod
     def dir(fp):
         return os.path.dirname(fp)
@@ -34,15 +38,15 @@ class Path(Base):
     def rjoin(path, *a):
         a = [k.strip() for k in a if k is not None and k.strip()!=""]
         if len(a)==0:
-            return None
+            return path
         if path is None:
             return os.path.join(*a)
         return os.path.join(path, *a)
     @staticmethod
     def rfp(paths, *a, last=-1, check_abs=False):
         a = [k.strip() for k in a if k is not None and k.strip()!=""]
-        if len(a)==0:
-            return None
+        # if len(a)==0:
+        #     a = ""
         if check_abs and len(a)>0:
             f = a[0]
             if f[:1]=="/" or f.find(":")>0:

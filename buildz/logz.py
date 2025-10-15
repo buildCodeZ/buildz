@@ -10,16 +10,18 @@ ns = wrap.ns("buildz.logz")
 @ns.obj(id="baseLog")
 @ns.obj_args("ref, buildz.logz.shows, null", "ref, buildz.logz.tag, null", "ref, buildz.logz.base, null")
 class Log(Base):
-    def show(self, type):
+    def show(self, type, on=True):
+        if not on:
+            return self.unshow(type)
         if type not in self.shows:
-            self.show.append(type)
+            self.shows.append(type)
     def unshow(self, type):
         if type in self.shows:
             self.shows.remove(type)
     def call(self, _tag):
         return self.tag(_tag)
     def tag(self, _tag):
-        if type(_tag) != str:
+        if _tag is not None and type(_tag) != str:
             try:
                 if not hasattr(_tag, "__name__"):
                     _tag = _tag.__class__
@@ -56,22 +58,28 @@ class Log(Base):
         if self.base is not None:
             return self.base.log(level, tag, *args)
         raise Exception("unimpl")
-    def info(self, *args):
-        if "info" not in self.shows:
-            return
-        self.log("info", self._tag, *args)
-    def warn(self, *args):
-        if "warn" not in self.shows:
-            return
-        self.log("warn", self._tag, *args)
-    def debug(self, *args):
-        if "debug" not in self.shows:
-            return
-        self.log("debug", self._tag, *args)
-    def error(self, *args):
-        if "error" not in self.shows:
-            return
-        self.log("error", self._tag, *args)
+    def __getattr__(self, key):
+        def fc(*args):
+            if key not in self.shows:
+                return
+            self.log(key, self._tag, *args)
+        return fc
+    # def info(self, *args):
+    #     if "info" not in self.shows:
+    #         return
+    #     self.log("info", self._tag, *args)
+    # def warn(self, *args):
+    #     if "warn" not in self.shows:
+    #         return
+    #     self.log("warn", self._tag, *args)
+    # def debug(self, *args):
+    #     if "debug" not in self.shows:
+    #         return
+    #     self.log("debug", self._tag, *args)
+    # def error(self, *args):
+    #     if "error" not in self.shows:
+    #         return
+    #     self.log("error", self._tag, *args)
     def clean(self):
         pass
 

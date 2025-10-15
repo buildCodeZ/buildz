@@ -12,7 +12,49 @@ def dzkeys(key, spt):
     if type(key) not in (list, tuple):
         key = [key]
     return key
+
+class BindKey(Base):
+    def sub(self, key):
+        return BindKey(key, False, self, self.obj)
+    def init(self, key, abs=True, up=None, conf=None):
+        self.key = key
+        self.abs = abs
+        self.spt = spt
+        self.up = up
+        self.obj = conf
+    def bind(self, conf):
+        self.obj=conf
+    def get(self, conf=None, default=None):
+        conf = self.conf(conf)
+        if self.up:
+            conf = self.up(conf)
+        elif self.abs:
+            conf = conf()
+        return conf.get(self.key, default)
+    def conf(self, obj):
+        obj = obj or self.obj
+        assert obj is not None
+        return obj
+    def set(self, val, conf=None):
+        conf = self.conf(conf)
+        if self.up:
+            conf = self.up(conf)
+        elif self.abs:
+            conf = conf()
+        return conf.set(self.key, val)
+    def call(self, conf):
+        conf = self.conf(conf)
+        if self.up:
+            conf = self.up(conf)
+        elif self.abs:
+            conf = conf()
+        return conf(self.key)
+
+pass
 class Conf(Base):
+    @staticmethod
+    def bind_key(key, abs=True, up = None):
+        return BindKey(key, abs, up)
     def val(self):
         return self.get_conf()
     def get_type(self):
@@ -293,3 +335,14 @@ class Conf(Base):
             if self.has(key, link):
                 return True
         return False
+
+pass
+
+class ArgsConf(Base):
+    def init(self, conf, args):
+        self.conf =conf
+        self.args =args
+    def __getattr__(self, key):
+        return getattr(self.conf,key)
+
+pass

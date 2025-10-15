@@ -10,6 +10,7 @@ def load_conf(conf, dp=None, dp_key = 'dp', src_key = 'src.conf'):
     conf_first,replace,flush,visit_list = conf.gets('conf_first,replace,flush,visit_list',1, 1,1,0)
     spt, spts = conf.gets('spt, spts','.',',')
     dp = conf.get(dp_key, dp)
+    conf.set(dp_key, dp)
     path = pathz.Path()
     path.set("dp", dp)
     rst = Conf(spt, spts)
@@ -51,7 +52,7 @@ def calls(conf):
     if not local:
         obj = root
     for key in calls:
-        assert obj.has(key), f"not has key: '{key}'"
+        #assert obj.has(key), f"not has key: '{key}'"
         simple(obj.l(key))
     return conf
 fn_key = "confz.fns"
@@ -104,7 +105,11 @@ def simple(conf):
         conf = conf.ltop(conf.domain)
     deep_link(conf)
     deep_copy(conf)
-    fc = get_fc(conf)
+    fc = get_fc(conf, default_fn = "calls")
+    if fc == calls and not conf.has("calls"):
+        fc = None
+    if fc is None :
+        fc = pyz.load(conf.domain)
     assert fc is not None, f"conf has not setted deal fc: {conf}"
     return fc(conf)
 def get_sys_conf(conf = []):
