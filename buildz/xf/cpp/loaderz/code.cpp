@@ -46,11 +46,23 @@ inline void init_barr();
 void init_barr(){
     if (mark_init_barr)return;
     for(int i=0;i<256;++i)barr[i]=-1;
+    // barr['b'] = '\b';
+    // barr['f'] = '\f';
+    // barr['r'] = '\r';
+    // barr['t'] = '\t';
+    barr['\\'] = '\\';
+    barr['\''] = '\'';
+    barr['"'] = '"';
+    barr['a'] = '\a';
     barr['b'] = '\b';
+    barr['e'] = '\e';
     barr['f'] = '\f';
     barr['n'] = '\n';
+    barr['p'] = '\p';
     barr['r'] = '\r';
     barr['t'] = '\t';
+    //barr['u'] = '\u';
+    barr['v'] = '\v';
 }
 char* do_translate(const char* s){
     init_barr();

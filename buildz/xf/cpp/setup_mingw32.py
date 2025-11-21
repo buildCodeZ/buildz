@@ -9,3 +9,10 @@ if len(sys.argv)==1:
 if sys.platform =='win32':
     sys.argv.append("--compiler=mingw32")
 from buildz.xf.cpp import setup
+
+"""
+mingw32 or linux:
+python -m buildz.xf.cpp.setup_mingw32
+mscrt or linux
+python -m buildz.xf.cpp.setup
+"""
