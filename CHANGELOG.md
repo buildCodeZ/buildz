@@ -1,3 +1,8 @@
+## 2025/12/25
+代码修复
+增加
+buildz.dz.Confx(buildz.dz.Conf的简化，读取更快)
+buildz.log.Log(更简便的日志生成)
 ## 2025/10/16
 little change
 ## 2025/08/07

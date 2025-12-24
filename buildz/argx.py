@@ -56,8 +56,16 @@ class Fetch:
                 for rkey in rkeys:
                     assert rkey!=key, f'error rkey==key: {key}'
                     val = rst[key]
-                    rst[rkey] = val
+                    if rkey not in rst:
+                        rst[rkey] = val
+                    else:
+                        tmp = rst[rkey]
+                        if type(tmp)!=list:
+                            tmp = [tmp]
+                            rst[rkey] = tmp
+                        tmp.append(val)
                     keys.append(rkey)
+                    keys = list(set(keys))
                 del rst[key]
         # for key in keys:
         #     while key in self.maps:

@@ -15,6 +15,7 @@ Codes of this project are not allowed to be used for AI training or any other fo
 2，基于xf格式写了个ioc控制反转配置文件读取的程序，模块在buildz.ioc下
 3，其他工具模块：
     buildz.fz: 文件夹查找
+    buildz.log: 日志工具
     buildz.pyz: 简化python __import__调用
     buildz.argx: 按格式读命令行参数
     buildz.tz: 加些工具，目前只有myerse diff字符串比较算法

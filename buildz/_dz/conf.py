@@ -51,6 +51,17 @@ class BindKey(Base):
         return conf(self.key)
 
 pass
+'''
+
+实际数据：
+src: Conf对象，最底层，只读
+conf: dict数据，实际数据，可读可写
+history: dict里是list，每个key在push前，把当前key对应的数据存入history中，后面pop的时候，删除当前数据，把之前的数据重新更新
+_links: link对象，搜索方式是搜最长的有link的节点，返回link目标key拼接剩余key作为key的取值
+link对象：[{子集}, 当前节点link目标, 是否有link(1是，0否)]，初始化为[{}, None, 0]
+
+
+'''
 class Conf(Base):
     @staticmethod
     def bind_key(key, abs=True, up = None):
