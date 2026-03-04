@@ -1,6 +1,8 @@
 #
 
 '''
+新的，更简单的buildz._dz.conf
+
 简单的方便读取配置文件的类
 没安全措施
 每个Conf里有当前的数据conf，和数据是否存在exist
@@ -186,6 +188,7 @@ class Conf(Base):
         '''
         if self.get_type()!=dict:
             return
+        self.history = {}
         for key in self.conf:
             del self.conf[key]
         return self
@@ -200,10 +203,35 @@ class Conf(Base):
         xf.fill(conf, self.conf, replace=replace)
         return self
     def push(self, key, value, flush = 1, update=0, clean_history = 0):
-        assert 0
+        if self.get_type()!=dict:
+            return None
+        keys = dzkeys(key, self.spt)
+        val, find = mapz.dget(self.conf, keys)
+        val = mapz.deep_clone(val)
+        if clean_history or key not in self.history:
+            self.history[key] = []
+        self.history[key].append([val, find, update])
+        if flush and type(value)==dict:
+            value = xf.flush_maps(value, lambda x:x.split(self.spt) if type(x)==str else [x], 0)
+        if find and type(value)==dict and type(val)==dict and update:
+            self(key).update(value,flush=0)
+        else:
+            self.set(key, value)
         return key
     def pop(self, key, clean_history = 0):
-        assert 0
+        if key not in self.history:
+            return False
+        lst = self.history[key]
+        if len(lst)==0:
+            return False
+        rst = lst.pop(-1)
+        if clean_history:
+            self.history[key] = []
+        if not rst[1]:
+            self.remove(key)
+            return True
+        self.set(key, rst[0])
+        return True
     def pops(self, keys, *a, **b):
         keys = self.spts_ks(keys)
         keys.reverse()

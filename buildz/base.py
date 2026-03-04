@@ -60,7 +60,19 @@ class Base:
         return None
 
 pass
-
+class BaseX(Base):
+    def __iter__(self):
+        return self.iter()
+    def iter(self):
+        assert False
+    def __getattr__(self, key):
+        return self.get(key)
+    def get(self, key):
+        assert False
+    def set(self, key,val):
+        assert False
+    def __setattr__(self, key, val):
+        return self.set(key, val)
 class WBase(Base):
     def _open(self):
         pass

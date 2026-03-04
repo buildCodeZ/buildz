@@ -5,6 +5,24 @@
 from ..base import Base,fcBase
 from .. import logz
 import traceback
+'''
+ut = UnitTest()
+@ut.case("A")
+def add(a,b):
+    return a+b
+
+@ut.case("A")
+def sub(a,b):
+    return a-b
+
+@ut.case("B"):
+def fv(v):
+    return v*v
+
+ut("A", [0,1])
+ut("B", [2])
+
+'''
 class UnitTest(Base):
     def init(self, log=None):
         self.tests = []

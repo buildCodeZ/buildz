@@ -94,16 +94,17 @@ def pyexe():
 pass
 exe=pyexe
 is_windows = sys.platform.lower()=='win32'
-def pypkg():
+def pypkg(easy=True):
     """
         return python package path, test on linux and windows
     """
-    try:
-        import buildz
-        import os
-        return os.path.dirname(buildz.__path__[0])
-    except:
-        pass
+    if easy:
+        try:
+            import buildz
+            import os
+            return os.path.dirname(buildz.__path__[0])
+        except:
+            pass
     import site
     sites = site.getsitepackages()
     if is_windows:
@@ -118,7 +119,7 @@ pth = pypkg
 
 class Pth:
     def __init__(self, fp = "build.pth"):
-        self.fp = os.path.join(pth(), fp)
+        self.fp = os.path.join(pth(0), fp)
     def read(self):
         fp = self.fp
         if not os.path.isfile(fp):
@@ -234,3 +235,10 @@ def th_input(s, fc_done):
     t.start()
 
 pass
+def test_import(model, error=None):
+    try:
+        __import__(model)
+    except ModuleNotFoundError as exp:
+        error = error or exp
+        print(error)
+        raise exp

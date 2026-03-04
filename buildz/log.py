@@ -4,6 +4,9 @@
 from . import xf, ioc, fz, dz, path as pathx
 from .base import Base
 import time, sys, threading, os
+'''
+    新的buildz.logz
+'''
 class Check(Base):
     def str(self):
         return f"Check<self.whitelist: {self.whitelist}, self.blacklist: {self.blacklist}, self.default_pass: {self.default_pass}>"
