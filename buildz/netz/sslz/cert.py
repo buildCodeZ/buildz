@@ -5,7 +5,7 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 import datetime
-from buildz import xf
+from buildz import xf, pyz
 from buildz import fz
 from .pk import *
 __doc__='''
@@ -20,22 +20,57 @@ cert和csr的区别：
             用上层节点的cert的公钥验证下层节点cert是否是它签名的，
             最后用CA的cert的公钥验证它自己（为了安全，验证方要自己存储CA的自签名cert证书，用自己存的cert的公钥验证cert链的最高层）
 '''
+def load_names():
+    import os
+    dp = os.path.dirname(__file__)
+    with open(os.path.join(dp, "names.txt"), 'rb') as f:
+        s = f.read().decode("utf-8")
+    arr = s.split("\n")[1:]
+    arr = [k.split(",") for k in arr]
+    arr = [[v.strip() for v in k] for k in arr]
+    for it in arr:
+        it[-1] = it[-1].split("|")
+        it[-1] = [k.strip() for k in it[-1] if k.strip()!=""]
+    return arr
+
+pass
+arr_names = load_names()
+dict_names = {k[0]:k for k in arr_names}
+def a2n(arr_names):
+    rst = {}
+    for item in arr_names:
+        oid = item[0]
+        als = item[3]
+        rst[oid] = oid
+        for al in als:
+            rst[al] = oid
+    return rst
+al2names = a2n(arr_names)
+def get_subject_val(obj, key):
+    '从subject（或cert/csr）获取key对应的值，返回列表'
+    if key not in al2names:
+        return []
+    key = al2names[key]
+    key = getattr(NameOID, key)
+    if not hasattr(obj, 'get_attributes_for_oid') and hasattr(obj, 'subject'):
+        obj = obj.subject
+    rst = obj.get_attributes_for_oid(key)
+    rst = [k.value for k in rst]
+    return rst
+get_sub_val = get_subject_val
 def gen_subject(conf = {}):
     "生成证书的主体信息"
-    names = [
-        # 国家
-        x509.NameAttribute(NameOID.COUNTRY_NAME, conf.get("contry", "CN")),
-        # 省份
-        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME,  conf.get("provice", "CN")),
-        # 城市
-        x509.NameAttribute(NameOID.LOCALITY_NAME, conf.get('local', 'cityz')),
-        # 组织
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME, conf.get('org', 'orgz')),
-        # 这里其实应该是域名/ip
-        x509.NameAttribute(NameOID.COMMON_NAME, conf.get('comman', 'commanz')),
-        # email
-        x509.NameAttribute(NameOID.EMAIL_ADDRESS, conf.get('email', 'emailz'))
-    ]
+    names = []
+    for item in arr_names:
+        OID,des,df,als = item
+        val = conf.get(OID)
+        for al in als:
+            if val:
+                break
+            val = conf.get(al)
+        val = val or df
+        if val:
+            names.append(x509.NameAttribute(getattr(NameOID, OID), val))
     subject = x509.Name(names)
     return subject
 
@@ -290,18 +325,16 @@ def des_subject(subject):
         for it in its:
             oid = it.oid
             val = it.value
-            if oid not in names:
+            if oid not in dict_names:
                 name = oid.dotted_string
             else:
-                name = names[oid]
+                name = f"{dict_names[oid][1]}({dict_names[oid][0].lower()})"
             rst[name]=val
     return rst
 
 pass
 def test():
-    gen_prv("prv.pem")
-    gen_pub("pub.pem", "prv.pem")
-    sign("sign.pem", "pub.pem", "prv.pem")
+    pass
 
 pass
 

@@ -9,14 +9,17 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, padding
 import os
+try:
+    import numpy as np
+except ModuleNotFoundError:
+    np = None
 def xors(a,b):
-    try:
-        import numpy as np
+    if np:
         na = np.array(bytearray(a))
         nb = np.array(bytearray(b))
         rst = na^nb
         return rst.tobytes()
-    except ModuleNotFoundError:
+    else:
         rst = [i^j for i,j in zip(a,b)]
         return bytes(rst)
 
