@@ -40,15 +40,31 @@ class ByteStream:
         self.crypt_hash = crypt_hash
         if pwd is not None:
             self.init(pwd, base, iv)
-    def init(self, pwd, base, iv):
+    def to_bytes(self):
+        # 32+32+16=80
+        return self.pwd+self.iv+self.base
+    @staticmethod
+    def from_bytes(dt):
+        base=dt[-32:]
+        dt=dt[:-32]
+        iv=dt[-16:]
+        pwd=dt[:-16]
+        obj =  ByteStream()
+        obj.init(pwd, base,iv, False)
+        return obj
+    def init(self, pwd, base, iv, hash_pwd=True):
         if iv is None:
             iv = os.urandom(16)
         if base is None:
             base = os.urandom(32)
-        obj = hashlib.md5(pwd)
-        self.pwd = obj.hexdigest().encode("ascii")
+        if hash_pwd:
+            # 32
+            obj = hashlib.md5(pwd)
+            pwd = obj.hexdigest().encode("ascii")
+            base = hashlib.md5(base).hexdigest().encode("ascii")
+        self.pwd = pwd
         self.iv = iv
-        self.base = hashlib.md5(base).hexdigest().encode("ascii")
+        self.base = base #hashlib.md5(base).hexdigest().encode("ascii")
         self.cipher = Cipher(algorithms.AES(self.pwd), modes.CBC(self.iv))
         self.encryptor = self.cipher.encryptor()
         self.codes = b""

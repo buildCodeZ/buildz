@@ -56,6 +56,8 @@ def gen_prv(pwd = None, to_pem=True):
     if not to_pem:
         return private_key
     # 将私钥序列化为PEM格式
+    pem = prv2pem(private_key, pwd)
+    return pem
     if pwd is None:
         alg = serialization.NoEncryption()
     else:
@@ -65,7 +67,7 @@ def gen_prv(pwd = None, to_pem=True):
         format=serialization.PrivateFormat.PKCS8,
         encryption_algorithm=alg
     )
-    return pem
+    #return pem
 
 pass
 def gen_pub(private_key, pwd = None, to_pem=True):
@@ -79,11 +81,13 @@ def gen_pub(private_key, pwd = None, to_pem=True):
     if not to_pem:
         return public_key
     # 将RSA公钥序列化为PEM格式
+    pem = pub2pem(public_key)
+    return pem
     pem = public_key.public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
-    return pem
+    #return pem
 
 pass
 
@@ -101,3 +105,22 @@ def load_pub(pem_data):
     return public_key
 
 pass
+
+def prv2pem(private_key, pwd=None):
+    if pwd is None:
+        alg = serialization.NoEncryption()
+    else:
+        alg = serialization.BestAvailableEncryption(pwd)
+    pem = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=alg
+    )
+    return pem
+
+def pub2pem(public_key):
+    pem = public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+    return pem

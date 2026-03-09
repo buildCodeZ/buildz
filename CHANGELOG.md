@@ -1,5 +1,6 @@
 ## 2026/03/09
 修改加密和网络部分，增加buildz.fz.clean，用来删除目录下pyc文件
+修复加密错误
 ## 2026/03/05
 修改网络部分，gen.py拆分成cert.py和pk.py，进行简化，增加netz.board，简单封装广播代码
 增加cryptz，简单封装aes和流加密

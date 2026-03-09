@@ -14,16 +14,19 @@ class CryptBase:
     '''
         基础类，不可直接调用
     '''
-    def __init__(self, pwd, coding = "utf-8"):
+    def __init__(self, pwd, coding = "utf-8", hash_pwd=True):
         self.coding = coding
-        pwd = self.to_bytes(pwd)
-        self.pwd = hashlib.md5(pwd).hexdigest().encode("ascii")
+        pwd = self.s2bytes(pwd)
+        if hash_pwd:
+            # 32
+            pwd = hashlib.md5(pwd).hexdigest().encode("ascii")
+        self.pwd = pwd
     def build(self, iv=None):
         self.iv = iv
         self.cipher = Cipher(algorithms.AES(self.pwd), modes.CBC(self.iv))
         self.padding = padding.PKCS7(algorithms.AES.block_size)
         self.hash_obj = hashlib.md5()
-    def to_bytes(self, data):
+    def s2bytes(self, data):
         if type(data) == str:
             data = data.encode(self.coding)
         return data
@@ -34,16 +37,17 @@ class Encrypt(CryptBase):
         加密方式：
             aes(data+md5(data))
     """
-    def __init__(self, pwd, iv=None, coding = "utf-8", iv2dt=True):
-        super().__init__(pwd, coding)
+    def __init__(self, pwd, iv=None, coding = "utf-8", iv2dt=True, hash_pwd = True):
+        super().__init__(pwd, coding, hash_pwd)
         self.iv2dt = iv2dt
+        self.build(iv)
+    def build(self, iv=None):
         if iv is None:
             iv = os.urandom(16)
-        self.build(iv)
-        self.cryptor = cryptor
+        super().build(iv)
         self.encryptor = self.cipher.encryptor()
         self.padder = self.padding.padder()
-        self.hash_obj.update(cryptor.iv)
+        self.hash_obj.update(self.iv)
         self.first = 1
     def __call__(self, data=None, done=False):
         done = done or data is None
@@ -55,7 +59,7 @@ class Encrypt(CryptBase):
             data += self.finalize()
         return data
     def update(self, data):
-        data = self.cryptor.to_bytes(data)
+        data = self.s2bytes(data)
         self.hash_obj.update(data)
         pdt = self.padder.update(data)
         out = self.encryptor.update(pdt)
@@ -79,8 +83,8 @@ class Decrypt(CryptBase):
             aes(data+md5(data))
         update是解密数据，会保留解密后的最后32位不返回，留作最后当作hash值
     """
-    def __init__(self, pwd, iv=None, coding = "utf-8"):
-        super().__init__(pwd, coding)
+    def __init__(self, pwd, iv=None, coding = "utf-8", hash_pwd = True):
+        super().__init__(pwd, coding, hash_pwd)
         self.iv = iv
         if iv is not None:
             self.build(iv)
@@ -96,11 +100,10 @@ class Decrypt(CryptBase):
         return data
     def build(self, iv):
         super().build(iv)
-        self.pwd = obj.hexdigest().encode("ascii")
         self.unpadder = self.padding.unpadder()
         self.decryptor = self.cipher.decryptor()
     def update(self, data):
-        data = self.to_bytes(data)
+        data = self.s2bytes(data)
         if self.iv is None:
             iv = data[:16]
             self.build(iv)
@@ -130,3 +133,37 @@ class Decrypt(CryptBase):
         return out
 
 pass
+
+class BlockCrypt:
+    def __init__(self, pwd, iv=None, iv2dt = True, hash_pwd=True):
+        if hash_pwd:
+            pwd = hashlib.md5(pwd).hexdigest().encode("ascii")
+        self.pwd = pwd
+        self.iv = iv
+        self.iv2dt = iv2dt
+        self.encryptor=None
+        self.decryptor=None
+    def encrypt(self, dts, done=True):
+        self.encryptor = self.encryptor or Encrypt(self.pwd, self.iv, "utf-8", self.iv2dt, False)
+        return self.encryptor(dts, done)
+    def decrypt(self, dts, done=True):
+        self.decryptor = self.decryptor or Decrypt(self.pwd, self.iv, "utf-8", False)
+        return self.decryptor(dts, done)
+    @staticmethod
+    def from_bytes(dt):
+        if len(dt)==32:
+            pwd = dt
+            iv = None
+            iv2dt=True
+        else:
+            pwd = dt[:32]
+            iv = dt[32:]
+            iv2dt=False
+        return BlockCrypt(pwd, iv, iv2dt, False)
+    def to_bytes(self):
+        if self.iv2dt:
+            # 16
+            return self.pwd
+        self.iv = self.iv or os.urandom(16)
+        # 32+16
+        return self.pwd+self.iv

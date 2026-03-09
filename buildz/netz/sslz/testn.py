@@ -7,6 +7,15 @@ from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography import x509
 from cryptography.x509.oid import NameOID
+prv = cert.gen_prv(to_pem=False)
+conf = {
+    'common': 'android' 
+}
+crt = cert.gen_root_cert(prv, conf=conf, to_pem=False)
+print("common:", cert.get_subject_val(crt, "common"))
+print(f"cert: {crt}")
+exit(0)
+crt = cert.gen_root_cert(prv, )
 
 root_prv = "root.prv"
 test_prv = "test.prv"

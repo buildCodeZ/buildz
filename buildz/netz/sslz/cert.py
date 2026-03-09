@@ -8,6 +8,7 @@ import datetime
 from buildz import xf, pyz
 from buildz import fz
 from .pk import *
+from . import gen_names
 __doc__='''
 cert和csr的区别：
     csr是用自己的私钥签名，对象里包含自身信息和公钥（用公钥可以验证私钥签名是否有效），用于发给证书机构，让证书机构验证和签发cert用的
@@ -20,21 +21,7 @@ cert和csr的区别：
             用上层节点的cert的公钥验证下层节点cert是否是它签名的，
             最后用CA的cert的公钥验证它自己（为了安全，验证方要自己存储CA的自签名cert证书，用自己存的cert的公钥验证cert链的最高层）
 '''
-def load_names():
-    import os
-    dp = os.path.dirname(__file__)
-    with open(os.path.join(dp, "names.txt"), 'rb') as f:
-        s = f.read().decode("utf-8")
-    arr = s.split("\n")[1:]
-    arr = [k.split(",") for k in arr]
-    arr = [[v.strip() for v in k] for k in arr]
-    for it in arr:
-        it[-1] = it[-1].split("|")
-        it[-1] = [k.strip() for k in it[-1] if k.strip()!=""]
-    return arr
-
-pass
-arr_names = load_names()
+arr_names = gen_names.loadf()
 dict_names = {k[0]:k for k in arr_names}
 def a2n(arr_names):
     rst = {}
@@ -176,14 +163,22 @@ def gen_cert(private_key, subject_csr = None, issuer_cert = None, conf={}, to_pe
         backend=default_backend()
     )
     if to_pem:
-        certificate = certificate.public_bytes(serialization.Encoding.PEM)
-        if add_chains and issuer_src:
-            if type(issuer_src)!=bytes:
-                issuer_src = issuer_src.public_bytes(serialization.Encoding.PEM)
-            certificate += issuer_src
+        certificate = cert2pem(certificate, issuer_src, add_chains)
+        #certificate = certificate.public_bytes(serialization.Encoding.PEM)
+        #if add_chains and issuer_src:
+        #    if type(issuer_src)!=bytes:
+        #        issuer_src = issuer_src.public_bytes(serialization.Encoding.PEM)
+        #    certificate += issuer_src
     return certificate
 pass
-
+def cert2pem(cert, up=None, add_chains=True):
+    issuer_src=up
+    certificate = cert.public_bytes(serialization.Encoding.PEM)
+    if add_chains and issuer_src:
+        if type(issuer_src)!=bytes:
+            issuer_src = issuer_src.public_bytes(serialization.Encoding.PEM)
+        certificate += issuer_src
+    return certificate
 def gen_csr(private_key, conf={}, to_pem=True):
     return gen_cert(private_key, conf=conf, to_pem=to_pem)
 pass
