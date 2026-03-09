@@ -26,6 +26,8 @@ class CryptBase:
         self.cipher = Cipher(algorithms.AES(self.pwd), modes.CBC(self.iv))
         self.padding = padding.PKCS7(algorithms.AES.block_size)
         self.hash_obj = hashlib.md5()
+    def reset(self):
+        self.build(self.iv)
     def s2bytes(self, data):
         if type(data) == str:
             data = data.encode(self.coding)
@@ -83,12 +85,12 @@ class Decrypt(CryptBase):
             aes(data+md5(data))
         update是解密数据，会保留解密后的最后32位不返回，留作最后当作hash值
     """
-    def __init__(self, pwd, iv=None, coding = "utf-8", hash_pwd = True):
+    def __init__(self, pwd, iv=None, coding = "utf-8", iv2dt=True, hash_pwd = True):
         super().__init__(pwd, coding, hash_pwd)
         self.iv = iv
+        self.iv2dt = iv2dt
         if iv is not None:
             self.build(iv)
-        self.remain = b""
     def __call__(self, data=None, done=False):
         done = done or data is None
         if data is not None:
@@ -98,10 +100,16 @@ class Decrypt(CryptBase):
         if done:
             data += self.finalize()
         return data
+    def reset(self):
+        if self.iv2dt:
+            self.iv = None
+        else:
+            super().reset()
     def build(self, iv):
         super().build(iv)
         self.unpadder = self.padding.unpadder()
         self.decryptor = self.cipher.decryptor()
+        self.remain = b""
     def update(self, data):
         data = self.s2bytes(data)
         if self.iv is None:
@@ -144,11 +152,19 @@ class BlockCrypt:
         self.encryptor=None
         self.decryptor=None
     def encrypt(self, dts, done=True):
+        if len(dts)==0:
+            return dts
         self.encryptor = self.encryptor or Encrypt(self.pwd, self.iv, "utf-8", self.iv2dt, False)
-        return self.encryptor(dts, done)
+        rst = self.encryptor(dts, done)
+        self.encryptor.reset()
+        return rst
     def decrypt(self, dts, done=True):
-        self.decryptor = self.decryptor or Decrypt(self.pwd, self.iv, "utf-8", False)
-        return self.decryptor(dts, done)
+        if len(dts)==0:
+            return dts
+        self.decryptor = self.decryptor or Decrypt(self.pwd, self.iv, "utf-8", self.iv2dt, False)
+        rst = self.decryptor(dts, done)
+        self.decryptor.reset()
+        return rst
     @staticmethod
     def from_bytes(dt):
         if len(dt)==32:
