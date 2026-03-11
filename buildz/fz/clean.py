@@ -34,8 +34,8 @@ class Deal(dirs.Deal):
             return False
         dp = filepath
         dirname = os.path.basename(dp)
-        if dirname[:1] == ".":
-            return False
+        #if dirname[:1] == ".":
+        #    return False
         if dirname not in ("__pycache__", "chromeCache"):
             return True
         Removes().dirs(dp)
