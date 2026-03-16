@@ -24,7 +24,7 @@ class PodmanBuilder(Builder):
         return rst == cmp or rst == cmpx
     def default_test(self, tag):
         return f"podman run --userns=keep-id -it --rm {tag}"
-    def build_cmd(self, fp, tag, dp):
+    def build_cmd(self, fp, tag, dp, s_args=""):
         return f"podman build -f {fp} -t {tag} {dp} && podman image prune -f"
 
 if __name__=="__main__":

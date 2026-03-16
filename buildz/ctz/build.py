@@ -1,10 +1,37 @@
 
 from .tools import *
 import re
+import platform 
 class Builder:
     def __init__(self, pt=None, npt = ".*\.pyc"):
         self.pt = pt
         self.npt = npt
+        self.args = {}
+    def default_args(self):
+        args = {}
+        sys = platform.system().lower()
+        args['TARGETOS'] = sys
+        args['TARGETARCH']=platform.machine().lower()
+        args['TARGETPLATFORM'] = args['TARGETOS']+"/"+args['TARGETARCH']
+        args['TARGETVARIANT'] = ""
+        self.args.update(args)
+    def init_args(self, s_args):
+        s_args = s_args.replace("\\", " ")
+        pt = "--build-arg\s+([^\s=]+)=([^\s]+)"
+        rst = re.findall(pt, s_args)
+        for k,v in rst:
+            self.args[k] = v
+    def replace_args(self, s, args):
+        pt1 = "(\$\{([^\{\}\$\s]+)\})"
+        pt2 = "(\$([\w\d_]+))"
+        for pt in [pt1, pt2]:
+            rst = re.findall(pt, s)
+            for rp, k in rst:
+                if k not in args:
+                    continue
+                v = args[k]
+                s = s.replace(rp, v)
+        return s
     def has_image(self, s):
         '''
         判断镜像是否存在
@@ -36,14 +63,30 @@ class Builder:
         cmds = {}
         offset = 0
         curr = None
+        args = {}
+        args.update(self.args)
         for s in arr:
             s=s.strip()
             if len(s)<2:
                 continue
+            if s.lower().find("arg")==0:
+                tmp = s[3:].strip()
+                _i = tmp.find("=")
+                if _i<0:
+                    continue
+                k = tmp[:_i].strip()
+                v = tmp[_i+1:].strip()
+                args[k] = v
+                pass
             if s.lower().find("from")==0:
                 arr = s.strip().split(" ")[1:]
                 arr = [k.strip() for k in arr if k.strip()!=""]
-                tag_from = arr[0]
+                lws = [k.lower() for k in arr]
+                if 'as' in lws:
+                    arr = arr[:lws.index('as')]
+                tag_from = arr[-1].split("@")[0]
+                tag_from = "/".join(tag_from.split("/")[-2:])
+                tar_from = self.replace_args(tag_from, args)
                 tag_froms.append(tag_from)
                 continue
             elif s[:3] == "#@@":
@@ -52,19 +95,12 @@ class Builder:
                 cmds[curr][-1][0]+="\n"+s[3:]
             elif s[:2]=="#@":
                 s = s[2:]
-                # if curr is not None:
-                #     cmds[curr][-1]+=s
-                #     continue
-                # curr = None
                 i=s.find("=")
                 if i<=0:
                     continue
                 key = s[:i].strip()
                 curr=key
                 val = s[i+1:]
-                # if val[-1]=="\\":
-                #     val = val[:-1]
-                #     curr = key
                 if key not in cmds:
                     cmds[key] = []
                 cmds[key].append([val, offset])
@@ -103,7 +139,7 @@ class Builder:
             elif os.path.isdir(fp):
                 self.scan(fp, out)
         return out
-    def builds(self, tag, dirpath = ".", maps=None):
+    def builds(self, tag, dirpath = ".", s_args="", maps=None):
         #print(f"[DEBUG] start builds image '{tag}'")
         if self.has_image(tag):
             print(f"image '{tag}' already builded")
@@ -112,11 +148,13 @@ class Builder:
         assert tag in maps, f"{tag} file not found in {dirpath}"
         fp, tfroms, cmds, orders = maps[tag]
         dp = os.path.dirname(fp)
+        print(f"[DEBUG] tfroms: {tfroms}")
         for tfrom in tfroms:
             if not self.has_image(tfrom):
-                _, ret = self.builds(tfrom, dirpath, maps)
+                _, ret = self.builds(tfrom, dirpath, s_args, maps)
                 if ret!=0:
-                    return maps, ret
+                    print(f"[WARN] images '{tfrom}' build failed")
+                    #return maps, ret
         for s, offset, key in orders:
             if key=='exec':
                 ret = os.system(s)
@@ -134,11 +172,14 @@ class Builder:
                 if type(ret)==int and ret!=0:
                     print(f"python eval '{s}' error: {ret}")
                     return maps, ret
-        ret = self.build(fp, tag, dp)
+        #tags = ",".join([k[0] for k in cmds['tag']])
+        ret = self.build(fp, tag, dp, s_args)
         return maps, ret
-    def build(self, fp, tag, dp):
+    def build_cmd(self, fp, tag, dp, s_args=""):
+        assert 0, 'not impl'
+    def build(self, fp, tag, dp, s_args=""):
         #print(f"[DEBUG] single build image '{tag}', in fp {fp}, dp: {dp}")
-        s = self.build_cmd(fp, tag, dp)
+        s = self.build_cmd(fp, tag, dp, s_args)
         lines = "="*10
         lines = "\n"+lines+"\n"
         print(lines)
@@ -152,9 +193,10 @@ class Builder:
             print(f"@@@ done build '{tag}'")
         print(lines)
         return ret
-    def test(self, tag, dirpath = ".", maps=None):
-        maps, ret = self.builds(tag, dirpath, maps)
+    def test(self, tag, dirpath = ".", s_args = None, maps=None):
+        maps, ret = self.builds(tag, dirpath, s_args, maps)
         if ret!=0:
+            print(f"[WARN] image '{tag}' build failed")
             return
         maps = maps or self.scan(dirpath)
         fp, tfroms, cmds, orders = maps[tag]
@@ -162,15 +204,18 @@ class Builder:
             print(f"[DEBUG] test with '{stest}'")
             os.system(stest)
     def demo(self):
-        order = sys.argv[1]
-        tag = sys.argv[2]
+        args = sys.argv[1:]
+        order = args.pop(0)
+        tag = args.pop(0)
         dp = "."
-        if len(sys.argv)>3:
-            dp =sys.argv[3]
+        if len(args)>0:
+            dp =args.pop(0)
+        more_args = " ".join(args)
+        self.init_args(more_args)
         if order == 'test':
-            self.test(tag, dp)
+            self.test(tag, dp, s_args = more_args)
         elif order == 'build':
-            self.builds(tag, dp)
+            self.builds(tag, dp, s_args = more_args)
         else:
             print(f'unknown command "{order}"')
 

@@ -1,6 +1,16 @@
 
 import subprocess, os, sys, re
-from os.path import isfile, exists, isdir
+
+def mkfc(fc):
+    def _fc(fp):
+        fp = os.path.expanduser(fp)
+        return fc(fp)
+    return _fc
+
+pass
+isfile = mkfc(os.path.isfile)
+exists = mkfc(os.path.exists)
+isdir = mkfc(os.path.isdir)
 from os import system
 def cmd(command):
     """
@@ -40,6 +50,7 @@ def assert_exec(val, cmds):
         return os.system(cmds)
 
 def assert_fc(val, fc, *a, **b):
+    #print(f"[DEBUG] assert_fc({val}, {fc}, {a}, {b})")
     if val:
         return
     return fc(*a, **b)

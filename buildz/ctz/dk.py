@@ -21,7 +21,7 @@ class DockerBuilder(Builder):
         return rst == cmp
     def default_test(self, tag):
         return f"docker run -it --rm {tag}"
-    def build_cmd(self, fp, tag, dp):
+    def build_cmd(self, fp, tag, dp, s_args=""):
         return f"docker build -f {fp} -t {tag} {dp} && docker image prune -f"
 
 if __name__=="__main__":
