@@ -1,3 +1,5 @@
+## 2026/03/16
+增加dockerfile的扩充处理逻辑(buildz.ctz，具体见python -m buildz.ctz.help)
 ## 2026/03/11
 加个管道处理（数据结构，和线程进程无关）_dz.lists
 ## 2026/03/10
