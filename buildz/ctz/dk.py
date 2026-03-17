@@ -25,6 +25,6 @@ class DockerBuilder(Builder):
         return f"docker build -f {fp} -t {tag} {dp} && docker image prune -f"
 
 if __name__=="__main__":
-    DockerBuilder().demo()
+    exit(DockerBuilder().demo())
 
 pass

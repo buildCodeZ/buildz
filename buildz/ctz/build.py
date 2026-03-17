@@ -139,6 +139,31 @@ class Builder:
             elif os.path.isdir(fp):
                 self.scan(fp, out)
         return out
+    def exec(self, fp, dp=None, orders=None):
+        it = self
+        if dp is not None:
+            fp = os.path.join(dp, fp)
+        if orders is None:
+            tfroms, cmds, orders = self.read_config(fp)
+        for s, offset, key in orders:
+            if key=='exec':
+                ret = os.system(s)
+                if ret!=0:
+                    print(f"system exec '{s}' error: {ret}")
+                    return ret
+            elif key=='try':
+                ret = os.system(s)
+                if ret!=0:
+                    print(f"[warn] system try '{s}' error: {ret}")
+            elif key=='py.exec':
+                exec(s)
+            elif key=='py.eval':
+                ret = eval(s)
+                print(f"[DEBUG] py.eval({s}): {ret}")
+                if type(ret)==int and ret!=0:
+                    print(f"python eval '{s}' error: {ret}")
+                    return ret
+        return 0
     def builds(self, tag, dirpath = ".", s_args="", maps=None):
         #print(f"[DEBUG] start builds image '{tag}'")
         if self.has_image(tag):
@@ -155,23 +180,9 @@ class Builder:
                 if ret!=0:
                     print(f"[WARN] images '{tfrom}' build failed")
                     #return maps, ret
-        for s, offset, key in orders:
-            if key=='exec':
-                ret = os.system(s)
-                if ret!=0:
-                    print(f"system exec '{s}' error: {ret}")
-                    return maps, ret
-            elif key=='try':
-                ret = os.system(s)
-                if ret!=0:
-                    print(f"[warn] system try '{s}' error: {ret}")
-            elif key=='py.exec':
-                exec(s)
-            elif key=='py.eval':
-                ret = eval(s)
-                if type(ret)==int and ret!=0:
-                    print(f"python eval '{s}' error: {ret}")
-                    return maps, ret
+        ret=self.exec(fp, None, orders)
+        if ret!=0:
+            return maps, ret
         #tags = ",".join([k[0] for k in cmds['tag']])
         ret = self.build(fp, tag, dp, s_args)
         return maps, ret
@@ -197,12 +208,14 @@ class Builder:
         maps, ret = self.builds(tag, dirpath, s_args, maps)
         if ret!=0:
             print(f"[WARN] image '{tag}' build failed")
-            return
+            return ret
         maps = maps or self.scan(dirpath)
         fp, tfroms, cmds, orders = maps[tag]
+        ret = 0
         for stest, _ in cmds['test']:
             print(f"[DEBUG] test with '{stest}'")
-            os.system(stest)
+            ret = os.system(stest)
+        return ret
     def demo(self):
         args = sys.argv[1:]
         order = args.pop(0)
@@ -213,10 +226,14 @@ class Builder:
         more_args = " ".join(args)
         self.init_args(more_args)
         if order == 'test':
-            self.test(tag, dp, s_args = more_args)
+            ret = self.test(tag, dp, s_args = more_args)
         elif order == 'build':
-            self.builds(tag, dp, s_args = more_args)
+            _, ret = self.builds(tag, dp, s_args = more_args)
+        elif order == 'exec':
+            ret = self.exec(tag, dp)
         else:
             print(f'unknown command "{order}"')
+            ret = 123
+        return ret
 
 pass

@@ -28,6 +28,6 @@ class PodmanBuilder(Builder):
         return f"podman build -f {fp} -t {tag} {dp} && podman image prune -f"
 
 if __name__=="__main__":
-    PodmanBuilder().demo()
+    exit(PodmanBuilder().demo())
 
 pass
