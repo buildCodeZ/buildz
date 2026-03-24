@@ -4,7 +4,8 @@ http协议模拟
 '''
 import socket
 import select
-from buildz import Base, logz
+from buildz.base import Base
+from buildz import logz
 import traceback
 # log = logz.simple("./logs/mhttp/%Y%m%d.log")
 # 默认日志只打印不存文件
@@ -76,6 +77,7 @@ pass
 def comb_url(prev, addr, url):
     return prev+"://"+addr+url
 def http_encode_send(http_type, url, headers=None, data_size=0, protocol = "HTTP/1.1"):
+    print(f"[DEBUG] http_encode_send url: http_type: {http_type}, url:{url}, headers: {headers}, data_size: {data_size}, protocol: {protocol}")
     prev, addr, url = spt_url(url)
     addrs = addr.split(":")
     ip = addrs[0]

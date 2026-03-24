@@ -1,6 +1,7 @@
 #coding=utf-8
 from . import runz
-from .. import Base, xf, pyz
+from ..base import Base
+from .. import xf, pyz
 
 
 from ..sc.subrun import Runner

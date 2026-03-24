@@ -1,5 +1,5 @@
 
-from buildz import Base
+from buildz.base import Base
 import os,time, traceback
 class FpsListener(Base):
     def init(self, wait_sec=0.1):

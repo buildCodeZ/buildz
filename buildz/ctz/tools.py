@@ -1,5 +1,6 @@
 
 import subprocess, os, sys, re
+from buildz.pyz import load
 
 def mkfc(fc):
     def _fc(fp):
@@ -50,7 +51,7 @@ def assert_exec(val, cmds):
         return os.system(cmds)
 
 def assert_fc(val, fc, *a, **b):
-    #print(f"[DEBUG] assert_fc({val}, {fc}, {a}, {b})")
+    print(f"[DEBUG] assert_fc({val}, {fc}, {a}, {b})")
     if val:
         return
     return fc(*a, **b)

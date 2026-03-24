@@ -1,4 +1,5 @@
-from buildz import Base, xf, pathz
+from buildz.base import Base
+from buildz import xf, pathz
 import os
 dp = os.path.dirname(__file__)
 path = pathz.Path()

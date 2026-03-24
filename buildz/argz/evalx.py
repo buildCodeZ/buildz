@@ -1,5 +1,6 @@
 #
-from .. import evalz,xf,Base
+from ..base import Base
+from .. import evalz,xf
 
 class VarEval(evalz.Eval):
     def init(self, key, stype = 'list'):

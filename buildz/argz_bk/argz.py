@@ -1,4 +1,5 @@
-from buildz import Base, xf
+from buildz.base import Base
+from buildz import xf
 from . import build
 class ArgExp(Exception):
     def __repr__(self):

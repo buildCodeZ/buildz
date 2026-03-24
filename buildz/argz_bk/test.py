@@ -1,4 +1,5 @@
-from buildz import argz,xf,Base,evalz,pathz
+from buildz import argz,xf,evalz,pathz
+from buildz.base import Base
 import sys,os
 
 path = pathz.Path()

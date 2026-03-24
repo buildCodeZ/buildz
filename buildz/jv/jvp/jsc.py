@@ -1,6 +1,7 @@
 #
 import re,sys
-from buildz import fz, dz, xf, argx, pyz, Base
+from buildz.base import Base
+from buildz import fz, dz, xf, argx, pyz
 def rps_dct(s, **maps):
     for k,v in maps.items():
         s = s.replace(f"<{k}>", v)

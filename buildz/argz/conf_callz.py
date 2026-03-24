@@ -1,5 +1,6 @@
 from ..iocz.conf import conf
-from .. import Base, xf, dz,pyz
+from ..base import Base
+from .. import xf, dz,pyz
 from .callz import *
 from ..iocz.ioc_deal.base import BaseEncape,BaseDeal
 from ..iocz.conf.up import BaseConf

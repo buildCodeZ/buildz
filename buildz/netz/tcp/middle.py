@@ -1,6 +1,7 @@
 
 import socket, select, traceback, threading, time
-from buildz import Base, logz, pyz
+from buildz.base import Base
+from buildz import logz, pyz
 
 log = logz.simple()
 class MiddleServer(Base):

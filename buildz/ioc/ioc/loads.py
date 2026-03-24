@@ -1,5 +1,6 @@
 #
-from buildz import Base, xf
+from buildz.base import Base
+from buildz import xf
 from ..ioc.decorator import decorator,IOCDObj
 class Loads(IOCDObj):
     def init(self, conf, vtype = "envs", flush=False):

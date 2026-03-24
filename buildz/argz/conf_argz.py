@@ -1,5 +1,6 @@
 from ..iocz.conf import conf
-from .. import Base, xf, dz,pyz
+from ..base import Base
+from .. import xf, dz,pyz
 from .argz import *
 """
 key:{

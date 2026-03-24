@@ -1,5 +1,6 @@
 #
-from buildz import Base, xf,pyz
+from buildz.base import Base
+from buildz import xf,pyz
 class Build(Base):
     def init(self, *binds):
         self.builder = None

@@ -158,6 +158,7 @@ class Builder:
             elif key=='py.exec':
                 exec(s)
             elif key=='py.eval':
+                print(f"eval: {s}")
                 ret = eval(s)
                 print(f"[DEBUG] py.eval({s}): {ret}")
                 if type(ret)==int and ret!=0:
@@ -170,7 +171,10 @@ class Builder:
             print(f"image '{tag}' already builded")
             return None, 0
         maps = maps or self.scan(dirpath)
-        assert tag in maps, f"{tag} file not found in {dirpath}"
+        #assert tag in maps, f"{tag} file not found in {dirpath}"
+        if tag not in maps:
+            print(f"[WARN] images '{tag}' not buildfile found")
+            return maps, 2
         fp, tfroms, cmds, orders = maps[tag]
         dp = os.path.dirname(fp)
         print(f"[DEBUG] tfroms: {tfroms}")

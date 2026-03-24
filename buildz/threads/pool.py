@@ -1,6 +1,6 @@
 
 import threading,time
-from .. import Base
+from ..base import Base
 class Task(Base):
     def run(self):
         pass

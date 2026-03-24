@@ -1,5 +1,5 @@
 #
-from buildz import Base
+from buildz.base import Base
 class MsgRecord(Base):
     """
         报文处理，非多线程安全

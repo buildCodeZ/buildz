@@ -1,5 +1,6 @@
 #
-from ... import pyz,dz,Base
+from ...base import Base
+from ... import pyz,dz
 class TagDict(Base):
     def remove(self, key, tag=None):
         tag = pyz.nnull(tag, self.default)

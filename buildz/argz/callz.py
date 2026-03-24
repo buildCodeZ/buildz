@@ -1,4 +1,5 @@
-from buildz import Base, xf, dz
+from buildz.base import Base
+from buildz import xf, dz
 from . import argz
 from . import evalx
 from ..iocz.ioc_deal.base import BaseEncape

@@ -1,7 +1,8 @@
 #
 
 from .lst import FcFpsListener
-from .. import Base, xf, dz, pathz, pyz
+from ..base import Base
+from .. import xf, dz, pathz, pyz
 import os, sys
 class Runner(Base):
     def init(self, fp, lst):

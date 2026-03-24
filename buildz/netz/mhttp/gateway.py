@@ -99,7 +99,7 @@ def test():
     px = Gateway(addr, rules)
     th = threading.Thread(target=px,daemon=True)
     th.start()
-    print(f"start on {(ip, port)}")
+    print(f"start on {addr}")
     while px.running:
         time.sleep(1)
 pyz.lc(locals(), test)

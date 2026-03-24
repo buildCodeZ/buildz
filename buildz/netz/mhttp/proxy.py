@@ -1,7 +1,7 @@
 import socket,threading
 from . import mhttp
 from . import record as _record
-from buildz import Base
+from buildz.base import Base
 import traceback
 log = mhttp.log
 class ProxyDealer(Base):

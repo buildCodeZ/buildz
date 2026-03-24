@@ -1,6 +1,6 @@
 #coding=utf-8
 
-__version__="0.7.2"
+__version__="0.9.24"
 
 # 小号多
 __author__ = "Zzz, emails: 1174534295@qq.com, 1309458652@qq.com"
@@ -21,5 +21,5 @@ buildz.base: 简化python类代码编写
 buildz.pathz: 简化文件路径相关的代码编写 
 '''
 
-from .argx import fetch as args
-from .base import Base, WBase,Args
+# from .argx import fetch as args
+# from .base import Base, WBase,Args

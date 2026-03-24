@@ -1,5 +1,6 @@
 
-from buildz import xf, Base
+from buildz.base import Base
+from buildz import xf
 class Translate(Base):
     """
     数据映射

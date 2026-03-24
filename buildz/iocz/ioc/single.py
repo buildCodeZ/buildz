@@ -1,5 +1,6 @@
 #
-from ... import pyz,dz,Base
+from ...base import Base
+from ... import pyz,dz
 
 class Key:
     default_param_key = 'single_id'

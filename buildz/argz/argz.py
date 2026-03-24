@@ -1,4 +1,5 @@
-from .. import Base, xf, dz
+from ..base import Base
+from .. import xf, dz
 class ArgExp(Exception):
     def __repr__(self):
         return self.__str__()

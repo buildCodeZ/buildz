@@ -1,6 +1,7 @@
 #
 from .tdict import TagDict
-from ... import pyz, dz,Base
+from ...base import Base
+from ... import pyz, dz
 class Key:
     Pub = "pub"
     Pri = "pri"

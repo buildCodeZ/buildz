@@ -1,4 +1,5 @@
-from buildz import argz,xf,Base,evalz,pathz
+from buildz.base import Base
+from buildz import argz,xf,evalz,pathz
 '''
 python -m buildz.argz.test search /d/rootz
 python -m buildz.argz.test_obj search /d/rootz f=asf c=test

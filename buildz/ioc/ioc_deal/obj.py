@@ -4,7 +4,7 @@ from ..ioc.single import Single
 from ..ioc.decorator import decorator, IOCDObj
 from .base import FormatData,FormatDeal
 from buildz import xf, pyz
-from buildz import Base as Basez
+from buildz.base import Base as Basez
 import os
 #g_obj_cid = '_buildz_ioc_conf_index'
 dp = os.path.dirname(__file__)

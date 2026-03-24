@@ -1,5 +1,5 @@
 
-from buildz import Base, Args
+from buildz.base import Base, Args
 # class Args(Base):
 #     def size(self):
 #         return len(self.args)+len(self.maps)

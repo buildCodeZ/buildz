@@ -1,6 +1,6 @@
 #coding=utf-8
 
-from buildz import Base
+from buildz.base import Base
 from buildz.db import tls
 from buildz import xf
 def dict2list(data):

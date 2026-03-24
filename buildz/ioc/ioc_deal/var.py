@@ -3,7 +3,7 @@ from ..ioc.base import Base, EncapeData
 from .base import FormatData,FormatDeal
 from ..ioc.decorator import decorator,IOCDObj
 from buildz import xf, pyz
-from buildz import Base as Basez
+from buildz.base import Base as Basez
 import os
 dp = os.path.dirname(__file__)
 join = os.path.join

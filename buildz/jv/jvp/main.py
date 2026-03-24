@@ -1,7 +1,8 @@
 #
 from . import jsc, defs, dm, rn, fcs
 import re,sys, os
-from buildz import fz, dz, xf, argx, pyz, Base
+from buildz.base import Base
+from buildz import fz, dz, xf, argx, pyz
 fetch =argx.Fetch(*xf.loads("[fp,ofp,left,right,spt],{f:fp,o:ofp,l:left,r:right,s:spt}"))
 def test():
     conf = fetch()

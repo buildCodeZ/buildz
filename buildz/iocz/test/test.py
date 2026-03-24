@@ -1,6 +1,7 @@
 #
 
-from buildz import iocz,xf, pyz, Base
+from buildz.base import Base
+from buildz import iocz,xf, pyz
 profiles = xf.loads(r"""
 xxx.test_var=profile_var_test
 """)

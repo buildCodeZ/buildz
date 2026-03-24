@@ -94,7 +94,7 @@ def pyexe():
 pass
 exe=pyexe
 is_windows = sys.platform.lower()=='win32'
-def pypkg(easy=True):
+def pypkg(easy=True, local=True):
     """
         return python package path, test on linux and windows
     """
@@ -110,7 +110,17 @@ def pypkg(easy=True):
     if is_windows:
         fpath = sites[-1]
     else:
+        if local:
+            dp = "~/.local/lib/python3.10/dist-packages"
         fpath = sites[0]
+        if local:
+            # example: "~/.local/lib/python3.10/site-packages"
+            dps = fpath.split("/")
+            dps[-1] = "site-packages"
+            dps = ["~/.local"]+dps[-3:]
+            import os
+            fpath = os.path.join(*dps)
+            fpath = os.path.expanduser(fpath)
     return fpath
 
 pass
@@ -118,8 +128,11 @@ pkg = pypkg
 pth = pypkg
 
 class Pth:
-    def __init__(self, fp = "build.pth"):
-        self.fp = os.path.join(pth(0), fp)
+    def __init__(self, fp = "build.pth", easy=False, local=True):
+        if fp[-3:]!=".pth":
+            fp = fp+".pth"
+        self.dp = pth(easy, local)
+        self.fp = os.path.join(self.dp, fp)
     def read(self):
         fp = self.fp
         if not os.path.isfile(fp):
@@ -135,6 +148,8 @@ class Pth:
         arr.append(path)
         self.write(arr)
     def write(self, paths = []):
+        if not os.path.exists(self.dp):
+            os.makedirs(self.dp)
         if type(paths) not in [list, tuple]:
             paths = [paths]
         s = "\n".join(paths)
@@ -242,3 +257,13 @@ def test_import(model, error=None):
         error = error or exp
         print(error)
         raise exp
+
+def demo():
+    import sys
+    dp = sys.argv[1]
+    fp = "buildz.pth"
+    if len(sys.argv)>2:
+        fp = sys.argv[2]
+    Pth(fp).add(dp)
+
+bylocals(locals(), demo)

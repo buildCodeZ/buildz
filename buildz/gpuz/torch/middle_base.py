@@ -20,7 +20,7 @@ torch.autograd.graph.saved_tensors_hooks(hook_pack, hook_unpack):
 '''
 
 import torch
-from ... import Base
+from ...base import Base
 from ... import pyz
 class MiddleBase(Base):
     def init(self, nets):

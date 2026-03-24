@@ -1,5 +1,5 @@
 import time
-from ... import Base
+from ...base import Base
 from ...logz import FpLog
 class Clock(Base):
     def default(self, cost, fc, rst, *a, **b):

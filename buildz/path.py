@@ -1,4 +1,4 @@
-from . import Base
+from .base import Base
 import os,sys,json,time
 dirname = os.path.dirname
 join = os.path.join

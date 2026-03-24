@@ -2,7 +2,7 @@
 import torch
 from torch import nn
 import threading as th
-from ... import Base
+from ...base import Base
 import numpy as np
 class Fcs(Base):
     def init(self, fcs):
