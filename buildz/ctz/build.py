@@ -139,25 +139,25 @@ class Builder:
             elif os.path.isdir(fp):
                 self.scan(fp, out)
         return out
-    def exec(self, fp, dp=None, orders=None):
+    def exec(self, fp, dp=None, orders=None, pfx=""):
         it = self
         if dp is not None:
             fp = os.path.join(dp, fp)
         if orders is None:
             tfroms, cmds, orders = self.read_config(fp)
         for s, offset, key in orders:
-            if key=='exec':
+            if key==pfx+'exec':
                 ret = os.system(s)
                 if ret!=0:
                     print(f"system exec '{s}' error: {ret}")
                     return ret
-            elif key=='try':
+            elif key==pfx+'try':
                 ret = os.system(s)
                 if ret!=0:
                     print(f"[warn] system try '{s}' error: {ret}")
-            elif key=='py.exec':
+            elif key==pfx+'py.exec':
                 exec(s)
-            elif key=='py.eval':
+            elif key==pfx+'py.eval':
                 print(f"eval: {s}")
                 ret = eval(s)
                 print(f"[DEBUG] py.eval({s}): {ret}")
@@ -189,6 +189,9 @@ class Builder:
             return maps, ret
         #tags = ",".join([k[0] for k in cmds['tag']])
         ret = self.build(fp, tag, dp, s_args)
+        if ret!=0:
+            return maps, ret
+        ret=self.exec(fp, None, orders, "$")
         return maps, ret
     def build_cmd(self, fp, tag, dp, s_args=""):
         assert 0, 'not impl'
@@ -235,6 +238,8 @@ class Builder:
             _, ret = self.builds(tag, dp, s_args = more_args)
         elif order == 'exec':
             ret = self.exec(tag, dp)
+        elif order == '$exec':
+            ret = self.exec(tag, dp, None, "$")
         else:
             print(f'unknown command "{order}"')
             ret = 123
