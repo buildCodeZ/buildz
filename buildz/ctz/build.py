@@ -122,6 +122,7 @@ class Builder:
                 return False
         return True
     def scan(self, dp, out = {}):
+        print(f"scan start")
         files = os.listdir(dp)
         #print(f"[DEBUG] scan {dp}, init out: {out}, files: {files}")
         for fp in files:
@@ -130,6 +131,7 @@ class Builder:
                 #print(f"[DEBUG] check_read False on '{fp}'")
                 continue
             if os.path.isfile(fp):
+                #print(f"[DEBUG] read_config '{fp}'")
                 tfroms, cmds, orders = self.read_config(fp)
                 if 'tag' not in cmds:
                     continue
@@ -166,10 +168,11 @@ class Builder:
                     return ret
         return 0
     def builds(self, tag, dirpath = ".", s_args="", maps=None):
-        #print(f"[DEBUG] start builds image '{tag}'")
+        print(f"[DEBUG] start builds image '{tag}'")
         if self.has_image(tag):
             print(f"image '{tag}' already builded")
             return None, 0
+        print(f"[DEBUG] before scan")
         maps = maps or self.scan(dirpath)
         #assert tag in maps, f"{tag} file not found in {dirpath}"
         if tag not in maps:
@@ -212,7 +215,9 @@ class Builder:
         print(lines)
         return ret
     def test(self, tag, dirpath = ".", s_args = None, maps=None):
+        print(f"[DEBUG] before test.builds")
         maps, ret = self.builds(tag, dirpath, s_args, maps)
+        print(f"[DEBUG] after test.builds")
         if ret!=0:
             print(f"[WARN] image '{tag}' build failed")
             return ret
@@ -224,6 +229,7 @@ class Builder:
             ret = os.system(stest)
         return ret
     def demo(self):
+        print(f"[DEBUG] start demo")
         args = sys.argv[1:]
         order = args.pop(0)
         tag = args.pop(0)
@@ -231,7 +237,9 @@ class Builder:
         if len(args)>0:
             dp =args.pop(0)
         more_args = " ".join(args)
+        print(f"[DEBUG] init_args")
         self.init_args(more_args)
+        print(f"[DEBUG] done init_args")
         if order == 'test':
             ret = self.test(tag, dp, s_args = more_args)
         elif order == 'build':

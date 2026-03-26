@@ -5,6 +5,8 @@ class PodmanBuilder(Builder):
     def has_image(self, s):
         if s == 'scratch' or s == 'local/scratch':
             return True
+        rst=cmd(f'podman history {s}')
+        return rst.find("image not known")<0
         _s = "localhost/"+s
         rst = cmd('podman images --format "{{.Repository}}:{{.Tag}}"|grep "'+s+'"').strip()
         return rst == s or rst == _s

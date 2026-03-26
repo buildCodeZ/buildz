@@ -29,6 +29,13 @@ col=0,as_map=0
     ...
 ]
 """
+def wrap_str(obj):
+    s = str(obj).strip()
+    s=s.replace("\r", "")
+    if s.find(",")>=0 or s.find("\n")>=0:
+        s=s.replace('"','""')#.replace("\n", "\\n")
+        s = '"'+s+'"'
+    return s
 def to_csv(keys, datas, fp, col = True, as_map = False,coding="utf-8"):
     fio.makefdir(fp)
     rst = []
@@ -39,8 +46,9 @@ def to_csv(keys, datas, fp, col = True, as_map = False,coding="utf-8"):
     else:
         if as_map:
             datas = [[dt[k] for k in keys] for dt in datas]
-    datas = [", ".join([str(v) for v in dt]) for dt in datas]
-    rst = [", ".join(keys)]+datas
+    szs = [len(k) for k in datas]
+    datas = [",".join([wrap_str(v) for v in dt]) for dt in datas]
+    rst = [",".join(keys)]+datas
     rs = "\n".join(rst)
     fio.write(rs.encode(coding), fp)
 
