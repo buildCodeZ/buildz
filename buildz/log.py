@@ -52,8 +52,8 @@ class Log(Base):
             tags = Check.build_conf(tags)
         if shows is not None:
             shows = Check.build_conf(shows)
-        print(f"tags: {tags}")
-        print(f"shows: {shows}")
+        # print(f"tags: {tags}")
+        # print(f"shows: {shows}")
         self.check_tags = tags or self.check_tags
         self.shows = shows or self.shows
         return self
@@ -81,6 +81,8 @@ class Log(Base):
     def get_tag(self):
         return self._tag
     def init(self, shows = None, tag= None, base = None, lock = False, check_tags=None):
+        if type(shows)==list:
+            shows = Check(shows)
         self.shows=shows
         self._tag = tag
         self.base = base
@@ -238,6 +240,8 @@ build_conf = builds
 
 def simple(fp=None,std=True, shows=None, tag=None, format=None,lock=False):
     logs = []
+    if type(shows)==list:
+        shows = Check(shows)
     if fp is not None:
         logs.append(FpLog(fp,shows,tag,format,lock))
     if std:
