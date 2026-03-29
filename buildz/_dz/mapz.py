@@ -1,5 +1,10 @@
 from buildz import pyz
 from ..base import Args
+def conf2obj(obj, conf, **maps):
+    for k, val in maps.items():
+        setattr(obj, k, conf.get(k, val))
+
+pass
 def isdict(obj):
     return type(obj)==dict
 def islist(obj):

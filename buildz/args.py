@@ -179,7 +179,7 @@ def fetch(argv = None, marks = set()):
             if k in marks:
                 v = 1
             if v is None:
-                assert i<len(argv), f"param '{k}' required value (-{k} val)"
+                assert i<len(argv), f"param '{k}' required value (--{k} val | --{k}=val)"
                 v = argv[i]
                 i+=1
             add_maps(maps, k, v)
@@ -189,7 +189,7 @@ def fetch(argv = None, marks = set()):
                 if k in marks:
                     v = 1
                 else:
-                    assert i<len(argv), f"param '{k}' required value (--{k} val | --{k}=val)"
+                    assert i<len(argv), f"param '{k}' required value (-{k} val)"
                     v = argv[i]
                     i+=1
                 add_maps(maps, k, v)
