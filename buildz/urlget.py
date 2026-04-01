@@ -5,6 +5,8 @@ import requests as rq
 import sys
 args = sys.argv[1:]
 url = args.pop(0)
+if url.find("://")<0:
+    url = "http://"+url
 ofp = url.split("?")[0].split("/")[-1].strip()
 if ofp=="":
     ofp = "index.html"

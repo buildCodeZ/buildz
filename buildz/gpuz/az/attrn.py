@@ -6,7 +6,7 @@ class MultiAttrn(Base):
         self.din=din
         self.dout=dout
         self.num_heads=num_heads
-        self.dout_per_head = dout//heads
+        self.dout_per_head = dout//num_heads
         self.bias=bias
     def fetch(self, shape):
         if type(shape)==int:
@@ -26,7 +26,7 @@ class MultiAttrn(Base):
         return n*unit
     def cal(self, shape):
         batch, seq_n, din = self.fetch(shape)
-        n = 6*batch*seq_n*din*self.dout+2*batchh*self.num_heads*seq_n*seq_n*self.dout_per_head+2*batch*seq_n*self.dout*self.dout
+        n = 6*batch*seq_n*din*self.dout+2*batch*self.num_heads*seq_n*seq_n*self.dout_per_head+2*batch*seq_n*self.dout*self.dout
         return n
     def backcal(self, shape):
         return 2*self.cal(shape)
@@ -35,5 +35,8 @@ class MultiAttrn(Base):
         out = self.dout*self.dout+self.dout*self.bias
         n = kqv+out
         return n*unit
+    def out(self, shape):
+        batch, seq_n, din = self.fetch(shape)
+        return [batch, seq_n, self.dout]
 
 pass
