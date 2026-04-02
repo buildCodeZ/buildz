@@ -65,6 +65,8 @@ class Log(Base):
         self.shows.add_reject(type)
     def call(self, _tag):
         return self.tag(_tag)
+    def get_tag(self):
+        return self._tag
     def tag(self, _tag):
         if _tag is not None and type(_tag) != str:
             try:

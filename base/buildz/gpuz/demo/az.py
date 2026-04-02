@@ -20,20 +20,38 @@ trans_mem = nsize(trans.get("gpu2mem", "1G"))
 def unit(din):
     # batch, seq_n, din
     nets = []
-    nets.append(MultiAttrn(din, din, 8))
-    nets.append(MultiAttrn(din, din, 8))
+    #nets.append(MultiAttrn(din, din, 8))
+    #nets.append(MultiAttrn(din, din, 8))
+    nets.append(Linear(din,din))
+    nets.append(Linear(din,din))
+    nets.append(Linear(din,din))
+    return nets
+
+def conv_unit(ksize, ch_in, ch_out, reshape):
+    # batch, seq_n, din
+    nets = []
+    nets.append(Reshape(reshape))
+    if type(ksize)!={list, tuple}:
+        ksize = [ksize, ksize]
+    nets.append(Conv(2, ch_in, ch_out, ksize, 1, 1, [k//2 for k in ksize]))
+    batch, ch, w, h = reshape
+    outshape = [batch, ch_out, w, h]
+    nets.append(Reshape(outshape))
+    #nets.append(MultiAttrn(din, din, 8))
     nets.append(Linear(din,din))
     return nets
 
 din =4096
-batch=1
+din=256
+batch=500000000
 seq_n=1024
 az_nets = []
-for i in range(5):
+for i in range(50):
+    #az_nets+=conv_unit(3, 4, 4, [batch, 4, 32, 32])
     az_nets+=unit(din)
 
 az_nets = Nets(*az_nets)
-data_shape = [batch, seq_n, din]
+data_shape = [batch, din]
 
 data_size = mul(data_shape)*4
 data_trans = data_size/trans_mem

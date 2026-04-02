@@ -6,12 +6,12 @@
 from setuptools import setup, find_packages,find_namespace_packages
 
 setup(
-    name = 'buildz',
-    version = '0.9.31',
+    name = 'buildz_aiclient',
+    version = '0.1.3',
     keywords='buildz',
     long_description=open('README.md', 'r', encoding="utf-8").read(),
     long_description_content_type='text/markdown',
-    description = "配置读写（基于json格式进行简化）、ioc、以及其他工具代码。a json-base file format's read and write code by python, and codes to read and product object from configure file in such format(ioc), and other tool codes",
+    description = "用python写的ai客户端和ai技能管理工具, buildz包的一部分(buildz.aiclient)",
     license = 'Apache License 2.0',
     url = 'https://github.com/buildCodeZ/buildz',
     author = 'Zzz',
@@ -19,5 +19,5 @@ setup(
     packages = find_namespace_packages(where="."),
     include_package_data = True,
     platforms = 'any',
-    install_requires = [],
+    install_requires = ["openai", "buildz>=0.9.32"],
 )

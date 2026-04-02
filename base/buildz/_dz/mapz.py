@@ -123,6 +123,9 @@ def gs(obj, **maps):
     return rst
 
 pass
+def init(obj, key, val):
+    if key not in obj:
+        obj[key] = val
 def get_set(obj, key, val):
     if key not in obj:
         obj[key]=val
