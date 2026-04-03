@@ -11,10 +11,6 @@ from buildz import log as logz
 from buildz.base import Base
 from buildz import pyz, dz
 
-# 测试代码目前先注释掉，可能还要测试，后面确定测试完全后会删掉
-log = logz.simple("recals.log")
-log = log("recals")
-log.info("new test start")
 class DoneRebuild(Exception):
     pass
 
@@ -25,11 +21,9 @@ class ReCals(Base):
         self.total_size = 0
         self.recals = []
         self.used = 0
-        self.log.info("clean")
     def init(self, max_size, rebuild = None, rng_dvs = [], cuda_only = False):
         if type(max_size)==str:
             max_size = int(az.nsize(max_size))
-        self.log = log("recals")
         self.max_size = max_size
         self.base = 0
         self.total_size = 0
@@ -45,7 +39,7 @@ class ReCals(Base):
     def call(self, fc, *a, **b):
         return self.forward(self.rng_dvs, fc, *a, **b)
     def forward(self,  rng_dvs, fc, *a, **b):
-        recal = ReCal(self, self.rebuild, rng_dvs, self.cuda_only, self.log(f"recals<{len(self.recals)}>"))
+        recal = ReCal(self, self.rebuild, rng_dvs, self.cuda_only)
         self.recals.append(recal)
         #print(f"curr recals: {len(self.recals)}")
         return recal.forward(fc, *a, *b)
@@ -56,7 +50,6 @@ class ReCals(Base):
         if self.total_size+size<self.max_size:
             return
         free_size = self.total_size+size-self.max_size
-        self.log.info(f"check_and_free: {free_size}, recal: {type(recal)}, base: {self.base}")
         #print(f"check and do free size: {free_size}")
         if recal is not None:
             free_size = recal.free_size(free_size)
@@ -85,8 +78,7 @@ class ReCal(Base):
         self.rebuild = rebuild
     def bind_rng_dvs(self, rng_dvs):
         self.rng_dvs = rng_dvs
-    def init(self, recals, rebuild = None, rng_dvs = [], cuda_only = False, log=None):
-        self.log= log
+    def init(self, recals, rebuild = None, rng_dvs = [], cuda_only = False):
         self.recals = recals
         self.caches = {}
         self.total_size = 0
@@ -157,7 +149,6 @@ class ReCal(Base):
             cut_size+=pop_size
             self.base+=1
             cnt+=1
-        self.log.info(f"free_size: {cnt}")
         if cut_size>0:
             self.total_size-=cut_size
             self.recals.add_size(-cut_size)
@@ -177,14 +168,12 @@ class ReCal(Base):
         self.total_size+=size
         if self.index==self.abs:
             self.status = 2
-        self.log.info(f"tensor_save {self.index}")
         self.index+=1
         if self.status==0:
             self.save_count+=1
         return self.index-1
     def do_rebuild(self):
         assert self.rebuild is not None, "use bind_rebuild(fc) to set a rebuild function"
-        self.log.info(f"do_rebuild")
         with self._with_forward(1):
             with torch.enable_grad():
                 try:
@@ -194,7 +183,6 @@ class ReCal(Base):
     def tensor_load(self, key):
         if type(key)!=int:
             return key
-        self.log.info("tensor_load")
         obj, size = self.caches.pop(key, (None, 0))
         if obj is None:
             self.abs = key
