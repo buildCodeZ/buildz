@@ -11,11 +11,11 @@ test_batch: 3
 "k_size"= 3
 "shape_conv"= (32,64,64)
 "shape_out"= (256, 512)
-dropout_rate:0.15
+dropout_rate:0.0
 lr: 0.0003
 cache_size: 300M //1T//90M
-train_loop = 3
+train_loop = 100
 show_epoch = 10
 gpu: true
 order: save
-filepath: huge4.dt
+filepath: huge5.dt

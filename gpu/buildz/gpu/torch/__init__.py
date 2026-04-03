@@ -7,6 +7,7 @@ __author__ = "Zzz, emails: 1174534295@qq.com, 1309458652@qq.com"
 
 from .middle_cache import MiddleCache
 from .recal import ReCal, recal_with_rngs
+from .recals import ReCals, recals_with_rngs
 
 '''
 模型训练显存不足解决方案

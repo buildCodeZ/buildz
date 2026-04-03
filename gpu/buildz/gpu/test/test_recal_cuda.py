@@ -1,5 +1,5 @@
 
-from buildz.gpu.torch import recal, dv
+from buildz.gpu.torch import recal, dv, recals
 from buildz.gpu import az
 import torch,time
 from torch import nn, optim
@@ -163,6 +163,7 @@ class Check(nn.Module):
         return self.net(*a, **b)
 def fc_check(fc, *a, **b):
     return checkpoint(fc, *a, use_reentrant=False, **b)
+log.info("conf:", conf)
 if order == "train":
     cal_obj = wrap_fc
 elif order == "trainx" or order=="cachex" or order == 'testx':
@@ -173,14 +174,17 @@ elif order=='trainc':
     cal_obj = fc_check
 elif order == 'traincc':
     cal_obj = wrap_fc
+elif order == "trainxs" or order=="cachexs" or order == 'testxs':
+    cal_obj = recals.ReCals(cache_size)
+elif order == 'trainxsr':
+    cal_obj = recals.recals_with_rngs(cache_size)
 else:
     assert False
-log.info("conf:", conf)
 if order=="cachex":
     out = cal_obj(model, train_data)
     print(f"caches:", cal_obj.cache_size(1))
     exit(0)
-if order=='testx':
+if order=='testx' or order=='testxs':
     print(f"try train")
     train(model, train_data, 1, lr, show_epoch, cal_obj)
     print(f"trainable")

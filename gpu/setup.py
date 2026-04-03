@@ -7,7 +7,7 @@ from setuptools import setup, find_packages,find_namespace_packages
 
 setup(
     name = 'buildz_gpu',
-    version = '0.1.1',
+    version = '0.1.2',
     keywords='buildz',
     long_description=open('README.md', 'r', encoding="utf-8").read(),
     long_description_content_type='text/markdown',
