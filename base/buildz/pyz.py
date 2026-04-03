@@ -129,7 +129,7 @@ pth = pypkg
 
 class Pth:
     def __init__(self, fp = "build.pth", easy=False, local=True):
-        if fp[-3:]!=".pth":
+        if fp[-4:]!=".pth":
             fp = fp+".pth"
         self.dp = pth(easy, local)
         self.fp = os.path.join(self.dp, fp)

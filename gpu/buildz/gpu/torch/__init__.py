@@ -1,5 +1,9 @@
 #coding=utf-8
-
+try:
+    import torch
+except ModuleNotFoundError as exp:
+    print(f"package pytorch is required, try pip install torch to download cpu version, or visit pytorch.org to download other version")
+    pass
 __version__="0.0.1"
 
 __author__ = "Zzz, emails: 1174534295@qq.com, 1309458652@qq.com"

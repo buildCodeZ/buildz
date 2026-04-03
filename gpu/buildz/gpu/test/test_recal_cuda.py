@@ -58,19 +58,32 @@ def gen(num, train_batch, test_batch, seq_n, din, num_ln, num_attrn, num_conv, n
     return model, train_data, test_data
 
 def eval(model, data):
+    model.eval()
     with torch.no_grad():
         out = model(data)
+    out = (out-data)**2
+    #out = out.mean()
+    return out.sum()
     return out.mean(axis=1)
 def wrap_fc(fc, *a, **b):
     return fc(*a, **b)
-def train(model, data, loop, lr=0.0001, show_epoch=100, cal_obj= wrap_fc):
+def train(model, data, loop, lr=0.0001, show_epoch=100, cal_obj= wrap_fc, spt = False):
     opt = optim.Adam(model.parameters(), lr=lr)
     log.info(f"TRAIN")
     fc_loss = nn.MSELoss()
+    fc_loss = lambda out,tgt:((out-tgt)**2).mean()
     curr=time.time()
+    print(f"spt: {spt}")
+    model.train()
     for i in range(loop):
         opt.zero_grad()
-        out = cal_obj(model, data)
+        if spt:
+            print(f"do spt")
+            out = data
+            for net in model:
+                out = cal_obj(net, out)
+        else:
+            out = cal_obj(model, data)
         loss = fc_loss(out, data)
         loss.backward()
         if i%show_epoch==0 or i == loop-1:
@@ -83,21 +96,21 @@ def train(model, data, loop, lr=0.0001, show_epoch=100, cal_obj= wrap_fc):
 def save(fp):
     global model, train_data, test_data
     eval_train = eval(model, train_data)
-    eval_train = eval(model, test_data)
-    print(f"save: train: {train_data.mean(), eval_train.mean()}, test: {test_data.mean(), eval_train.mean()}")
+    eval_test = eval(model, test_data)
+    print(f"save: train: {train_data.mean(), eval_train.mean()}, test: {test_data.mean(), eval_test.mean()}")
     dv.xsave(fp, model=model, trainx=train_data, testx=test_data)
 
 def load(fp):
     assert isfile(fp), f"data file not exist: {fp}"
     global model, train_data, test_data
     eval_train = eval(model, train_data)
-    eval_train = eval(model, test_data)
-    print(f"before load: train: {train_data.mean(), eval_train.mean()}, test: {test_data.mean(), eval_train.mean()}")
+    eval_test= eval(model, test_data)
+    print(f"before load: train: {train_data.mean(), eval_train.mean()}, test: {test_data.mean(), eval_test.mean()}")
     obj = dv.xload(fp, model=model, trainx=train_data, testx=test_data)
     model, train_data, test_data = obj.model, obj.trainx, obj.testx
     eval_train = eval(model, train_data)
-    eval_train = eval(model, test_data)
-    print(f"load: train: {train_data.mean(), eval_train.mean()}, test: {test_data.mean(), eval_train.mean()}")
+    eval_test = eval(model, test_data)
+    print(f"load: train: {train_data.mean(), eval_train.mean()}, test: {test_data.mean(), eval_test.mean()}")
 
 
 
@@ -114,7 +127,7 @@ c:cuda
 cuda:gpu
 r:dropout_rate
 }
-[g,gpu]
+[g,gpu,spt]
 """)
 conf_path = join(curr_dir, "test_recal_cuda.js")
 fetch = argx.Fetch(*args)
@@ -148,6 +161,7 @@ model, train_data, test_data = gen(
     conf.get("shape_out", (16, 256)),
     float(conf.get("dropout_rate", 0.0))
 )
+print(f"model: {len(model)}")
 if order=='save':
     log.info(f"save to: {fp}")
     save(fp)
@@ -164,6 +178,8 @@ class Check(nn.Module):
 def fc_check(fc, *a, **b):
     return checkpoint(fc, *a, use_reentrant=False, **b)
 log.info("conf:", conf)
+spt = int(conf.get("spt", 0))
+sptable=False
 if order == "train":
     cal_obj = wrap_fc
 elif order == "trainx" or order=="cachex" or order == 'testx':
@@ -175,18 +191,22 @@ elif order=='trainc':
 elif order == 'traincc':
     cal_obj = wrap_fc
 elif order == "trainxs" or order=="cachexs" or order == 'testxs':
+    sptable = True
     cal_obj = recals.ReCals(cache_size)
 elif order == 'trainxsr':
+    sptable = True
     cal_obj = recals.recals_with_rngs(cache_size)
 else:
     assert False
+if not sptable:
+    spt = False
 if order=="cachex":
     out = cal_obj(model, train_data)
     print(f"caches:", cal_obj.cache_size(1))
     exit(0)
 if order=='testx' or order=='testxs':
     print(f"try train")
-    train(model, train_data, 1, lr, show_epoch, cal_obj)
+    train(model, train_data, 1, lr, show_epoch, cal_obj, spt)
     print(f"trainable")
     exit(0)
 
@@ -201,12 +221,14 @@ if gpu:
     test_data = test_data.cuda()
 
 log.info(f"cal_obj: {cal_obj}, model: {type(model)}")
-train(model, train_data, train_loop, lr, show_epoch, cal_obj)
+train(model, train_data, train_loop, lr, show_epoch, cal_obj, spt)
 
 # log.info(f"test_data: {test_data}")
-vals = eval(model, test_data)
-log.info(f"eval: {vals.mean()}")
+vals = eval(model, train_data)
+log.info(f"eval train: {vals.mean()}")
 
+vals = eval(model, test_data)
+log.info(f"eval test: {vals.mean()}")
 """
 
 生成一个模型和训练/测试数据，存储成文件
