@@ -86,17 +86,6 @@ log.info(f"test_data: {test_data}")
 vals = eval(model, test_data)
 log.info(f"eval: {vals}")
 
-exit(0)
-
-cal_obj = recal.ReCal(20612//2)
-lr=0.001
-batch=2
-train_loop = 2000
-show_epoch = 100
-train(model, train_data, train_loop, lr, show_epoch, cal_obj)
-log.info(f"test_data: {test_data}")
-vals = eval(model, test_data)
-log.info(f"eval: {vals}")
 """
 
 生成一个模型和训练/测试数据，存储成文件

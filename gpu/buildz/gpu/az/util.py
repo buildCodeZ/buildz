@@ -1,7 +1,8 @@
 
 
 def mul(arr):
-    if type(arr) not in {list, tuple}:
+    from collections.abc import Iterable
+    if not isinstance(arr, Iterable):
         return arr
     i=1
     for j in arr:

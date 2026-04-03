@@ -89,6 +89,27 @@ def sizes(datas):
         for it in datas:
             rst+=sizes(it)
     return rst
+def sizes_cuda(datas):
+    if isinstance(datas, torch.Tensor):
+        return tsz(datas), datas.is_cuda
+    _type = type(datas)
+    if _type not in {tuple, list, dict}:
+        return 0, False
+    rst = 0
+    is_cuda = False
+    if _type==dict:
+        for k,v in datas.items():
+            sz_k, ic_k = sizes_cuda(k)
+            sz_v, ic_v = sizes_cuda(v)
+            rst+=sz_k+sz_v
+            is_cuda |= ic_k | ic_v
+    else:
+        for it in datas:
+            sz, ic = sizes_cuda(it)
+            rst+=sz
+            is_cuda |= ic
+            rst+=sizes(it)
+    return rst, is_cuda
 
 def make_fc(fc = None, cuda = False):
     if fc is None:
