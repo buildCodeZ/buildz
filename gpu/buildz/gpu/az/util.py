@@ -26,6 +26,8 @@ def format_size(n, unit=1024):
     return f"{n}{units[i]}"
 
 def nsize(fmt, unit=1024):
+    if type(fmt)!=str:
+        return fmt
     fmt=fmt.strip()
     units = ",K,M,G,T,P,E,Z,Y".split(",")
     maps = {}

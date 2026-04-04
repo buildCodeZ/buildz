@@ -14,7 +14,7 @@ test_batch: 3
 dropout_rate:0.0
 lr: 0.0003
 cache_size: 150M //1T//90M
-train_loop = 3
+train_loop = 10
 show_epoch = 1
 gpu: true
 order: save

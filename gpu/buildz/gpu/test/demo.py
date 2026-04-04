@@ -26,7 +26,6 @@ def fmt(datas):
         return ""
     return str(datas.size())
 class Hooks(Base):
-    def size(self, )
     def bind(self, net):
         key = id(net)
         dz.init(self.hooks, key, [])

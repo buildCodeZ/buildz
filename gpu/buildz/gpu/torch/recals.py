@@ -10,7 +10,7 @@ from torch import nn
 from buildz import log as logz
 from buildz.base import Base
 from buildz import pyz, dz
-
+# log = logz.simple("recals.log")
 class DoneRebuild(Exception):
     pass
 
@@ -20,28 +20,53 @@ class ReCals(Base):
         self.base = 0
         self.total_size = 0
         self.recals = []
-        self.used = 0
-    def init(self, max_size, rebuild = None, rng_dvs = [], cuda_only = False):
+        # self.used = 0
+        self.do_backward=False
+    def init(self, max_size, rebuild = None, rng_dvs = [], max_remains=10, cuda_only = False):
         if type(max_size)==str:
             max_size = int(az.nsize(max_size))
         self.max_size = max_size
+        self.max_remains = max_remains
         self.base = 0
         self.total_size = 0
         self.rebuild = rebuild
         self.rng_dvs = rng_dvs
         self.cuda_only = cuda_only
-        self.used = 0
+        # self.used = 0
         self.recals = []
-    def inc_used(self):
-        self.used+=1
-        if self.used>=len(self.recals):
-            self.clean()
+        self.do_backward=False
+    def inc_backward(self):
+        self.do_backward=True
+    # def inc_used(self):
+    #     self.used+=1
+    #     if self.used>=len(self.recals):
+    #         self.clean()
     def call(self, fc, *a, **b):
         return self.forward(self.rng_dvs, fc, *a, **b)
+    def analyze(self, fc, *a, **b):
+        '''
+            计算总缓存和单元最大缓存，不实际存储
+        '''
+        cache_size = 0
+        max_unit_size=0
+        cache_sizes=[0,0]
+        def save(tuple_data):
+            u_size = dv.sizes(tuple_data)
+            if u_size>cache_sizes[1]:
+                cache_sizes[1]=u_size
+            cache_sizes[0]+=u_size
+            return -1
+        def load(obj):
+            raise "not impl"
+        with torch.autograd.graph.saved_tensors_hooks(save, load):
+            out = fc(*a, **b)
+        return cache_sizes
     def forward(self,  rng_dvs, fc, *a, **b):
-        recal = ReCal(self, self.rebuild, rng_dvs, self.cuda_only)
+        if self.do_backward:
+            self.clean()
+        # log.info(f"do forward")
+        recal = ReCal(self, self.rebuild, rng_dvs, self.cuda_only, self.max_remains)
         self.recals.append(recal)
-        #print(f"curr recals: {len(self.recals)}")
         return recal.forward(fc, *a, *b)
     def add_size(self, size):
         self.total_size+=size
@@ -50,25 +75,24 @@ class ReCals(Base):
         if self.total_size+size<self.max_size:
             return
         free_size = self.total_size+size-self.max_size
-        #print(f"check and do free size: {free_size}")
         if recal is not None:
             free_size = recal.free_size(free_size)
-            #print(f"single recal[{id(recal)}] free: {free_size}")
             assert free_size<=0, f"unknown reason that caches can't free a: {free_size}"
             return
         for i in range(self.base, len(self.recals)):
             recal = self.recals[i]
             if recal.total_size>0:
                 free_size = recal.free_size(free_size)
-                #print(f"recal[{i}/{id(recal)}] free: {free_size}")
                 if free_size<=0:
                     if recal.total_size==0:
                         i+=1
                     break
         self.base = i
         assert free_size<=0, f"unknown reason that caches can't free b: {free_size}"
-    def cache_size(self):
+    def cache_size(self, fmt=False):
         size = sum([recal.cache_size() for recal in reacals])
+        if fmt:
+            size = az.fmt_sz(size)
         return size
 
 class ReCal(Base):
@@ -78,8 +102,9 @@ class ReCal(Base):
         self.rebuild = rebuild
     def bind_rng_dvs(self, rng_dvs):
         self.rng_dvs = rng_dvs
-    def init(self, recals, rebuild = None, rng_dvs = [], cuda_only = False):
+    def init(self, recals, rebuild = None, rng_dvs = [], cuda_only = False, max_remains = 10):
         self.recals = recals
+        self.max_remains = max_remains
         self.caches = {}
         self.total_size = 0
         self.rebuild = rebuild
@@ -87,6 +112,7 @@ class ReCal(Base):
         '0: normal, 1: wait_rebuild, 2: done_rebuild'
         self.status = 0 
         self.index=0 
+        self.max_used = 0
         self.base=0
         self.save_count=0
         self.used = set()
@@ -99,16 +125,12 @@ class ReCal(Base):
     def get_rngs(self):
         if self.rng_dvs is None:
             return
-        # if len(self.rng_dvs)>0:
-        #     print(f"get_rngs")
         for i in self.rng_dvs:
             with torch.cuda.device(i):
                 self.rng_states.append(torch.cuda.get_rng_state())
     def set_rngs(self):
         if self.rng_dvs is None:
             return
-        # if len(self.rng_dvs)>0:
-        #     print(f"set_rngs")
         for i, st in zip(self.rng_dvs, self.rng_states):
             with torch.cuda.device(i):
                 torch.cuda.set_rng_state(st)
@@ -116,14 +138,16 @@ class ReCal(Base):
         if status == 0:
             self.used = set()
             self.caches = {}
+            self.rng_states = []
             self.get_rngs()
             self.abs=-1
-            self.save_count=0
+            self.save_count = 0
+            self.total_size = 0
+            self.max_used = 0
         else:
             self.set_rngs()
-        self.total_size = 0
         self.status = status
-        self.index=0 
+        self.index=0
         self.base=0 
     def call(self, fc, *a, **b):
         return self.forward(fc, *a, **b)
@@ -145,10 +169,14 @@ class ReCal(Base):
         cut_size = 0
         cnt=0
         while size>cut_size and len(self.caches)>0:
+            if self.base==self.abs and self.status!=0:
+                break
             _, pop_size = self.caches.pop(self.base)
+            # log.info(f"free {self.base}")
             cut_size+=pop_size
             self.base+=1
             cnt+=1
+        assert cut_size>0, f"error in free_size({size}), not space can be free"
         if cut_size>0:
             self.total_size-=cut_size
             self.recals.add_size(-cut_size)
@@ -168,6 +196,8 @@ class ReCal(Base):
         self.total_size+=size
         if self.index==self.abs:
             self.status = 2
+        # log.info(f"save {self.index}")
+        self.max_used = max(self.max_used, self.index)
         self.index+=1
         if self.status==0:
             self.save_count+=1
@@ -179,8 +209,10 @@ class ReCal(Base):
                 try:
                     self.rebuild()
                 except DoneRebuild as exp:
+                    # log.info("done rebuild")
                     pass
     def tensor_load(self, key):
+        self.recals.inc_backward()
         if type(key)!=int:
             return key
         obj, size = self.caches.pop(key, (None, 0))
@@ -188,11 +220,18 @@ class ReCal(Base):
             self.abs = key
             self.do_rebuild()
             obj, size = self.caches.pop(key)
+        # log.info(f"load {key}")
         self.total_size-=size
         self.recals.add_size(-size)
         self.used.add(key)
-        if len(self.used)==self.save_count:
-            self.recals.inc_used()
+        if key == self.max_used:
+            self.max_used-=1
+        while self.max_used-key>self.max_remains:
+            if self.max_used in self.caches:
+                _, _size = self.caches.pop(self.max_used)
+                self.total_size-=_size
+                self.recals.add_size(-_size)
+            self.max_used-=1
         return obj
     def cache_size(self, fmt=False):
         size = self.total_size
@@ -200,7 +239,7 @@ class ReCal(Base):
             size = az.fmt_sz(size)
         return size
 
-def recals_with_rngs(max_size:int, rng_devices:list|str|int|tuple="all",rebuild = None):
+def recals_with_rngs(max_size:int, rng_devices:list|str|int|tuple|torch.Tensor="all",max_remains=10, rebuild = None, cuda_only=False):
     '''
         rng_devices: 
             需要在计算前存储随机数种子的显卡设备，避免在反向梯度计算时重新计算因为网络层运行的随机性导致和之前计算的不不一样（比如dropout）
@@ -210,6 +249,7 @@ def recals_with_rngs(max_size:int, rng_devices:list|str|int|tuple="all",rebuild 
                 "all", scan all cuda devices
             int: torch.cuda.device(rng_devices)
             list: [torch.cuda.device(i) for i in rng_devices]
+            torch.Tensor: [rng_devices.get_device()]
     '''
     if isinstance(rng_devices, torch.Tensor):
         rng_devices = [rng_devices.get_device()]
@@ -222,8 +262,7 @@ def recals_with_rngs(max_size:int, rng_devices:list|str|int|tuple="all",rebuild 
     elif type(rng_devices)==int:
         rng_devices = [rng_devices]
     assert type(rng_devices) in {tuple, list}, "rng_devices should be int or str or list or tuple"
-    print(f"rng_devices: {rng_devices}")
-    return ReCals(max_size, rebuild, rng_devices)
+    return ReCals(max_size, rebuild, rng_devices, max_remains, cuda_only)
 
 
 

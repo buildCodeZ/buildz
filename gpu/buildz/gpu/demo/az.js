@@ -20,3 +20,28 @@ trans: {
     gpu2mem: 1.6G
     wifi6: 1.2G
 }
+
+// unit num
+num=5
+train_batch: 10
+test_batch: 3
+"seq_n"= 1024//256*16
+"din"= 512
+"num_ln"= 10
+"num_attrn"= 3
+"num_conv"= 3
+"num_heads"= 4
+"k_size"= 3
+"shape_conv"= (32,64,256)
+"shape_out"= (1024, 512)
+dropout_rate:0.2
+lr: 0.0003
+cache_size: 4G //1T//90M
+train_loop = 3
+show_epoch = 1
+gpu: true
+order: save
+filepath: cuda_mini_rate.dt
+/*
+python -m buildz.gpu.demo.az --cf az.js
+*/

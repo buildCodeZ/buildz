@@ -101,6 +101,9 @@ def save(fp):
     dv.xsave(fp, model=model, trainx=train_data, testx=test_data)
 
 def load(fp):
+    if not isfile(fp):
+        print(f"[WRAN] load fp '{fp}' is not exist and will not be load")
+        return
     assert isfile(fp), f"data file not exist: {fp}"
     global model, train_data, test_data
     eval_train = eval(model, train_data)
@@ -145,6 +148,7 @@ lr=0.001
 lr = float(conf.get("lr", 0.001))
 train_loop = int(conf.get("train_loop", 2000))
 show_epoch = int(conf.get("show_epoch", 100))
+max_remains = int(conf.get("max_remains", 10))
 cache_size = conf.get("cache_size", "1T")
 model, train_data, test_data = gen(
     int(conf.get("num", 3)), 
@@ -161,7 +165,7 @@ model, train_data, test_data = gen(
     conf.get("shape_out", (16, 256)),
     float(conf.get("dropout_rate", 0.0))
 )
-print(f"model: {len(model)}")
+print(f"model: {len(model)}, size: {az.fmt_sz(dv.sizes(model))}")
 if order=='save':
     log.info(f"save to: {fp}")
     save(fp)
@@ -192,17 +196,26 @@ elif order == 'traincc':
     cal_obj = wrap_fc
 elif order == "trainxs" or order=="cachexs" or order == 'testxs':
     sptable = True
-    cal_obj = recals.ReCals(cache_size)
+    cal_obj = recals.ReCals(cache_size,max_remains=max_remains)
 elif order == 'trainxsr':
     sptable = True
-    cal_obj = recals.recals_with_rngs(cache_size)
+    cal_obj = recals.recals_with_rngs(cache_size,max_remains=max_remains)
+elif order=='size':
+    size = dv.sizes(model)
+    print(f"model size: {az.fmt_sz(size)}")
+    exit()
 else:
     assert False
 if not sptable:
     spt = False
+spt = bool(spt)
 if order=="cachex":
     out = cal_obj(model, train_data)
     print(f"caches:", cal_obj.cache_size(1))
+    exit(0)
+if order == "cachexs":
+    cache_size, max_unit = cal_obj.analyze(model, train_data)
+    print(f"total cache size: {az.fmt_sz(cache_size)}, max_unit_size: {az.fmt_sz(max_unit)}")
     exit(0)
 if order=='testx' or order=='testxs':
     print(f"try train")

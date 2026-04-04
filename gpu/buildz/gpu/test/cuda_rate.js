@@ -1,5 +1,5 @@
 // unit num
-num=21
+num=12
 train_batch: 10
 test_batch: 3
 "seq_n"= 1
@@ -11,11 +11,11 @@ test_batch: 3
 "k_size"= 3
 "shape_conv"= (32,64,64)
 "shape_out"= (256, 512)
-dropout_rate:0.15
+dropout_rate:0.2
 lr: 0.0003
-cache_size: 300M //1T//90M
+cache_size: 100M //1T//90M
 train_loop = 100
 show_epoch = 10
 gpu: true
 order: save
-filepath: huge4.dt
+filepath: cuda_rate.dt

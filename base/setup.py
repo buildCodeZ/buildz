@@ -7,7 +7,7 @@ from setuptools import setup, find_packages,find_namespace_packages
 
 setup(
     name = 'buildz',
-    version = '0.9.32',
+    version = '0.9.33',
     keywords='buildz',
     long_description=open('README.md', 'r', encoding="utf-8").read(),
     long_description_content_type='text/markdown',

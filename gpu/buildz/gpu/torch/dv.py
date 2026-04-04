@@ -1,5 +1,5 @@
 #
-import torch
+import torch,types
 '''
 SaveModel: 存取模型数据的简化
 cpu, cuda: 指向torch设备实例
@@ -76,10 +76,12 @@ pass
 def tsz(tensor):
     return tensor.element_size()*tensor.nelement()
 def sizes(datas):
+    if isinstance(datas, torch.nn.Module):
+        datas = datas.parameters()
     if isinstance(datas, torch.Tensor):
         return tsz(datas)
     _type = type(datas)
-    if _type not in {tuple, list, dict}:
+    if _type not in {tuple, list, dict, types.GeneratorType}:
         return 0
     rst = 0
     if _type==dict:
@@ -93,7 +95,7 @@ def sizes_cuda(datas):
     if isinstance(datas, torch.Tensor):
         return tsz(datas), datas.is_cuda
     _type = type(datas)
-    if _type not in {tuple, list, dict}:
+    if _type not in {tuple, list, dict, types.GeneratorType}:
         return 0, False
     rst = 0
     is_cuda = False
