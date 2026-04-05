@@ -250,6 +250,11 @@ def recals_with_rngs(max_size:int, rng_devices:list|str|int|tuple|torch.Tensor="
             int: torch.cuda.device(rng_devices)
             list: [torch.cuda.device(i) for i in rng_devices]
             torch.Tensor: [rng_devices.get_device()]
+        max_remains:
+            默认取值10，反向计算backward的时候，使用到第i个缓存的时候，将缓存索引为i+max_remains以上的缓存清空
+            反向的时候是用一个缓存删一个缓存，并且是从后面存的缓存开始用，一直用到前面存的缓存
+            但pytorch有个坑，在前向计算forward时候存的缓存在backward的时候不一定都会使用，可能有少量缓存直接不用了，这时候需要手动清理下，避免其占据设置的缓存上限却完全没用。
+            测试发现backward的时候缓存使用基本都是一直往前使用，局部存在少量的乱序，比如存的缓存顺序是1，2，3，4，5，6，7，8，9，10，用的时候可能是10，9，7，8，4，6，5，3，2，1，乱序基本是单个网络层存多个缓存的时候，该网络层下的缓存使用可能是随机的，单个网络层基本就存0到4个缓存，max_remains使用默认值10基本足够了
     '''
     if isinstance(rng_devices, torch.Tensor):
         rng_devices = [rng_devices.get_device()]
