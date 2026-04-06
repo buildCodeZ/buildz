@@ -44,17 +44,18 @@ class ReCals(Base):
     def call(self, fc, *a, **b):
         return self.forward(self.rng_dvs, fc, *a, **b)
     def analyze(self, fc, *a, **b):
+        return self.analyzes(fc, *a, **b)[:2]
+    def analyzes(self, fc, *a, **b):
         '''
             计算总缓存和单元最大缓存，不实际存储
         '''
-        cache_size = 0
-        max_unit_size=0
-        cache_sizes=[0,0]
+        cache_sizes=[0,0,0]
         def save(tuple_data):
             u_size = dv.sizes(tuple_data)
             if u_size>cache_sizes[1]:
                 cache_sizes[1]=u_size
             cache_sizes[0]+=u_size
+            cache_sizes[2]+=1
             return -1
         def load(obj):
             raise "not impl"
@@ -117,21 +118,33 @@ class ReCal(Base):
         self.save_count=0
         self.used = set()
         self.cuda_only = cuda_only
-        if type(rng_dvs) in {bool, int}:
-            if rng_dvs:
-                rng_dvs = [0]
+        if type(rng_dvs) == int:
+            rng_dvs = [rng_dvs]
         self.rng_dvs = rng_dvs
         self.rng_states = []
-    def get_rngs(self):
+        self.bak_rng_states = []
+        self.cuda_autocasts=None
+        self.cpu_autocasts=None
+    def get_rngs(self, rng_states = None):
         if self.rng_dvs is None:
             return
+        if rng_states is None:
+            rng_states = self.rng_states
         for i in self.rng_dvs:
+            if i == 'cpu' or i == -1:
+                rng_states.append(torch.get_rng_state())
+                continue
             with torch.cuda.device(i):
-                self.rng_states.append(torch.cuda.get_rng_state())
-    def set_rngs(self):
+                rng_states.append(torch.cuda.get_rng_state())
+    def set_rngs(self, rng_states = None):
         if self.rng_dvs is None:
             return
-        for i, st in zip(self.rng_dvs, self.rng_states):
+        if rng_states is None:
+            rng_states = self.rng_states
+        for i, st in zip(self.rng_dvs, rng_states):
+            if i =='cpu' or i == -1:
+                torch.set_rng_state(st)
+                continue
             with torch.cuda.device(i):
                 torch.cuda.set_rng_state(st)
     def forward_init(self, status=0):
@@ -139,11 +152,18 @@ class ReCal(Base):
             self.used = set()
             self.caches = {}
             self.rng_states = []
+            self.bak_rng_states = []
             self.get_rngs()
             self.abs=-1
             self.save_count = 0
             self.total_size = 0
             self.max_used = 0
+            self.cuda_autocasts={"enabled": torch.is_autocast_enabled(),
+                           "dtype": torch.get_autocast_gpu_dtype(),
+                           "cache_enabled": torch.is_autocast_cache_enabled()}
+            self.cpu_autocasts={"enabled": torch.is_autocast_cpu_enabled(),
+                           "dtype": torch.get_autocast_cpu_dtype(),
+                           "cache_enabled": torch.is_autocast_cache_enabled()}
         else:
             self.set_rngs()
         self.status = status
@@ -159,11 +179,26 @@ class ReCal(Base):
             return self.rebuild()
     def _with_forward(self, status=0):
         obj = torch.autograd.graph.saved_tensors_hooks(self.tensor_save, self.tensor_load)
+        auto_cuda = None
+        auto_cpu = None
+        if status!= 0:
+            if self.cuda_autocasts and self.cuda_autocasts["enabled"]:
+                auto_cuda = torch.cuda.amp.autocast(**self.cuda_autocasts)
+            if self.cpu_autocasts and self.cpu_autocasts["enabled"]:
+                auto_cpu = torch.cuda.amp.autocast(**self.cpu_autocasts)
         def wrap_enter():
             self.forward_init(status)
+            if auto_cuda:
+                auto_cuda.__enter__()
+            if auto_cpu:
+                auto_cpu.__enter__()
             obj.__enter__()
         def wrap_out(exc_type, exc_val, exc_tb):
             obj.__exit__(exc_type, exc_val, exc_tb)
+            if auto_cpu:
+                auto_cpu.__exit__(exc_type, exc_val, exc_tb)
+            if auto_cuda:
+                auto_cuda.__exit__(exc_type, exc_val, exc_tb)
         return pyz.With(wrap_enter, wrap_out, True)
     def free_size(self, size):
         cut_size = 0
@@ -204,6 +239,8 @@ class ReCal(Base):
         return self.index-1
     def do_rebuild(self):
         assert self.rebuild is not None, "use bind_rebuild(fc) to set a rebuild function"
+        if self.rng_dvs and len(self.bak_rng_states)==0:
+            self.get_rngs(self.bak_rng_states)
         with self._with_forward(1):
             with torch.enable_grad():
                 try:
@@ -211,6 +248,7 @@ class ReCal(Base):
                 except DoneRebuild as exp:
                     # log.info("done rebuild")
                     pass
+        self.set_rngs(self.bak_rng_states)
     def tensor_load(self, key):
         self.recals.inc_backward()
         if type(key)!=int:
@@ -246,7 +284,9 @@ def recals_with_rngs(max_size:int, rng_devices:list|str|int|tuple|torch.Tensor="
             取值:
             str: 
                 "null", "none": no cuda device
-                "all", scan all cuda devices
+                "all", scan all cuda devices and cpu device
+                "cuda", scan all cuda devices
+                "cpu", cpu only
             int: torch.cuda.device(rng_devices)
             list: [torch.cuda.device(i) for i in rng_devices]
             torch.Tensor: [rng_devices.get_device()]
@@ -259,9 +299,13 @@ def recals_with_rngs(max_size:int, rng_devices:list|str|int|tuple|torch.Tensor="
     if isinstance(rng_devices, torch.Tensor):
         rng_devices = [rng_devices.get_device()]
     elif type(rng_devices)==str:
-        assert rng_devices in {"null","none","all"},f"unknown rng_devices str: {rng_devices}, should be 'all' or 'null'"
+        assert rng_devices in {"null","none","all", 'cpu', 'cuda'},f"unknown rng_devices str: {rng_devices}, should be 'all' or 'null'"
         if rng_devices=="all":
+            rng_devices = list(range(torch.cuda.device_count()))+[-1]
+        if rng_devices=="cuda":
             rng_devices = list(range(torch.cuda.device_count()))
+        elif rng_devices=="cpu":
+            rng_devices = [-1]
         else:
             rng_devices = []
     elif type(rng_devices)==int:

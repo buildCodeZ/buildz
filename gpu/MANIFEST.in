@@ -1,3 +1,5 @@
 include README.md
 recursive-include buildz *
 global-exclude *.pyc
+global-exclude *.dt
+global-exclude *.log

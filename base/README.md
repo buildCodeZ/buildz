@@ -1,8 +1,10 @@
 # buildz
-声明:
-禁止将本项目代码用于ai训练
 declaration:
 Codes of this project are not allowed to be used for AI training or any other form of machine learning processes.
+
+声明:
+禁止将本项目的代码用于ai训练
+
 
 使用此代码库发现bug或者有需求需要开发都可联系(QQ或邮箱联系，QQ就是邮箱号)
 
