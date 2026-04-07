@@ -6,13 +6,15 @@ class HtmlTag:
     def data(self):
         return self.to_maps()
     def to_maps(self):
-        nodes = [n.to_maps() for n in self.nodes]
+        nodes = [n.to_maps() if is_node(n) else str(n) for n in self.nodes]
         rst = {'tag': self.tag, 'attrs': self.attrs, 'nodes': nodes}
         return rst
     def __str__(self):
         return xf.dumps(self.to_maps())
     def __repr__(self):
         return self.__str__()
+    def get_tags(self, name):
+        return self.maps.get(name, [])
     def tags(self, tag):
         rst=[]
         for nd in self.nodes:
@@ -81,8 +83,10 @@ pass
 def is_node(node):
     return isinstance(node, HtmlTag)
 is_tag = is_node
-def parse(text):
-    text=text.replace("\r", "").replace("\n", "")
+def parse(text, keep_enter=False):
+    text=text.replace("\r", "")
+    if not keep_enter:
+        text = text.replace("\n", "")
     obj = MyHTMLParser()
     obj.feed(text)
     return obj.data
