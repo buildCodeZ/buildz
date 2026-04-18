@@ -2,10 +2,15 @@
 from buildz.base import Base
 import os,time, traceback
 class FpsListener(Base):
-    def init(self, wait_sec=0.1):
+    '''
+        每隔wait_sec秒扫描一次所有监听文件，把有更新的文件生成文件列表调用update(filepaths)
+    '''
+    def init(self, wait_sec=0.1, fps = [], last_update=False):
         self.fps = {}
         self.wait_sec = wait_sec
         self.running=False
+        for fp in fps:
+            self.add(fp,last_update)
     def set_wait(self, wait):
         self.wait_sec = wait
     def update(self, fps):
