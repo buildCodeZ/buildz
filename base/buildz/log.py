@@ -8,6 +8,11 @@ import time, sys, threading, os
     新的buildz.logz
 '''
 class Check(Base):
+    '''
+        whitelist: [tag1, tag2, ...]
+        blacklist: [tag1, tag2, ...]
+        default_pass: true/false
+    '''
     def str(self):
         return f"Check<self.whitelist: {self.whitelist}, self.blacklist: {self.blacklist}, self.default_pass: {self.default_pass}>"
     @staticmethod
@@ -57,6 +62,9 @@ class Log(Base):
         self.check_tags = tags or self.check_tags
         self.shows = shows or self.shows
         return self
+    def sub(self, tag):
+        tag = self._tag+"."+tag
+        return self(tag)
     def show(self, type, on=True):
         if not on:
             return self.unshow(type)
@@ -153,6 +161,11 @@ class FormatLog(Log):
 class FpLog(FormatLog):
     @staticmethod
     def build(conf,dp=None):
+        '''
+        type: file
+        fp: ...
+        dp: ...
+        '''
         fp = dz.g(conf, fp=None)
         dp = dz.g(conf, dp=dp)
         if dp is not None:
@@ -181,6 +194,7 @@ pass
 class StdLog(FormatLog):
     @staticmethod
     def build(conf,*a,**b):
+        '{type: std}'
         log = StdLog()
         log.build_tags(conf)
         return log
@@ -192,6 +206,9 @@ class Logs(Log):
     '''
     {
         type: logs
+        logs: [
+            ...
+        ]
     }
     '''
     @staticmethod
@@ -203,7 +220,7 @@ class Logs(Log):
         for conf_log in conf_logs:
             logs.append(builds(conf_log))
         log = Logs(logs)
-        log.build_tag(conf)
+        log.build_tags(conf)
         return log
     def init(self, logs=[], shows = None, tag= None, lock = False, check_tags=None):
         super().init(shows, tag, lock=lock, check_tags=check_tags)
@@ -228,10 +245,17 @@ class Builds(Base):
             self.fcs[k] = v
     def add(self, key, fc):
         self.fcs[key] = fc
-    def call(self, conf, type=None,*a,**b):
-        if type is None:
-            type = dz.g(conf, type=self.default)
-        return self.fcs[type](conf,*a,**b)
+    def call(self, conf, conf_type=None,*a,**b):
+        if type(conf)==str:
+            conf = dz.maps(type='logs', logs= [
+                dz.maps(type='std'),
+                dz.maps(type='file', fp=conf)
+            ])
+        if conf is None:
+            conf = dz.maps(type='std')
+        if conf_type is None:
+            conf_type = dz.g(conf, type=self.default)
+        return self.fcs[conf_type](conf,*a,**b)
 
 pass
 builds = Builds("logs")

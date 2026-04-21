@@ -76,6 +76,10 @@ def get_first(obj, keys, default = None):
 pass
 def get_one(obj, keys, default=None):
     return get_first(obj, keys, default)[0]
+def get_one_default(obj, *args):
+    keys = args[:-1]
+    default = args[-1]
+    return get_one(obj, keys, default)
 def g1(obj, **maps):
     v = None
     for k in maps:

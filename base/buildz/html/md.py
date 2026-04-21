@@ -1,6 +1,8 @@
 
 from .base import is_node, parse
+from buildz.base import Base
 import re
+__all__ = "dumps,dump,dump_html,MDTree,load".split(",")
 def match(pt, s):
     return len(re.findall(pt, s))>0
 def dumps(nodes, conf={}, strip=False):
@@ -71,3 +73,100 @@ def dump_html(html):
         html = parse(html)
     content = dump(html)
     return content
+
+def is_title(s):
+    if s[:4]=='    ':
+        return False
+    return match("^#+ +.+", s.strip())
+
+class MDTree(Base):
+    @property
+    def val(self):
+        return self.value
+    def str(self):
+        data = {'name': self.name, 'value': self.value, 'subs': self.subs}
+        return str(data)
+    def get_val(self, *a, **b):
+        obj = self.get_one(*a, **b)
+        if self.is_node(obj):
+            obj = obj.val
+        return obj
+    def gets(self, *a, **b):
+        data = self.get(*a, **b)
+        if type(data)!=list:
+            data = [data]
+        return data
+    def get_one(self, *a, **b):
+        data = self.get(*a, **b)
+        if type(data)==list:
+            data = data[0]
+        return data
+    def get(self, *a, **b):
+        return self.subs.get(*a, **b)
+    def __getitem__(self, key):
+        return self.subs[key]
+    @staticmethod
+    def is_node(node):
+        return isinstance(node, MDTree)
+    def __init__(self, level, name=None):
+        self.name = name
+        self.level = level
+        self.datas = []
+        self.subs = {}
+        self.value = ""
+    def add(self, data):
+        self.datas.append(data)
+        if self.is_node(data):
+            name = data.name
+            if name in self.subs:
+                x = self.subs[name]
+                if type(x)!=list:
+                    self.subs[name] = [x]
+                self.subs[name].append(data)
+            else:
+                self.subs[name] = data
+        else:
+            data = data.strip("\r")
+            if self.value:
+                self.value = self.value+"\n"+data
+            else:
+                self.value = data
+
+pass
+
+
+def load(content):
+    arr = content.split("\n")
+    stacks = []
+    stacks.append(MDTree(0))
+    mark_js = False
+    for i in range(len(arr)):
+        data = arr[i]
+        if data[:4]=='    ':
+            stacks[-1].add(data)
+            continue
+        if data.strip()[:3]=='```':
+            stacks[-1].add(data)
+            mark_js = not mark_js
+            continue
+        if mark_js:
+            stacks[-1].add(data)
+            continue
+        if not is_title(data):
+            stacks[-1].add(data)
+            continue
+        data = data.strip()
+        tmp = data.split(" ")
+        level = len(tmp[0].strip())
+        name = " ".join(tmp[1:])
+        name = name.strip()
+        curr = MDTree(level, name)
+        while curr.level<=stacks[-1].level:
+            stacks.pop(-1)
+        stacks[-1].add(curr)
+        stacks.append(curr)
+    return stacks[0]
+
+
+
+

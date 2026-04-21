@@ -2,6 +2,7 @@ from html.parser import HTMLParser
 from .. import xf
 from ..base import Base
 import re
+__all__ = "HtmlTag,is_node,is_tag,parse".split(",")
 class HtmlTag:
     def data(self):
         return self.to_maps()

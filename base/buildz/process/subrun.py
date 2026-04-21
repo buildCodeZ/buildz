@@ -1,14 +1,16 @@
 #
 
 from ..base import Base
-from .. import xf, dz, pyz
+from .. import xf, dz, pyz, log as logz
 import subprocess
 class Runner(Base):
     """
         子进程调用和杀子进程的封装
         单个子进程，每次调用都会把前面的子进程运行先关闭
     """
-    def init(self, commands):
+    def init(self, commands, log = None):
+        log = log or logz.simple()
+        self.log = log("subrun")
         self.commands = commands
         self.process = None
         self.exist_psutil = True
@@ -22,9 +24,9 @@ class Runner(Base):
             import psutil
         except ModuleNotFoundError as exp:
             self.exist_psutil = False
-            print(f"[WARN] psutil not installed, children process of subprocess will not being killed")
-            print(f"[WARN] if children processes exists and need to be killed, do 'pip install psutil' by yourself and restart")
-            print(f"[警告] 没有装psutil，本代码无法删除目标进程的子进程，如果需要本代码删除子进程，需要装psutil然后重启: pip install psutil")
+            self.log.warn(f"psutil not installed, children process of subprocess will not being killed")
+            self.log.warn(f"if children processes exists and need to be killed, do 'pip install psutil' by yourself and restart")
+            self.log.warn(f"没有装psutil，本代码无法删除目标进程的子进程，如果需要本代码删除子进程，需要装psutil然后重启: pip install psutil")
             return
         try:
             parent_process = psutil.Process(pid)
@@ -51,13 +53,3 @@ class Runner(Base):
         self.process_exec(commands)
     def call(self, *a, **b):
         self.update(*a, **b)
-
-def test():
-    import sys
-    fp = sys.argv[1]
-    lst = FcFpsListener()
-    runner = Runner(fp, lst)
-    lst.run()
-
-pass
-pyz.lc(locals(), test)

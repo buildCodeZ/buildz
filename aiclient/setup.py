@@ -7,7 +7,7 @@ from setuptools import setup, find_packages,find_namespace_packages
 
 setup(
     name = 'buildz_aiclient',
-    version = '0.1.3',
+    version = '0.1.4',
     keywords='buildz',
     long_description=open('README.md', 'r', encoding="utf-8").read(),
     long_description_content_type='text/markdown',
@@ -19,5 +19,5 @@ setup(
     packages = find_namespace_packages(where="."),
     include_package_data = True,
     platforms = 'any',
-    install_requires = ["openai", "buildz>=0.9.32"],
+    install_requires = ["openai", "ollama", "buildz>=0.9.35"],
 )
