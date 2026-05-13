@@ -1,18 +1,29 @@
 from ..base import Base
 class Lists(Base):
-    def init(self, *keys):
+    def init(self, *keys, **maps):
         self.lists = {}
+        self.orders = {}
         for k in keys:
             self.lists[k] = []
+            self.orders[k]=1
+        for k,v in maps.items():
+            self.lists[k]=[]
+            self.orders[k] = v
         self.enables = set()
+    def add_lists(self, _type, obj):
+        if self.orders[_type]>0:
+            self.lists[_type].append(obj)
+        else:
+            self.lists[_type].insert(0, obj)
     def add(self, kid, _type, fc, enable=True):
         if _type:
             if _type not in self.lists:
                 self.lists[_type] = []
-            self.lists[_type].append([kid, fc])
+                self.orders[_type] = 1
+            self.add_lists(_type, [kid, fc])
         else:
-            for _type in slef.lists.keys():
-                self.lists[_type].append([kid, fc])
+            for _type in self.lists.keys():
+                self.add_lists(_type, [kid, fc])
         self.enable(kid, enable)
     def adds(self, kid, enable, **maps):
         for _type, fc in maps.items():
