@@ -39,6 +39,8 @@ class BlockSocket:
         for k in "add,adds,enable,disable".split(","):
             setattr(self, k, getattr(self.lists, k))
         self.blk = Block()
+    def close(self):
+        self.skt.close()
     def send(self, bts):
         #print(f"[{gid()}][BlockSocket] send: {bts}")
         bts = self.lists.send(bts)

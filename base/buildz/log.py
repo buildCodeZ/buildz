@@ -4,10 +4,11 @@
 from . import xf, ioc, fz, dz, path as pathx
 from .base import Base
 import time, sys, threading, os
+from .dz import Check
 '''
     新的buildz.logz
 '''
-class Check(Base):
+class Checkbak(Base):
     '''
         whitelist: [tag1, tag2, ...]
         blacklist: [tag1, tag2, ...]
