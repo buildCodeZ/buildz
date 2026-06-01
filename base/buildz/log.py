@@ -64,7 +64,8 @@ class Log(Base):
         self.shows = shows or self.shows
         return self
     def sub(self, tag):
-        tag = self._tag+"."+tag
+        if self._tag:
+            tag = self._tag+"."+tag
         return self(tag)
     def show(self, type, on=True):
         if not on:

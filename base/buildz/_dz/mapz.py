@@ -335,11 +335,17 @@ def deep_fill_argx(src, target, replace=1):
 
 
 
-def deep_update(target, src, replace=1):
+def deep_update(target, src, replace=1, act_lst=None, act_lv=None):
     """
         dict深层更新，src[key]是dict就深入更新，否则:
             src有而target没有就替换，否则：
-                replace=1就替换
+                如果src和target都是list:
+                    act_lst='replace':替换
+                    act_lst='add':在后面追加
+                    act_lst='keep':保持不变
+                    act_lst=None:按其余情况执行
+                其余情况：
+                    replace=1就替换
     """
     for k in src:
         val = src[k]
@@ -347,16 +353,32 @@ def deep_update(target, src, replace=1):
             target[k] = val
             continue
         mval = target[k]
-        if type(mval) == dict and type(val)==dict:
-            deep_update(mval, val, replace)
+        tm = type(mval)
+        tv = type(val)
+        if tm == dict and tv==dict:
+            deep_update(mval, val, replace, act_lst, act_lv)
+        elif tm==list and tv==list and act_lst:
+            if act_lst=='replace':
+                target[k] = val
+            elif act_lst=='add':
+                target[k]+=val
+            elif act_lst=='keep':
+                pass
+            else:
+                assert 0, f"value of act_list should be in (None, 'replace', 'add', 'keep')"
+        elif (tm==list or tv==list) and tm!=tv and act_lv == 'add':
+            if tm == list:
+                target[k].append(val)
+            else:
+                target[k] = [target[k]]+val
         else:
             if replace:
                 target[k] = val
 
 pass
 update = deep_update
-def deep_fill(src, target, replace=1):
-    return deep_update(target, src, replace)
+def deep_fill(src, target, replace=1, act_lst=None, act_lv=None):
+    return deep_update(target, src, replace, act_lst, act_lv)
 
 pass
 def deep_clone(obj):

@@ -37,6 +37,10 @@ class Check(Base):
         return Check(whitelist, blacklist, default_pass, fc)
     def init(self, whitelist=[], blacklist=[], default_pass=False, fc = None):
         fc = fc or Check.fc_contain
+        if type(whitelist)==str:
+            whitelist = [whitelist]
+        if type(blacklist)==str:
+            blacklist=[blacklist]
         self.whitelist = set(whitelist)
         self.blacklist = set(blacklist)
         self.default_pass = default_pass

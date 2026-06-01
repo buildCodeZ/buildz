@@ -22,7 +22,8 @@ cert和csr的区别：
             最后用CA的cert的公钥验证它自己（为了安全，验证方要自己存储CA的自签名cert证书，用自己存的cert的公钥验证cert链的最高层）
 '''
 arr_names = gen_names.loadf()
-dict_names = {k[0]:k for k in arr_names}
+#dict_names = {k[0]:k for k in arr_names}
+dict_names = {getattr(NameOID, k[0]):k for k in arr_names}
 def a2n(arr_names):
     rst = {}
     for item in arr_names:
@@ -221,6 +222,8 @@ def verify_certs(certs, cas = None, verify_time=True):
         cas = []
     if type(cas)!=list:
         cas = [cas]
+    fc_l = lambda x:load_cert(x) if type(x)==bytes else x
+    cas =[fc_l(ca) for ca in cas]
     #cas = [load_cert(ca) for ca in cas]
     roots = {ca.subject:[ca.public_key(), ca.signature_hash_algorithm] for ca in cas}
     #print(f"[TESTZ] verify certs: {len(certs)}")

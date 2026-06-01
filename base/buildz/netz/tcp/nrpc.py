@@ -90,10 +90,35 @@ class Server(Base):
 pass
 
 class Client:
-    def __init__(self, skt):
+    def __init__(self, skt, caches = None, log=None):
+        log = log or logz.simple()
+        self.log = log
+        if type(caches)==str:
+            caches = caches.split(",")
+            caches = [k.strip() for k in caches]
+        if type(caches)==list:
+            caches = set(caches)
+        self.caches = caches
+        self.datas = {}
         self.skt = skt
         #skt.enable_v2bs()
+    def set_cache(self, fn, args, maps, rst):
+        if not self.caches or fn not in self.caches:
+            return
+        key = f"{fn}(*{args}, **{maps})"
+        self.datas[key] = rst
+    def get_cache(self, fn, args, maps):
+        if not self.caches or fn not in self.caches:
+            return None
+        key = f"{fn}(*{args}, **{maps})"
+        if key not in self.datas:
+            return None
+        return self.datas[key]
     def __call__(self, fn, *args, **maps):
+        self.log.debug(f"nrpc.client.call: {fn}(*{args}, **{maps})")
+        rst = self.get_cache(fn, args, maps)
+        if rst:
+            return rst.get('data', None)
         msg = {'args': args, 'maps': maps}
         msg['call'] = fn
         self.skt.send(msg)
@@ -101,6 +126,7 @@ class Client:
         err = rst.get("error", None)
         if err:
             raise Exception(err)
+        self.set_cache(fn, args, maps, rst)
         return rst.get('data', None)
     def __getattr__(self, fn):
         def wfc(*args, **maps):
