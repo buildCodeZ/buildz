@@ -1,0 +1,13 @@
+
+
+obj = api.client(conf)
+
+send = api.Send()
+send.set_tools(tools)
+send.add("...")
+msg = obj.send(send)
+tool_calls = msg.tool_calls_out(tools)
+send.add(tool_calls)
+
+def obj.send(send):
+	msg =it.send(send)

@@ -69,16 +69,21 @@ class ByteStream:
         self.encryptor = self.cipher.encryptor()
         self.codes = b""
         #self.padder = padding.PKCS7(algorithms.AES.block_size).padder()
-    def next(self):
-        data = self.base
-        nxt = hashlib.md5(data).hexdigest().encode("ascii")
-        self.base = nxt
-        out = self.encryptor.update(data)
+    def next(self, n=1):
+        mids = b""
+        #n = 0
+        while len(mids)<n:
+            nxt = hashlib.md5(self.base).hexdigest().encode("ascii")
+            self.base = nxt
+            mids+=nxt
+        out = self.encryptor.update(mids)
         return out
     def encrypt(self, dts):
+        #print(f"[Crypt.stream] encrypt start: {len(dts)}")
         if self.crypt_hash>0:
             hash = hashlib.md5(dts).hexdigest().encode("ascii")
             dts += hash[:self.crypt_hash]
+        #print(f"[Crypt.stream] encrypt done hash: {len(dts)}")
         return self.update(dts)
     def decrypt(self, dts):
         dts = self.update(dts)
@@ -90,11 +95,15 @@ class ByteStream:
         return dts
     def update(self, dts):
         l = len(dts)
+        #print(f"update: {l}")
         while len(self.codes)<l:
-            self.codes+=self.next()
+            print(f"codes: {len(self.codes)}<{l}")
+            self.codes+=self.next(l-len(self.codes))
         tmp = self.codes[:l]
         self.codes = self.codes[l:]
+        #print(f"[Crypt.stream] tmp: {len(tmp)}")
         rst = xors(dts, tmp)
+        #print(f"[Crypt.stream] xors: {len(rst)}")
         return rst
         # src = np.array(bytearray(dts))
         # cds = np.array(bytearray(self.codes[:l]))

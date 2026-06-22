@@ -15,7 +15,7 @@ just to make it easy to use
 class Server(Base):
     def init(self, obj, skt, fns = None, log=None):
         log = log or logz.simple()
-        self.log = log
+        self.log = log.sub("nrpc.server")
         self.obj = obj
         self.skt = skt
         #skt.enable_v2bs()
@@ -40,8 +40,10 @@ class Server(Base):
         args = msg.get("args", [])
         maps = msg.get("maps", {})
         try:
+            self.log.debug(f"nrpc server.deal get: {fn}({len(args)}, {len(maps)})")
             fc = getattr(self.obj, fn)
             rst = fc(*args, **maps)
+            self.log.debug(f"nrpc server.deal done: {fn}({len(args)}, {len(maps)})")
             out['data'] = rst
         except Exception as exp:
             self.log.error(f"exp: {exp}")
@@ -58,22 +60,31 @@ class Server(Base):
     def single(self, tid = None):
         self.rst = None
         tid = tid or gid()
+        self.log.debug(f"single before recv")
         msg = self.skt.recv()
-        #print(f"[NRPC] server get msg: {msg}")
+        self.log.debug(f"single recv: {len(msg)}")
         self.sends[tid]=False
         if msg is None or len(msg)==0:
             #self.rst = 'null'
+            self.log.debug(f"single done for null msg")
             return False, 'null'
         if msg.get("close", False):
             #self.rst = msg.get('msg', 'close')
+            self.log.debug(f"single done for close msg")
             return False, msg.get('msg', 'close')
         if msg.get("break", False):
             #self.rst = msg.get('msg', 'break')
+            self.log.debug(f"single done for break msg")
             return False, msg.get('msg', 'break')
         rst = self.deal(msg)
+        self.log.debug(f"single done deal")
         #print(f"[DEBUG] single return: {rst}")
         if not self.sends[tid]:
+            self.log.debug(f"single before send {len(rst)}")
             self.skt.send(rst)
+            self.log.debug(f"single done send {len(rst)}")
+        else:
+            self.log.debug(f"single not send mark")
         return True, None
     def run(self):
         return self.call()
@@ -92,7 +103,7 @@ pass
 class Client:
     def __init__(self, skt, caches = None, log=None):
         log = log or logz.simple()
-        self.log = log
+        self.log = log.sub("nrpc.client")
         if type(caches)==str:
             caches = caches.split(",")
             caches = [k.strip() for k in caches]
@@ -118,14 +129,20 @@ class Client:
         self.log.debug(f"nrpc.client.call: {fn}(*{args}, **{maps})")
         rst = self.get_cache(fn, args, maps)
         if rst:
+            self.log.debug(f"get from caches: {fn}")
             return rst.get('data', None)
         msg = {'args': args, 'maps': maps}
         msg['call'] = fn
+        self.log.debug("call before send")
         self.skt.send(msg)
+        self.log.debug("call done send")
         rst = self.skt.recv()
+        self.log.debug("call done recv")
         err = rst.get("error", None)
         if err:
+            self.log.debug(f"nrpc client get error: {err}")
             raise Exception(err)
+        self.log.debug(f"nrpc.client.call done result for {fn}")
         self.set_cache(fn, args, maps, rst)
         return rst.get('data', None)
     def __getattr__(self, fn):

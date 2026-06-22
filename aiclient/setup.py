@@ -19,5 +19,5 @@ setup(
     packages = find_namespace_packages(where="."),
     include_package_data = True,
     platforms = 'any',
-    install_requires = ["openai", "ollama", "buildz>=0.9.35"],
+    install_requires = ["openai", "ollama", "buildz>=0.9.39"],
 )

@@ -8,6 +8,12 @@ class Check(Base):
         default_pass: true/false
     '''
     @staticmethod
+    def fc_prefix(tag, list):
+        for key in list:
+            if tag.find(key)==0:
+                return True
+        return False
+    @staticmethod
     def fc_contain(tag, list):
         return tag in list
     @staticmethod
@@ -26,7 +32,9 @@ class Check(Base):
         blacklist = blacklist or rejects
         fn = mapz.g(conf, fc=default_fn)
         fc = Check.fc_contain
-        if fn == 'contain':
+        if fn == 'prefix':
+            fc = Check.fc_prefix
+        elif fn == 'contain':
             fc = Check.fc_contain
         elif fn in {'match', 'match_any'}:
             fc = Check.fc_match_any

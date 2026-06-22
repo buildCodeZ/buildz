@@ -110,12 +110,19 @@ def _bs2val(bs):
     fc = fcs[tp][1]
     return fc(bs)
 def val2bs(val):
+    #print(f"[DEBUG.str] val2bs: {type(val)}")
     tp = type(val)
     if tp not in fcs and val in {None, False, True}:
         tp = val
     fc = fcs[tp][2]
-    return fc(val)
+    rst = fc(val)
+    #print(f"[DEBUG.str] done val2bs: {len(rst)}")
+    return rst
 def bs2val(bs):
+    #print(f"[DEBUG.str] bs2val: {len(bs)}")
     if bs is None or len(bs)==0:
         return bs
-    return _bs2val(bs)[0]
+    rst = _bs2val(bs)[0]
+    #print(f"[DEBUG.str] done bs2val: {type(rst)}")
+    return rst
+

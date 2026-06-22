@@ -36,10 +36,14 @@ class Lists(Base):
     def disable(self, kid):
         return self.enable(kid, False)
     def call(self, _type, data, *a, **b):
+        #print(f"list.call start")
         for kid, fc in self.lists[_type]:
             if kid not in self.enables:
                 continue
+            #print(f"list.call before {fc}")
             data = fc(data, *a, **b)
+            #print(f"list.call after {fc}")
+        #print(f"list.call done")
         return data
     def __getattr__(self, key):
         if key in {'lists', 'enables'}:

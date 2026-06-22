@@ -2,7 +2,6 @@
 from . import cert as certz, pk as pkz
 from buildz import xf, fz, dz, args as argz, log as logz
 from getpass import getpass
-
 conf = xf.loads("""
 (call, outfp)
 {
@@ -38,11 +37,20 @@ def test():
     params = {}
     if fconf:
         params = xf.loadf(fconf)
-    args = conf.get("param", {})
+    args = conf.get("params", {})
     dz.deep_fill(args, params)
     log.debug(f"call: '{call}', conf: {conf}")
     if need_pwd and pwd is None:
-        pwd = getpass("input password:")
+        while True:
+            pwd = getpass("input password:")
+            if call=='prv':
+                pwd2 = getpass("input password again:")
+            else:
+                pwd2 = pwd
+            if pwd!=pwd2:
+                print(f"password input twice not the same")
+            else:
+                break
     if call == 'prv':
         certz.genf_prv(ofp, pwd)
     elif call == 'pub':
@@ -50,6 +58,7 @@ def test():
         certz.genf_pub(ofp, fp_prv, pwd)
     elif call == 'cert':
         assert fp_prv is not None
+        print(f"conf: {params}")
         certz.genf_root_cert(ofp, certz.loadf_prv(fp_prv, pwd), conf=params)
     elif call == 'csr':
         assert fp_prv is not None

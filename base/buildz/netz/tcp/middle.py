@@ -3,7 +3,7 @@ import socket, select, traceback, threading, time
 from buildz.base import Base
 from buildz import logz, pyz
 
-log = logz.simple()
+log = logz.simple("./mid.log")
 class MiddleServer(Base):
     '''
         端口映射
@@ -37,7 +37,7 @@ class MiddleServer(Base):
                 self.close_pair(skt_read, skt_write)
                 return
             skt_write.send(bts)
-            log("send").info(f"{skt_read.getpeername()} to {skt_write.getpeername()}: {len(bts)} bytes")
+            log("send").info(f"{skt_read.getpeername()} to {skt_write.getpeername()}: {len(bts)} bytes")#: {bts}")
         except Exception as exp:
             log.debug(f"deal exp: {exp}")
             log.warn(f"traceback: {traceback.format_exc()}")

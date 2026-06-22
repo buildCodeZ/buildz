@@ -3,8 +3,15 @@ class Block:
     '''
         在网络流数据上使用格式"数据长度+数据"，数据长度用4字节整数
     '''
-    def __init__(self):
-        self.caches = b""
+    def out(self):
+        if len(self.caches)==0:
+            return None
+        return self.caches
+    def size(self):
+        return len(self.caches)
+    def __init__(self, caches=None):
+        caches = caches or b""
+        self.caches = caches
         self.build = self.wrap
     def empty(self):
         return len(self.caches)==0
@@ -23,6 +30,7 @@ class Block:
         bsz = self.caches[:4]
         sz = struct.unpack("<I", bsz)[0]
         if lc<sz+4:
+            #print(f"[BLOCK] need {sz}+4 but only {lc}")
             return b'', lc
         dts = self.caches[4:4+sz]
         self.caches = self.caches[4+sz:]

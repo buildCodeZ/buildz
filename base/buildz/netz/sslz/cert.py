@@ -23,7 +23,7 @@ cert和csr的区别：
 '''
 arr_names = gen_names.loadf()
 #dict_names = {k[0]:k for k in arr_names}
-dict_names = {getattr(NameOID, k[0]):k for k in arr_names}
+dict_names = {getattr(NameOID, k[0]):k for k in arr_names if hasattr(NameOID, k[0])}
 def a2n(arr_names):
     rst = {}
     for item in arr_names:
@@ -273,12 +273,22 @@ def verify_cert(cert, public_key=None, verify_time=True, hash_alg = None, csr=Fa
         return f"sign verify error: {exp}"
     if not verify_time:
         return None
-    if cert.not_valid_before_utc<datetime.datetime.now(datetime.timezone.utc)<cert.not_valid_after_utc:
+    if valid_date(cert):
         return None
+    #if cert.not_valid_before_utc<datetime.datetime.now(datetime.timezone.utc)<cert.not_valid_after_utc:
+    #    return None
     return "date not pass"
     raise CertVerifyException("date not pass")
 
 pass
+def valid_date(cert):
+    if hasattr(cert, "not_valid_before_utc"):
+        not_before = cert.not_valid_before_utc
+        not_after = cert.not_valid_after_utc
+    else:
+        not_before = cert.not_valid_before.replace(tzinfo=datetime.timezone.utc)
+        not_after = cert.not_valid_after.replace(tzinfo=datetime.timezone.utc)
+    return not_before < datetime.datetime.now(datetime.timezone.utc) < not_after
 
 def load_der(der):
     cert = x509.load_der_x509_certificate(der)

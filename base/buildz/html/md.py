@@ -114,6 +114,8 @@ class MDTree(Base):
         self.datas = []
         self.subs = {}
         self.value = ""
+    def items(self):
+        return self.subs.items()
     def add(self, data):
         self.datas.append(data)
         if self.is_node(data):

@@ -95,6 +95,8 @@ class Log(Base):
     def init(self, shows = None, tag= None, base = None, lock = False, check_tags=None):
         if type(shows)==list:
             shows = Check(shows)
+        if shows is None:
+            shows = Check(default_pass=True)
         self.shows=shows
         self._tag = tag
         self.base = base

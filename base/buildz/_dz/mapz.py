@@ -138,8 +138,15 @@ def s(obj, **maps):
     for k in maps:
         v = maps[k]
         obj[k] = v
+    return obj
 
 pass
+def snn(obj, **maps):
+    for k in maps:
+        v = maps[k]
+        if v is not None:
+            obj[k]=v
+    return obj
 def fill_fc(maps, fc):
     for k in maps:
         v = maps[k]
@@ -374,6 +381,7 @@ def deep_update(target, src, replace=1, act_lst=None, act_lv=None):
         else:
             if replace:
                 target[k] = val
+    return target
 
 pass
 update = deep_update
@@ -396,6 +404,9 @@ def deep_clone(obj):
 pass
 fill=deep_fill
 
+def mapsnn(**kv):
+    rst ={k:v for k,v in kv.items() if v is not None}
+    return rst
 def maps(**kv):
     return kv
 
