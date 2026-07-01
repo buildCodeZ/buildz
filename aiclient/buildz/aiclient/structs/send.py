@@ -11,9 +11,10 @@ class Send(Base):
     '''
     def str(self):
         return str(self.out())
-    def init(self, messages:List[Message]=None, tools:List[Dict]=None, tool_choice:str="auto", model:str=None):
+    def init(self, messages:List[Message]=None, tools:List[Dict]=None, tool_choice:str="auto", model:str=None,think=True):
         messages = messages or []
         self.model = model
+        self.think = think
         self.messages=messages
         self.tools = tools
         self.tool_choice = tool_choice
@@ -28,13 +29,13 @@ class Send(Base):
         msgs = self.messages
         if msgs:
             msgs = [msg.out() if isinstance(msg, Message) else msg for msg in msgs]
-        rst = dz.snn(rst, model=self.model, messages=msgs)
+        rst = dz.snn(rst, model=self.model, messages=msgs, think=self.think)
         if send_tools:
             rst = dz.snn(rst, tools=self.tools, tool_choice=self.tool_choice)
         return rst
     @staticmethod
     def from_conf(conf:dict):
-        messages, tools, tool_choice, model = dz.g(conf, messages=None, tools=None, tool_choice="aut'", model=None)
+        messages, tools, tool_choice, model = dz.g(conf, messages=None, tools=None, tool_choice="auto", model=None)
         if messages:
             messages = [Message.from_conf(msg) for msg in messages]
         return Send(messages, tools, tool_choice, model)

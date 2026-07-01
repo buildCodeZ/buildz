@@ -9,7 +9,7 @@ class Recv(Base):
     def from_conf(conf):
         role, content, think, tools = dz.g(conf, role=None, content=None, thinkg=None, tool_calls=None)
         if tools:
-            tools = [ToolCall.from_conf(k) for k in tools if k.type=="function"]
+            tools = [ToolCall.from_conf(k) for k in tools ]
         return Recv(role, content, think, tools)
     def tool_calls_out(self, tools):
         if self.tool_calls is None:

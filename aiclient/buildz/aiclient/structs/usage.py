@@ -8,7 +8,7 @@ class Usage(Base):
         self.recv =recv
         self.total = total or (send+recv)
     @staticmethod
-    def from_conf(self, conf):
+    def from_conf(conf):
         send, recv, total = dz.g(conf, send=0, recv=0, total=0)
         return Usage(send, recv, total)
     def out(self):

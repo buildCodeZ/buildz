@@ -6,12 +6,15 @@ from ..api import Api
 class OllamaApi(Api):
     @staticmethod
     def from_conf(conf):
-        return OllamaApi(conf.get("url"))
-    def init(self, url, api_key=None):
+        return OllamaApi(conf.get("url"), None, conf.get("log"))
+    def init(self, url, api_key=None, log=None):
+        super().init(log)
         import ollama 
         self.url = url
         self.client = ollama.Client(url)
     def send_dict(self, send:dict)->tuple[dict, dict]:
+        if 'tool_choice' in send:
+            del send['tool_choice']
         rsp = self.client.chat(**send)
         usage =dz.maps(
             send = rsp.prompt_eval_count,
@@ -21,3 +24,7 @@ class OllamaApi(Api):
         msg = rsp.message
         rst = dz.maps(role=msg.role, content=msg.content, think=msg.thinking, tool_calls=msg.tool_calls)
         return rst, usage
+    def embed(self, msg:str, model:str=None)->list[float]:
+        resp = self.client.embed(input=msg, model=model)
+        print(f"[TESTZ] resp: {len(resp.embeddings)}")
+        return resp.embeddings[0]

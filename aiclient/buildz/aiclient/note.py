@@ -58,7 +58,7 @@ class Note:
                 reqs.append(key)
             inputs[key]['type']=self.types[tp]
         out = {}
-        dz.s(out, type="object", properties=inputs, reqs =reqs)
+        dz.s(out, type="object", properties=inputs, required =reqs)
         return out
     def get(self, fc, base=0):
         #self.log.debug(f"get: {fc}")

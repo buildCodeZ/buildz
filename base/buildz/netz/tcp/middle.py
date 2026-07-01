@@ -1,7 +1,8 @@
 
-import socket, select, traceback, threading, time
+import socket, select, traceback, threading, time, os
 from buildz.base import Base
-from buildz import logz, pyz
+from buildz import log as logz, pyz, xf, fz
+from buildz import args as argx
 
 log = logz.simple("./mid.log")
 class MiddleServer(Base):
@@ -11,9 +12,9 @@ class MiddleServer(Base):
             python -m buildz.netz.tcp 监听ip 监听端口 目标ip 目标端口
     '''
     def init(self, addr, remote_addr, listen=5,wait=0.1, read_size=1024*1024):
-        self.addr = tuple(addr)
+        self.addr = self.fetch_addr(addr)
         self.listen = listen
-        self.remote_addr = tuple(remote_addr)
+        self.remote_addr = self.fetch_addr(remote_addr)
         self.read_size = read_size
         self.running = False
         self.wait = wait
@@ -48,7 +49,8 @@ class MiddleServer(Base):
         return arr
     def add(self, skt_cli, addr):
         try:
-            skt_srv = socket.socket()
+            skt_srv = self.new_skt(self.remote_addr)
+            #skt_srv = socket.socket()
             skt_srv.connect(tuple(self.remote_addr))
         except Exception as exp:
             log.error(f"add exp: {exp}")
@@ -70,8 +72,23 @@ class MiddleServer(Base):
                     time.sleep(1.0)
             finally:
                 self.running=False
+    def fetch_addr(self, addr):
+        if addr.find(":")<0:
+            return addr
+        ip, port = addr.split(":")
+        port = int(port)
+        return (ip, port)
+    def new_skt(self, addr):
+        if type(addr)==str:
+            if os.path.isfile(addr):
+                os.remove(addr)
+            skt = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        else:
+            skt = socket.socket()
+        return skt
     def waits_and_deals(self):
-        skt = socket.socket()
+        log.info(f"start middle server at {self.addr} to {self.remote_addr}")
+        skt = self.new_skt(self.addr)
         skt.bind(self.addr)
         skt.listen(self.listen)
         self.skt = skt
@@ -86,7 +103,8 @@ class MiddleServer(Base):
                 else:
                     self.deal(skt)
     def waits(self):
-        skt = socket.socket()
+        skt = self.new_skt(self.addr)
+        #skt = socket.socket()
         skt.bind(self.addr)
         skt.listen(self.listen)
         self.skt = skt
@@ -103,16 +121,39 @@ class MiddleServer(Base):
                 self.deal(skt)
 
 pass
-
+fetch = argx.Fetch(*xf.loads("""
+(listen, connect)
+{
+    src: listen
+    target: connect
+    s:src
+    t:target
+    l:log
+    lp: logpath
+}
+(log,l)
+"""))
 def test():
-    import sys
-    args = sys.argv[1:]
-    ip = args.pop(0)
-    port = int(args.pop(0))
-    addr = (ip, port)
-    ip = args.pop(0)
-    port = int(args.pop(0))
-    remote_addr = (ip, port)
-    MiddleServer(addr, remote_addr)()
+    global log
+    #import sys
+    #args = sys.argv[1:]
+    conf = fetch()
+    src = conf.get("listen")
+    target = conf.get("connect")
+    assert src is not None and target is not None
+    #ip = args.pop(0)
+    #port = int(args.pop(0))
+    #addr = (ip, port)
+    #ip = args.pop(0)
+    #port = int(args.pop(0))
+    #remote_addr = (ip, port)
+    dolog = conf.get("log", False)
+    logpath = conf.get("logpath", "./mid.log")
+    if not dolog:
+        log = logz.simple()
+        log.unshow("info")
+    else:
+        log = logz.simple(logpath)
+    MiddleServer(src, target)()
 
 pass
