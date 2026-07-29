@@ -1,0 +1,91 @@
+写一个话术，让ai接受记忆消息和对话消息，返回需要新增或修改的记忆消息，假设现在有4条记忆数据和5条对话数据，用户发给ai的数据如下(xml格式数据，在'''包裹的内容，不包括'''，并且发给ai的不会有下面这样缩进，下面的缩进只是为了方便查看):
+'''
+<memories>
+    <memory>
+        <date>2026-07-01 16:06:56</date>
+        <subject>张三</subject>
+        <object>开发项目</object>
+        <content>张三在开发游戏项目Rax</content>
+    </memory>
+    <memory>
+        <date>2026-07-03 17:00:00</date>
+        <subject>游戏项目Rax</subject>
+        <object>位置</object>
+        <content>游戏项目Rax保存在系统的/home/zhangsan/rax下</content>
+    </memory>
+    <memory>
+        <date>2026-07-03 17:00:00</date>
+        <subject>游戏项目R3d</subject>
+        <object>位置</object>
+        <content>游戏项目R3d保存在系统的/home/zhangsan/r3d下</content>
+    </memory>
+    <memory>
+        <date>2026-07-03 17:00:00</date>
+        <subject>游戏项目Rax</subject>
+        <object>编程语言</object>
+        <content>游戏项目Rax主要是用python写的</content>
+    </memory>
+</memories>
+<chats>
+    <chat>
+        <date>2026-07-06 16:01:02</date>
+        <role>user</role>
+        <content>R3d项目运行报错了，报错数据如下:\n...(这里是报错记录)\n分析报错原因</content>
+    </chat>
+    <chat>
+        <date>2026-07-06 16:06:07</date>
+        <role>assistant</role>
+        <content>报错的位置在....(这里是ai返回的报错问题分析)，应该修改***.py，把***替换成***，是否执行替换？</content>
+    </chat>
+    <chat>
+        <date>2026-07-06 16:06:21</date>
+        <role>user</role>
+        <content>执行</content>
+    </chat>
+    <chat>
+        <date>2026-07-06 16:07:11</date>
+        <role>assistant</role>
+        <tool_calls>
+            <tool_call>
+                <id>312123809804fff</id>
+                <function></function>
+                <arguments>{"path":"/home/zhangsan/r3d/roles/npc.py", "search":"avg=total/num", "replace":"avg=total/(num+1e-6)"}</arguments>
+            <tool_call>
+        </tool_calls>
+    </chat>
+    <chat>
+        <date>2026-07-06 16:07:13</date>
+        <role>tool</role>
+        <tool_call_id>312123809804fff</tool_call_id>
+        <content>执行成功</content>
+    </chat>
+</chats>   
+'''
+如上，发给ai的会有memories和chats两个模块，memories里面的是记忆消息列表，一条memory是一条记忆消息，包括日期date，记忆主体subject，记忆客体object和记忆内容content四个字段，chats里面是用户和ai的对话，以及ai申请调用工具和工具调用结果的数据，一条chat是一条发送给ai或ai返回的数据，包括日期date，角色role，对话内容content（ai调用工具的时候可能没有），工具返回主键tool_call_id(只在工具返回ai调用结果时有），ai申请调用工具数据tool_calls（仅在ai申请调用工具时候有）；ai申请调用工具一次可以申请调用多条，每个tool_call是一条调用申请，包括唯一id，工具名function，调用参数arguments(json格式)。
+ai返回的数据格式要求，和上送数据一样是xml格式:
+'''
+<replaces>
+    <replace>
+        <source>
+            <date>2026-07-01 16:06:56</date>
+            <subject>张三</subject>
+            <object>开发项目</object>
+            <content>张三在开发游戏项目Rax</content>
+        </source>
+        <target>
+            <subject>张三</subject>
+            <object>游戏项目Rax</object>
+            <content>张三在开发游戏项目R3d</content>
+        </target>
+    </replace>
+</replaces>
+</increments>
+    <increment>
+        <subject>游戏项目R3d</subject>
+        <object>位置</object>
+        <content>游戏项目Rax保存在系统的/home/zhangsan/rax下</content>
+    </increment>
+</increments>
+'''
+如上，ai返回数据包括要替换的数据replaces要新增的数据increments，replaces里面一条replace是一个替换记录，source里是源记忆消息，target里是替换后的消息，target里不需要有date字段，由客户端自动添加，increments里一条increment是一条需要新增的记忆，source、target和increment里的数据和发送的memory类似，但target和increment里不要包括date字段，由客户端自动添加
+写出让ai这样执行的辅助话术

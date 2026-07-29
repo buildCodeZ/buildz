@@ -1,6 +1,6 @@
 
 from typing import List, Dict, Any, Optional
-
+import json
 from buildz.base import Base
 from buildz import log as logz, dz, xf
 from .toolcall import ToolCall
@@ -24,11 +24,33 @@ class Recv(Base):
         self.content= content
         self.think = think
         self.tool_calls = tool_calls
+    def clone(self):
+        return Recv(self.role, self.content, self.think, self.tool_calls)
     def out_tool_calls(self):
         if self.tool_calls is None:
             return None
         return [tl.out() for tl in self.tool_calls]
+    def out_tool_calls_json(self):
+        if self.tool_calls is None:
+            return None
+        return [tl.out_json() for tl in self.tool_calls]
+    def size(self):
+        rst = self.out()
+        rs = json.dumps(rst)
+        return len(rs)//4
     def out(self):
-        rst = {'role':self.role, 'content':self.content, 'tool_calls':self.out_tool_calls()}
+        rst = dz.mnn(role=self.role, content=self.content, tool_calls=self.out_tool_calls())
         return rst
+    def out_json(self):
+        rst = dz.mnn(role=self.role, content=self.content, tool_calls=self.out_tool_calls_json())
+        return rst
+    def out_xml(self):
+        s = f"<role>{self.role}</role>"
+        if self.content:
+            s+=f"<content>{self.content}</content>"
+        if self.tool_calls:
+            arr = [f"<tool_call>{tcall.out_xml()}</tool_call>" for tcall in self.tool_calls]
+            rs = "".join(arr)
+            s += f"<tool_calls>{rs}</tool_calls>"
+        return s
 

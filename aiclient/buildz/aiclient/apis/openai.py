@@ -22,6 +22,14 @@ class OpenAiApi(Api):
             tool_calls = [self.out_tool_call(it) for it in tool_calls]
         return tool_calls
     def send_dict(self, send:dict)->tuple[dict, dict]:
+        if 'think' in send:
+            think = send.get("think")
+            del send['think']
+            if think:
+                if think==True:
+                    think = 'high'
+                send['reasoning_effort'] = think
+        print(f"[TEST] chat: {send}")
         rsp = self.client.chat.completions.create(**send)
         msg = rsp.choices[0].message
         usage = rsp.usage
@@ -30,7 +38,8 @@ class OpenAiApi(Api):
             send = usage.prompt_tokens,
             recv = usage.completion_tokens
         )
-        rst = dz.maps(role=msg.role,  content=msg.content, think=msg.reasoning, tool_calls=self.out_tool_calls(msg))
+        role, content, think = dz.og(msg, role=None, content=None, reasoning=None)
+        rst = dz.maps(role=role,  content=content, think=think, tool_calls=self.out_tool_calls(msg))
         return rst, usage
     def embed(self, msg:str, model:str)->list[float]:
         resp = self.client.embeddings.create(input=msg, model=model)

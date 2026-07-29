@@ -1,5 +1,25 @@
 from ..base import Base
 class Lists(Base):
+    '''
+        Lists(**maps)
+        example:
+            fcs = Lists(send=-1, recv=1)
+            fcs.adds("encrypt", True, send=fc_encrypt, recv=fc_decrypt)
+            fcs.add("json", True, send = json.dumps, recv = json.loads)
+            data = {"test": 123}
+            data = fcs.send(data) 
+            # {"test":123} => '{"test":123}' => crypt_data
+            data = fcs.recv(data)
+            # crypt_data => '{...}' => {...}
+        key=1:
+            add的时候加到调用队列的末尾（越后面添加调用顺序越靠后）
+        key=-1:
+            add的时候加到调用队列的开头（越后面添加调用顺序越靠前）
+        call(key, dt, *a, **b):
+            for fc in self.fcss[key]:
+                dt = fc(dt, *a, **b)
+            return dt
+    '''
     def init(self, *keys, **maps):
         self.lists = {}
         self.orders = {}
@@ -40,7 +60,6 @@ class Lists(Base):
         for kid, fc in self.lists[_type]:
             if kid not in self.enables:
                 continue
-            #print(f"list.call before {fc}")
             data = fc(data, *a, **b)
             #print(f"list.call after {fc}")
         #print(f"list.call done")

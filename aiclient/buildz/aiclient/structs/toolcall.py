@@ -37,6 +37,13 @@ class ToolCall(Base):
         #rst = {'id': self.id, 'function': {'name':self.fn, 'arguments': json.dumps(self.args)}}
         rst = {'id': self.id, 'function': {'name':self.fn, 'arguments': self.args}}
         return rst
+    def out_json(self):
+        rst = dz.mnn(id=self.id, function=self.fn, arguments=self.args)
+        return rst
+    def out_xml(self):
+        args = json.dumps(self.args, ensure_ascii=False)
+        s = f"<id>{self.id}</id><function>{self.fn}</function><arguments>{args}</arguments>"
+        return s
     @staticmethod
     def from_conf(conf):
         id,role, fc=dz.g(conf,id=None,role='tool', function={})

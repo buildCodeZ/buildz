@@ -20,5 +20,6 @@ class QianwenApi(OpenAiApi):
             send = usage.prompt_tokens,
             recv = usage.completion_tokens
         )
-        rst = dz.maps(role=msg.role,  content=msg.content, think=msg.reasoning_content, tool_calls=self.out_tool_calls(msg))
+        role, content, think = dz.og(msg, role=None, content=None, reasoning_content=None)
+        rst = dz.maps(role=role,  content=content, think=think, tool_calls=self.out_tool_calls(msg))
         return rst, usage

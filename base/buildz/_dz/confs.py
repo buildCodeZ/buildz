@@ -1,35 +1,10 @@
-#
-
 '''
-2025+
-新的，更简单的buildz._dz.conf
-
-简单的方便读取配置文件的类
-没安全措施
-每个Conf里有当前的数据conf，和数据是否存在exist
-可以执行的操作:
-读取，循环读取，修改，删除，修改和删除不会通知其他节点
-
-push和pop操作(耗时高)
-push修改当前conf的key
-生成修改记录
-
-pop的时候全改回来
-因为没用到，暂时不实现，只保留接口和数据
-
-gets可以获取多个key，返回队列
-top(domain)回到根节点的domain下
-call(domain)到当前节点的domain下，不存在或没有数据就报错
-
-Conf包含数据：
-conf: 实际数据
-exist: 数据是否存在
-domain: 根节点到当前节点的路径字符串
-spt,spts: 分割字符串
-src: 只读配置，默认为空
-root: 根节点
-
-
+2026/07/23
+两种逻辑
+1，key全局化
+2, 一个map里包含另一个map
+第2个对于查一个key耗时会更多
+但不同map互不相关的时候，会更快
 
 '''
 
@@ -37,19 +12,22 @@ from . import mapz
 from buildz import xf
 from ..base import Base
 import os
-def dzkeys(key, spt):
+def dzkeys(key):
     if key is None:
-        return []
-    elif type(key)==str:
-        if spt is not None:
-            key = key.split(spt)
-        else:
-            key = [key]
-    elif type(key) not in (list, tuple):
-        key = [key]
+        return None
+    if type(key)==list:
+        key = tuple(key)
+    if type(key) != tuple:
+        key = (key,)
     return key
 
 class Conf(Base):
+    def items(self):
+        if type(self.conf)==dict:
+            rst = self.conf.items()
+        else:
+            rst = self.conf
+        return rst
     def len(self):
         return len(self.conf)
     def items(self, as_conf=True):
@@ -60,12 +38,12 @@ class Conf(Base):
     def list(self, i, as_conf=True):
         conf = self.conf[i]
         if as_conf:
-            domain = self.domain+self.spt+str(i)
+            domain = self.domain+(i,)
             val = conf
             src = self.src_list(i, as_conf)
             obj = self.root or self
             find = True
-            conf = Conf(self.spt, self.spts, domain, obj, src, val, find)
+            conf = self.new(domain, obj, src, val, find)
         return conf
     def lhget(self, key, default=None, loop=-1):
         '''
@@ -82,8 +60,6 @@ class Conf(Base):
         if loop>0:
             bak = a,b
         return bak
-    def key(self, ks):
-        return self.spt.join(ks)
     def src_list(self, i, as_conf = True):
         if self.src is None:
             return None
@@ -112,34 +88,38 @@ class Conf(Base):
             先从conf拿，没有则从src拿
         '''
         val, find = default, 0
-        keys = dzkeys(key, self.spt)
-        if self.exist and type(self.conf)==dict:
+        keys = dzkeys(key)
+        if self.exist and type(self.conf) in (list,dict):
             val, find = mapz.dget(self.conf, keys, default)
         if find:
             return val, find
         return self.src_hget(keys, default)
     def get(self, key, default=None):
         val = self.hget(key, default)[0]
-        #print(f"get {key} = {val}")
         return val
     def has(self, key):
         return self.hget(key, None)[1]
     def remove(self, key):
+        '''
+        '''
         if not self.exist or type(self.conf)!=dict:
             return
-        keys = dzkeys(key, self.spt)
+        keys = dzkeys(key)
         return mapz.dremove(self.conf, keys)
-    def spts_ks(self, keys):
+    def deal_ks(self, keys):
         '''
             一堆key组成的字符串拆分成key的列表
         '''
-        keys = dzkeys(keys, self.spts)
-        keys = [k.strip() if type(k) == str else k for k in keys]
         return keys
     def set(self, key, val):
-        keys = dzkeys(key, self.spt)
+        keys = dzkeys(key)
         mapz.dset(self.conf, keys, val)
+    def append(self, val):
+        self.conf.append(val)
     def top(self, domain = None, loop=0):
+        '''
+            从根目录往下获取子域
+        '''
         root = self.root or self
         if domain is not None:
             root = root(domain, loop)
@@ -147,15 +127,18 @@ class Conf(Base):
     def l(self, domain=None, loop=-1):
         return self(domain,loop)
     def call(self, domain=None, loop=0):
+        return self.sub(domain, loop)
+    def sub(self, domain=None, loop=0):
         '''
             获取子域下的数据作为Conf
         '''
         if domain is None:
             return self.root or self
+        domain = dzkeys(domain)
         val,find = self.hget(domain)
         src = self.src_dm(domain)
         if self.domain:
-            domain = self.domain+self.spt+domain
+            domain = self.domain+domain
         obj = self.root or self
         bak = domain, val, find, src
         while loop!=0 and find and type(val)==str:
@@ -164,8 +147,11 @@ class Conf(Base):
             src = self.src_top(domain)
             loop-=1
         domain,val,find,src=bak
-        return Conf(self.spt, self.spts, domain, obj, src, val, find)
+        return self.new(domain, obj, src, val, find)
     def val(self):
+        '''
+            返回当前域下的所有数据
+        '''
         return self.conf
     def get_type(self):
         return type(self.val())
@@ -175,9 +161,10 @@ class Conf(Base):
         return self.conf
     def str(self):
         return str(self.get_conf())
-    def init(self, spt='.', spts=',', domain=None, root = None, src = None, conf=None, exist=1):
-        self.spt = spt
-        self.spts = spts
+    def new(self, domain, root, src, conf, exist):
+        return Conf(domain, root, src, conf, exist)
+    def init(self, domain=None, root = None, src = None, conf=None, exist=1):
+        domain = dzkeys(domain)
         self.domain = domain
         self.root = root
         self.src = src
@@ -197,32 +184,29 @@ class Conf(Base):
             del self.conf[key]
         return self
     def dkey(self, key):
+        keys = dzkeys(key)
         if self.domain:
-            key = self.domain+self.spt+key
+            key = self.domain+key
         return key
     def update(self, conf, flush = 1, replace=1, visit_list=0):
-        if flush:
-            conf = xf.flush_maps(conf, lambda x:x.split(self.spt) if type(x)==str else [x], visit_list)
-        #print(f"update with {conf}")
         xf.fill(conf, self.conf, replace=replace)
         return self
-    def push(self, key, value, flush = 1, update=0, clean_history = 0):
+    def push(self, key, value, update=0, clean_history = 0):
         if self.get_type()!=dict:
             return None
-        keys = dzkeys(key, self.spt)
+        keys = dzkeys(key)
         val, find = mapz.dget(self.conf, keys)
         val = mapz.deep_clone(val)
-        if clean_history or key not in self.history:
-            self.history[key] = []
-        self.history[key].append([val, find, update])
-        if flush and type(value)==dict:
-            value = xf.flush_maps(value, lambda x:x.split(self.spt) if type(x)==str else [x], 0)
+        if clean_history or keys not in self.history:
+            self.history[keys] = []
+        self.history[keys].append([val, find, update])
         if find and type(value)==dict and type(val)==dict and update:
             self(key).update(value,flush=0)
         else:
             self.set(key, value)
         return key
     def pop(self, key, clean_history = 0):
+        key = dzkeys(key)
         if key not in self.history:
             return False
         lst = self.history[key]
@@ -237,7 +221,7 @@ class Conf(Base):
         self.set(key, rst[0])
         return True
     def pops(self, keys, *a, **b):
-        keys = self.spts_ks(keys)
+        keys = self.deal_ks(keys)
         keys.reverse()
         for key in keys:
             self.pop(key)
@@ -259,11 +243,11 @@ class Conf(Base):
     def s(self, **maps):
         [self.set(k,v) for k,v in maps.items()]
     def has_all(self, keys):
-        keys = self.spts_ks(keys)
+        keys = self.deal_ks(keys)
         rst = [1-self.has(key) for key in keys]
         return sum(rst)==0
     def has_any(self, keys):
-        keys = self.spts_ks(keys)
+        keys = self.deal_ks(keys)
         for key in keys:
             if self.has(key):
                 return True
@@ -271,8 +255,7 @@ class Conf(Base):
     @staticmethod
     def fcs_bind(fn, wfn, align=False, null_default= False):
         def wfc(self, keys, *objs, **maps):
-            #print(f"[[[[[]]]]]{wfn} call by {id(self)}")
-            keys = self.spts_ks(keys)
+            keys = self.deal_ks(keys)
             fc = getattr(self, fn)
             rst = []
             for i in range(len(keys)):
@@ -304,3 +287,23 @@ for item in maps:
     Conf.fcs_bind(*item)
 
 pass
+
+
+def test():
+    conf = Conf()
+    conf.set("123", 456)
+    conf.set((1,2,3),(4,5,6))
+    conf.set(0, [[1,2,3], [4,5]])
+    print(f"item: {conf.sub((0,0)).val()}")
+    print(f"item: {conf.sub((0,0)).hget(0)}")
+    print(f"item: {conf.sub((0,0)).has((0,))}")
+    print(f"item: {conf.sub((0,0)).get(1)}")
+    print(f"().has(0,0,1): {conf.has((0,0,1))}")
+    print(f"(0).has(0,1): {conf(0).has((0,1))}")
+    print(f"(0,0).has(1): {conf(0,0).has((1,))}")
+    print(f"conf: {conf}")
+
+pass
+
+if __name__=="__main__":
+    test()

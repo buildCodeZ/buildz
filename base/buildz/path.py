@@ -2,6 +2,9 @@ from .base import Base
 import os,sys,json,time
 dirname = os.path.dirname
 join = os.path.join
+'''
+new 2026
+'''
 class Key:
     first='first'
     ifirst = 0
@@ -59,6 +62,8 @@ class Path(Base):
                 return _fp
         return Path.rjoin(paths[last], *a)
     def add(self, path, name=None, index=0):
+        if name not in self.paths:
+            self.set([], name)
         self.paths[name].insert(index, path)
     def set(self, paths, name=None, last = -1, curr = None):
         if type(paths) not in (list, tuple):

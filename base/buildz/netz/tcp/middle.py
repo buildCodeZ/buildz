@@ -9,7 +9,7 @@ class MiddleServer(Base):
     '''
         端口映射
         简单调用:
-            python -m buildz.netz.tcp 监听ip 监听端口 目标ip 目标端口
+            python -m buildz.netz.tcp 监听ip:监听端口 目标ip:目标端口
     '''
     def init(self, addr, remote_addr, listen=5,wait=0.1, read_size=1024*1024):
         self.addr = self.fetch_addr(addr)
@@ -51,7 +51,7 @@ class MiddleServer(Base):
         try:
             skt_srv = self.new_skt(self.remote_addr)
             #skt_srv = socket.socket()
-            skt_srv.connect(tuple(self.remote_addr))
+            skt_srv.connect(self.remote_addr)
         except Exception as exp:
             log.error(f"add exp: {exp}")
             log.error(f"traceback: {traceback.format_exc()}")

@@ -1,10 +1,16 @@
 from buildz import pyz
 from ..base import Args
+import json
 def conf2obj(obj, conf, **maps):
     for k, val in maps.items():
         setattr(obj, k, conf.get(k, val))
 
 pass
+def lgets(obj, keys, default=None):
+    rst = []
+    for key in keys:
+        rst += [obj.get(key, default)]
+    return rst
 def isdict(obj):
     return type(obj)==dict
 def islist(obj):
@@ -90,6 +96,18 @@ def g1(obj, **maps):
     return v
 
 pass
+def og(obj, **maps):
+    rst = []
+    if obj is None:
+        return maps.values()
+    for k in maps:
+        v = maps[k]
+        if hasattr(obj, k):
+            v = getattr(obj, k)
+        rst.append(v)
+    if len(rst)==1:
+        rst = rst[0]
+    return rst
 def g(obj, **maps):
     rst = []
     if obj is None:
@@ -411,6 +429,14 @@ def maps(**kv):
     return kv
 
 pass
+m=mp=maps
+def jnn(**kv):
+    obj = mapsnn(**kv)
+    return json.dumps(kv, ensure_ascii=False)
+def j(**kv):
+    obj = maps(**kv)
+    return json.dumps(kv, ensure_ascii=False)
+mnn = mapsnn
 
 def flush_maps(maps, fc_key = lambda x:x.split(".") if type(x)==str else [x], visit_list=False):
     if type(maps)==list:

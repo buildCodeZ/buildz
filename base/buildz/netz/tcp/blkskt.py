@@ -14,6 +14,11 @@ def bs2v(bs):
     return obj
 
 class BlockSocket:
+    @staticmethod
+    def unwrap(skt):
+        while isinstance(skt, BlockSocket):
+            skt = skt.skt
+        return skt
     def out(self):
         return self.skt, self.blk.out()
     @staticmethod

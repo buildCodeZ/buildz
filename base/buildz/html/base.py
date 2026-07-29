@@ -2,8 +2,35 @@ from html.parser import HTMLParser
 from .. import xf
 from ..base import Base
 import re
-__all__ = "HtmlTag,is_node,is_tag,parse".split(",")
+__all__ = "HtmlTag,is_node,is_tag,parse,wrap,xwrap,w,xw,r,xr,x2j".split(",")
+def wrap(tag, s):
+    return f"<{tag}>{s}</{tag}>"
+def xwrap(**kv):
+    rst = [f"<{k}>{v}</{k}>" for k,v in kv.items()]
+    return "".join(rst)
+w=wrap
+xw=xwrap
+r=w
+xr=xw
+def arr(obj, keys, key):
+    arr = obj.tags(keys)
+    if len(arr)==1:
+        arr = arr[0].tags(key)
+    else:
+        arr = []
+    return arr
+def x2j(node):
+    if isinstance(node, HtmlTag):
+       node = node.simple()
+    return node
 class HtmlTag:
+    def simple(self):
+        if self.text:
+            return self.text
+        rst = {}
+        for k,v in self.maps.items():
+            rst[k] = v[0].simple()
+        return rst
     def data(self):
         return self.to_maps()
     def to_maps(self):
@@ -16,14 +43,17 @@ class HtmlTag:
         return self.__str__()
     def get_tags(self, name):
         return self.maps.get(name, [])
-    def tags(self, tag):
+    def tags(self, tag, depth=1):
         rst=[]
+        if depth>0:
+            depth-=1
         for nd in self.nodes:
             if not is_node(nd):
                 continue
             if nd.tag==tag:
                 rst.append(nd)
-            rst+=nd.tags(tag)
+            if depth!=0:
+                rst+=nd.tags(tag, depth)
         return rst
     def get(self, key, default=None):
         return self.attrs.get(key, default)
