@@ -70,6 +70,7 @@ def test():
         assert fp_csr is not None
         assert fp_cert is not None
         certz.signf_csr(ofp, certz.loadf_prv(fp_prv, pwd), certz.loadf_csr(fp_csr), certz.loadf_cert(fp_cert)) 
+        certz.signf_csr(ofp, certz.loadf_prv(fp_prv, pwd), certz.loadf_csr(fp_csr), fz.read(fp_cert))#certz.loadf_cert(fp_cert)) 
     elif call in ('show_csr', 'show_cert'):
         if call == 'show_csr':
             subject = certz.loadf_csr(ofp).subject
@@ -85,6 +86,8 @@ def test():
             rst = certz.verifyf_cert(ofp)
         elif call == 'verify_certs':
             cas = conf.get("cas", [])
+            if type(cas)==str:
+                cas = [cas]
             cas = [certz.loadf_cert(ca) for ca in cas]
             rst = certz.verifyf_certs(ofp, cas)
         print(f"{call} {ofp}: {rst}")

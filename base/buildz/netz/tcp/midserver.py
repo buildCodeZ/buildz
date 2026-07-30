@@ -48,20 +48,23 @@ class MidServer(Base):
         self.server_id = self.slt.add(self.server, self.deal)
         self.dealers = []
         self.running=1
-    def deal(self):
+    def deal(self, opt):
         skt, addr = self.server.accept()
         if self.deal_fc:
             skt = self.deal_fc(skt)
         skt = BlockSocket.wrap(skt, 0)
         skt.enable_v2bs()
         self.slt.add(skt, self.wrap_deal_cli(skt), True)
+        self.log.debug(f"accept: {addr}, {skt}")
     def wrap_deal_cli(self, skt):
         def wrap(_skt, ind):
-            def fc():
+            def fc(opt):
+                self.log.debug(f"cli deal: skt: {skt}, ind: {ind}, opt: {opt}")
                 data = skt.recv()
                 addr, listen = dz.g(data, addr = 0, listen=0)
                 self.slt.remove(ind)
                 skt.send({"success":True})
+                self.log.debug(f"new dealer: {skt}, {addr}, {listen}")
                 dealer = MidDealer(self.slt, skt, addr, listen, log=self.log)
                 self.dealers.append(dealer)
             return fc
@@ -72,9 +75,11 @@ class MidServer(Base):
             self.slt()
     def close(self):
         for dealer in self.dealers:
+            self.log.debug(f"dealer close: {dealer}")
             dealer.close()
         self.dealers = []
         if self.server:
+            self.log.debug(f"server close: {self.server}")
             self.slt.remove(self.server_id)
             self.server.close()
             self.server = None
@@ -121,6 +126,7 @@ class MidDealer(Base):
     '''
     def init(self, slt, mid_skt, addr, is_server=False, listen_num=10, max_recv=1024*1024*10, log=None):
         self.log = (log or logz.simple())("midDealer")
+        self.log.debug(f"init dealer: mid_skt: {mid_skt}, addr: {addr}, is_server: {is_server}")
         self.max_recv=max_recv
         self.mid_skt = mid_skt
         self.addr = fetch_addr(addr)
@@ -138,22 +144,25 @@ class MidDealer(Base):
         self.server.bind(self.addr)
         self.server.listen(self.listen_num)
         self.server_id = self.slt.add(self.server, self.deal_server)
-    def deal_server(self):
+    def deal_server(self, opt):
         skt, addr = self.server.accept()
+        self.log.debug(f"accept: {skt}, {addr}")
         _id = self.id
         self.id+=1
         slt_id = self.slt.add(skt, self.wrap_cli(_id))
         self.clis[_id]=[skt, addr, 0, slt_id]
         self.mid_skt.send({"type":"connect", 'id': _id})
     def wrap_cli(self, _id):
-        def fc():
-            return self.deal_cli(_id)
+        def fc(opt):
+            return self.deal_cli(_id, opt)
         return fc
-    def deal_cli(self, _id):
+    def deal_cli(self, _id, opt):
+        self.log.debug(f"deal_cli: {_id}")
         skt, addr, status, slt_id = self.clis[_id]
         if status!=1:
             return
         dt = skt.recv(self.max_recv)
+        self.log.debug(f"cli recv: {len(dt)}")
         do_close=0
         if dt == b'':
             obj = dz.mnn(id=_id, type="close")
@@ -161,7 +170,9 @@ class MidDealer(Base):
         else:
             obj = dz.mnn(id=_id, type="send", data=dt)
         self.mid_skt.send(obj)
+        self.log.debug(f"mid send: {obj}")
         if do_close:
+            self.log.debug(f"do cli close: {_id}")
             self.close_cli(_id)
     def close_cli(self, _id):
         skt, addr, status, slt_id = self.clis[_id]
@@ -171,17 +182,21 @@ class MidDealer(Base):
         self.slt.remove(slt_id)
     def close(self):
         if self.mid_skt:
+            self.log.debug("mid_skt close")
             self.mid_skt.close()
             self.mid_skt = None
         if self.is_server and self.server:
+            self.log.debug("server close")
             self.server.close()
             self.server = None
-    def deal_mid(self):
+    def deal_mid(self, opt):
+        self.log.debug(f"deal_mid: {opt}")
         data = self.mid_skt.recv()
         if data==b'':
             self.close()
             return
         _type, _id, dt = dz.g(data, type=None, id=None, data=None)
+        self.log.debug(f"deal_mid: type: {_type}, id:{_id}")
         if _type=='connect':
             skt = new_skt(self.addr)
             try:
@@ -194,19 +209,24 @@ class MidDealer(Base):
                 obj = dz.mnn(id=_id, type='connected', error= str(exp))
             self.mid_skt.send(obj)
         elif _type=='connected':
+            self.log.debug("connected")
             err = data.get("error", None)
             if err:
-                self.log.error(f"exp in connected: {exp}")
+                self.log.error(f"exp in connected: {err}")
                 self.close_cli(_id)
             else:
                 self.clis[_id][2]=1
         elif _type == 'send':
+            self.log.debug(f"send")
             if _id not in self.clis:
+                self.log.warn(f"{_id} not in clis")
+                # TODO ?
                 pass
             self.clis[_id][0].send(dt)
         elif _type=='close':
             if _id not in self.clis:
                 return
+            self.log.debug(f"do close: {_id}")
             skt = self.clis[_id]
             skt[0].close()
             skt[0]=None
