@@ -50,7 +50,7 @@ class Selector(Base):
                 dt[3]=skt_tm
             else:
                 skts.append(skt)
-        for ind in self.rms:
+        for ind in rms:
             self.remove(ind)
         #self.log.debug(f"[TESTZ] skts: {skts}")
         (rlist,wlist,elist)=select.select(skts,[],[],self.wait_sec)
