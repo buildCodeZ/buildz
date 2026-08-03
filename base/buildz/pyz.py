@@ -4,6 +4,9 @@ import os
 import hashlib
 import inspect
 #from .base import Base, WBase
+def s_exp():
+    import traceback
+    return traceback.format_exc()
 class With:
     def __init__(self, fc_in, fc_out, args = False):
         self.fc_in = fc_in

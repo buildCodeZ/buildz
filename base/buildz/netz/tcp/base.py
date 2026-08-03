@@ -19,3 +19,22 @@ def new_skt(addr):
     else:
         skt = socket.socket()
     return skt
+def mstr(data):
+    if type(data) not in (str, bytes):
+        return data
+    sz = len(data)
+    if sz<12:
+        return str(data)
+    data = str(data)[:10]
+    rs = f"{data}...{str(sz)}"
+    return rs
+def dsp(data):
+    if type(data)==dict:
+        rst = {}
+        for k,v in data.items():
+            v = mstr(v)
+            rst[k] = v
+        data = rst
+    elif type(data) in (str, bytes):
+        data = mstr(data)
+    return data

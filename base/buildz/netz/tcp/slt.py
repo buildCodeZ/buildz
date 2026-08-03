@@ -1,6 +1,6 @@
 from buildz.base import Base
 import socket, select, traceback, threading, time, os
-from buildz import log as logz, pyz, xf, fz
+from buildz import log as logz, pyz, xf, fz, pyz
 from buildz import args as argx
 from .base import *
 from .blkskt import BlockSocket
@@ -8,11 +8,16 @@ CLOSED="closed"
 TIMEOUT="timeout"
 READABLE = "readable"
 class Selector(Base):
+    CLOSED=CLOSED
+    TIMEOUT=TIMEOUT
+    READABLE=READABLE
     def init(self, wait_sec = 1.0, log=None):
         self.log = (log or logz.simple())("selector")
         self.datas = {}
         self.wait_sec = wait_sec
         self.curr = None
+    def num(self):
+        return len(self.datas)
     def add(self, skt, fc, call=False, timeout=0):
         skt = BlockSocket.unwrap(skt)
         ind = id(skt)
@@ -21,6 +26,8 @@ class Selector(Base):
         self.datas[ind] = [skt, fc, timeout, 0.0]
         return ind
     def remove(self, ind):
+        if ind not in self.datas:
+            return
         del self.datas[ind]
     def call(self):
         try:
@@ -36,29 +43,55 @@ class Selector(Base):
         self.curr = curr
         rms = []
         skts = []
+        self.log.debug(f"slt.deal start: {self.wait_sec}")
         for k, dt in self.datas.items():
             skt, fc, tm, skt_tm = dt
             skt = dt[0]
             if skt._closed:
                 rms.append(k)
-                fc(CLOSED)
+                try:
+                    fc(CLOSED)
+                except Exception as exp:
+                    self.log.error(f"fc(CLOSED) error for {skt}: {exp}")
+                    self.log.error(pyz.s_exp())
             elif tm and diff>0:
                 skt_tm+=diff
                 if skt_tm>=tm:
-                    fc(TIMEOUT)
+                    try:
+                        fc(TIMEOUT)
+                    except Exception as exp:
+                        self.log.error(f"fc(TIMEOUT) error for {skt}: {exp}")
+                        self.log.error(pyz.s_exp())
                     skt_tm=0
                 dt[3]=skt_tm
             else:
                 skts.append(skt)
         for ind in rms:
             self.remove(ind)
-        #self.log.debug(f"[TESTZ] skts: {skts}")
+        rms = []
+        self.log.debug(f"[TESTZ] skts: {skts}")
         (rlist,wlist,elist)=select.select(skts,[],[],self.wait_sec)
         if len(rlist)>0:
-            self.log.debug(f"single deal: {len(rlist)}")
+            self.log.debug(f"single deal: {rlist}")
         for skt in rlist:
             ind = id(skt)
             if ind in self.datas:
-                self.datas[ind][1](READABLE)
+                fc = self.datas[ind][1]
+                try:
+                    fc(READABLE)
+                except Exception as exp:
+                    self.log.error(f"read exp for {skt}: {pyz.s_exp()}")
+                    self.log.error(f"read exp for {skt}: {exp}, do close")
+                    rms.append(ind)
+                    try:
+                        fc(CLOSED)
+                    except Exception as exp:
+                        self.log.error(f"close exp after read for {skt}: {exp}")
+                        self.log.error(pyz.s_exp())
+            else:
+                self.log.error(f"deal {ind} not in datas")
+        for ind in rms:
+            self.remove(ind)
+        self.log.debug(f"slt.deal done")
 
 pass
