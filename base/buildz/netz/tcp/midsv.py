@@ -9,8 +9,6 @@ fetch = argx.Fetch(*xf.loads(r"""
 {
     la: localaddr
     ra: remoteaddr
-    l:la
-    r:ra
     a: addr
     c: cert
     p: prv
@@ -19,9 +17,13 @@ fetch = argx.Fetch(*xf.loads(r"""
     ca: cas
     conf: confpath
     log: logpath
+    l: listen
+    d: debug
+
+
     // sid
 }
-(listen)
+(listen,l,d,debug)
 """))
 def test():
     conf = fetch()
@@ -29,8 +31,11 @@ def test():
     if os.path.isfile(fp):
         src = xf.loadf(fp).get("conf", {})
         dz.fill(src, conf, replace=0)
-    act, addr, laddr, raddr, listen, log = dz.g(conf, action=0, addr=0, localaddr=0, remoteaddr=0, listen=0, logpath="log.txt")
-    log = logz.simple(log)("test")
+    act, addr, laddr, raddr, listen, log,debug = dz.g(conf, action=0, addr=0, localaddr=0, remoteaddr=0, listen=0, logpath="log.txt",debug=True)
+    shows = 'info,warn,error'.split(",")
+    if debug:
+        shows.append("debug")
+    log = logz.simple(log,shows=shows)("test")
     log.debug(f"conf: {conf}")
     cert, prv, pwd, cas, sid = dz.g(conf, cert=None, prv=False, password=None, cas=None, sid=None)
     if cas:

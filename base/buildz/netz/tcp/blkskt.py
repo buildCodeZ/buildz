@@ -63,28 +63,28 @@ class BlockSocket:
     def close(self):
         self.skt.close()
     def send(self, bts):
-        print(f"[{gid()}][BlockSocket][{self}] send: {len(bts)}")
+        #print(f"[{gid()}][BlockSocket][{self}] send: {len(bts)}")
         bts = self.lists.send(bts)
-        print(f"[{gid()}][BlockSocket][{self}] done lists.send: {len(bts)}")
+        #print(f"[{gid()}][BlockSocket][{self}] done lists.send: {len(bts)}")
         dt=self.blk.wrap(bts)
-        print(f"[{gid()}][BlockSocket][{self}] before send: {len(dt)}")
+        #print(f"[{gid()}][BlockSocket][{self}] before send: {len(dt)}")
         self.skt.send(dt)
-        print(f"[{gid()}][BlockSocket][{self}] done send: {len(dt)}")
+        #print(f"[{gid()}][BlockSocket][{self}] done send: {len(dt)}")
     def recv(self, size=1024*1024*10):
-        print(f"[{gid()}][BlockSocket][{self}] before recv")
+        #print(f"[{gid()}][BlockSocket][{self}] before recv")
         bts, ch = self.blk.get()
         while len(bts)==0:
-            print(f"[{gid()}][BlockSocket][{self}] loop init {self.blk.size()}") 
+            #print(f"[{gid()}][BlockSocket][{self}] loop init {self.blk.size()}") 
             bts = self.skt.recv(size)
             if len(bts)==0:
                 return bts
-            print(f"[{gid()}][BlockSocket][{self}] loop recv: {len(bts)}") 
+            #print(f"[{gid()}][BlockSocket][{self}] loop recv: {len(bts)}") 
             bts, ch = self.blk.get(bts)
-            print(f"[{gid()}][BlockSocket][{self}] loop get: {len(bts), ch, self.blk.size()}") 
+            #print(f"[{gid()}][BlockSocket][{self}] loop get: {len(bts), ch, self.blk.size()}") 
             if len(bts)>0 or ch==0:
                 break
-        print(f"[{gid()}][BlockSocket][{self}] recv: {len(bts)}")
+        #print(f"[{gid()}][BlockSocket][{self}] recv: {len(bts)}")
         bts = self.lists.recv(bts)
-        print(f"[{gid()}][BlockSocket][{self}] after lists.recv: {len(bts)}")
+        #print(f"[{gid()}][BlockSocket][{self}] after lists.recv: {len(bts)}")
         # test
         return bts
