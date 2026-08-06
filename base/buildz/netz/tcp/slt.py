@@ -11,7 +11,7 @@ class Selector(Base):
     CLOSED=CLOSED
     TIMEOUT=TIMEOUT
     READABLE=READABLE
-    def init(self, wait_sec = 1.0, log=None):
+    def init(self, wait_sec = 30.0, log=None):
         self.log = (log or logz.simple())("selector")
         self.datas = {}
         self.wait_sec = wait_sec
@@ -19,6 +19,9 @@ class Selector(Base):
     def num(self):
         return len(self.datas)
     def add(self, skt, fc, call=False, timeout=0):
+        '''
+            这里timeout是多久没收到数据后触发
+        '''
         skt = BlockSocket.unwrap(skt)
         ind = id(skt)
         if call:
@@ -47,7 +50,9 @@ class Selector(Base):
         for k, dt in self.datas.items():
             skt, fc, tm, skt_tm = dt
             skt = dt[0]
+            add = 1
             if skt._closed:
+                add=0
                 rms.append(k)
                 try:
                     fc(CLOSED)
@@ -62,9 +67,12 @@ class Selector(Base):
                     except Exception as exp:
                         self.log.error(f"fc(TIMEOUT) error for {skt}: {exp}")
                         self.log.error(pyz.s_exp())
+                        fc(CLOSED)
+                        rms.append(k)
+                        add=0
                     skt_tm=0
                 dt[3]=skt_tm
-            else:
+            if add:
                 skts.append(skt)
         for ind in rms:
             self.remove(ind)
@@ -77,6 +85,7 @@ class Selector(Base):
             ind = id(skt)
             if ind in self.datas:
                 fc = self.datas[ind][1]
+                self.datas[ind][3]=0
                 try:
                     fc(READABLE)
                 except Exception as exp:

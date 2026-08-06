@@ -74,7 +74,7 @@ from .base import *
 from .slt import Selector
 from .blkskt import BlockSocket
 class MidServer(Base):
-    def init(self, addr, listen_num=10, log=None, deal_fc = None):
+    def init(self, addr, listen_num=50, log=None, deal_fc = None):
         log = (log or logz.simple())("midServer")
         self.deal_fc = deal_fc
         self.log = log
@@ -95,12 +95,16 @@ class MidServer(Base):
         if opt!=Selector.READABLE:
             return
         skt, addr = self.server.accept()
-        if self.deal_fc:
-            skt = self.deal_fc(skt)
-        skt = BlockSocket.wrap(skt, 0)
-        skt.enable_v2bs()
-        self.slt.add(skt, self.wrap_deal_cli(skt), True)
-        self.log.debug(f"accept: {addr}, {skt}")
+        try:
+            if self.deal_fc:
+                skt = self.deal_fc(skt)
+            skt = BlockSocket.wrap(skt, 0)
+            skt.enable_v2bs()
+            self.slt.add(skt, self.wrap_deal_cli(skt), True)
+            self.log.debug(f"accept: {addr}, {skt}")
+        except Exception as exp:
+            self.log.error(f"exp in accept {addr}, {skt}: {exp}")
+            self.log.error(f"exp detail: {pyz.s_exp()}")
     def wrap_deal_cli(self, skt):
         '''
             新连接处理逻辑：读取客户端数据，创建中间件处理对应功能
@@ -151,7 +155,7 @@ class MidClient(Base):
         self.deal_fc = deal_fc
         self.log = (log or logz.simple())("midClient")
         self.addr = fetch_addr(addr)
-        self.slt = Selector()
+        self.slt = Selector(log=self.log)
     def connect(self, local_addr, remote_addr, listen=False):
         local_addr = fetch_addr(local_addr)
         remote_addr = fetch_addr(remote_addr)
@@ -191,7 +195,7 @@ class MidDealer(Base):
         如果是服务端：
             监听端口等待连接，有连接就往客户端发新建连接请求并新建id
     '''
-    def init(self, slt, mid_skt, addr, is_server=False, listen_num=10, max_recv=1024*1024*10, log=None):
+    def init(self, slt, mid_skt, addr, is_server=False, listen_num=50, max_recv=1024*1024*10, log=None, deal_ping=30):
         self.log = (log or logz.simple())("midDealer")
         self.log.debug(f"init dealer: mid_skt: {mid_skt}, addr: {addr}, is_server: {is_server}")
         self.max_recv=max_recv
@@ -201,8 +205,9 @@ class MidDealer(Base):
         self.id = 0
         self.listen_num = listen_num
         self.clis = {}
+        self.deal_ping=deal_ping
         self.slt = slt
-        self.mid_id = self.slt.add(self.mid_skt, self.deal_mid)
+        self.mid_id = self.slt.add(self.mid_skt, self.deal_mid, timeout=self.deal_ping)
         if self.is_server:
             self.listen()
     def listen(self):
@@ -226,9 +231,11 @@ class MidDealer(Base):
         self.log.debug(f"accept: {skt}, {addr}")
         _id = self.id
         self.id+=1
-        slt_id = self.slt.add(skt, self.wrap_cli(_id))
-        self.clis[_id]=[skt, addr, 0, slt_id]
+        self.clis[_id]=[skt, addr, 0, -1]#slt_id]
+        #slt_id = self.slt.add(skt, self.wrap_cli(_id))
+        self.log.debug(f"before send connect: {self.mid_skt}, {addr}")
         self.mid_skt.send({"type":"connect", 'id': _id})
+        self.log.debug(f"done send connect: {self.mid_skt}, {addr}")
     def wrap_cli(self, _id):
         def fc(opt):
             return self.deal_cli(_id, opt)
@@ -238,13 +245,13 @@ class MidDealer(Base):
             本地客户端连接处理逻辑：
                 读取数据，发给远端
         '''
-        #self.log.debug(f"deal_cli: {_id}")
+        if opt== Selector.CLOSED:
+            self.close_cli(_id)
+            return
         skt, addr, status, slt_id = self.clis[_id]
-        if status!=1:
-            if status==0:
-                self.clis[_id][2]=10
-            else:
-                self.close_cli(_id)
+        #self.log.debug(f"deal_cli: {_id}")
+        if status==0:
+            #远程连接还没建好，等待中
             return
         self.log.debug(f"[TESTZ.Client] before recv from {skt.getpeername()} to {skt.getsockname()}")
         dt = skt.recv(self.max_recv)
@@ -309,6 +316,9 @@ class MidDealer(Base):
             中间件连接处理逻辑
         '''
         if opt!=Selector.READABLE:
+            if opt==Selector.TIMEOUT:
+                dt = dz.mnn(type="ping")
+                self.mid_skt.send(dt)
             if opt==Selector.CLOSED:
                 self.close()
             return
@@ -342,7 +352,11 @@ class MidDealer(Base):
                 self.log.error(f"exp in connected: {err}")
                 self.close_cli(_id)
             else:
-                self.clis[_id][2]=1
+                tmp = self.clis[_id]
+                tmp[2]=1
+                skt=tmp[0]
+                slt_id = self.slt.add(skt, self.wrap_cli(_id))
+                tmp[3] = slt_id
         elif _type == 'send':
             self.log.debug(f"send")
             if _id not in self.clis:
@@ -358,5 +372,9 @@ class MidDealer(Base):
                 self.log.debug(f"[TESTZ.MID]: done sen from {_skt.getsockname()} to {_skt.getpeername()}")
         elif _type=='close':
             self.close_cli(_id)
+        elif _type == 'ping':
+            self.mid_skt.send(dz.mnn(type="pong"))
+        elif _type == 'pong':
+            pass
         else:
             assert 0, f"unknown type {_type}"

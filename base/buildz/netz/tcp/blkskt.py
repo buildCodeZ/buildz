@@ -14,6 +14,10 @@ def bs2v(bs):
     return obj
 
 class BlockSocket:
+    def __str__(self):
+        return f"Blk({self.skt})"
+    def __repr__(self):
+        return self.__str__()
     @staticmethod
     def unwrap(skt):
         while isinstance(skt, BlockSocket):

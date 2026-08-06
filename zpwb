@@ -1,0 +1,1 @@
+rm -f codes.tar.gz && tar -C . -zf codes.tar.gz -c base && python3 -m http.server 8080

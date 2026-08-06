@@ -31,7 +31,7 @@ def test():
     if os.path.isfile(fp):
         src = xf.loadf(fp).get("conf", {})
         dz.fill(src, conf, replace=0)
-    act, addr, laddr, raddr, listen, log,debug = dz.g(conf, action=0, addr=0, localaddr=0, remoteaddr=0, listen=0, logpath="log.txt",debug=True)
+    act, addr, laddr, raddr, listen, log,debug = dz.g(conf, action=0, addr=0, localaddr=0, remoteaddr=0, listen=0, logpath="log.txt",debug=0)
     shows = 'info,warn,error'.split(",")
     if debug:
         shows.append("debug")
