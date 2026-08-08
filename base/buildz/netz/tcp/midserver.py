@@ -328,6 +328,14 @@ class MidDealer(Base):
         if data==b'':
             self.close()
             return
+        self.single_deal(data)
+        while self.mid_skt.readable():
+            data = self.mid_skt.recv()
+            if data==b'':
+                self.close()
+                return
+            self.single_deal(data)
+    def single_deal(self, data):
         _type, _id, dt = dz.g(data, type=None, id=None, data=None)
         #self.log.debug(f"deal_mid: type: {_type}, id:{_id}")
         if _type=='connect':

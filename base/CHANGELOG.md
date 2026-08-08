@@ -1,6 +1,10 @@
-## 2026/06/02
-一些修改
-## 2026/05/13
-新增buildz._dz.str.*(buildz.dz下新增val2bs和bs2val)
 ## 2026/04/01
 新建
+## 2026/05/13
+新增buildz._dz.str.*(buildz.dz下新增val2bs和bs2val)
+## 2026/06/02
+一些修改
+## 2026/08/07
+version=0.9.48
+解决midserver有数据但读取不了的问题，问题原因是blkskt.recv只会返回一条数据，但blkskt的缓存里可能有更多的数据，增加blkskt.readable()判断缓存是否有完整数据可以读
+cert证书验证逻辑增加ca判断，签名path_length判断，域名签名判断（本代码里用common_name当域名，因为域名可以有多个，common_name只有一个，这里只需要一个，不做多个判断）

@@ -5,7 +5,7 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography import x509
 from cryptography.x509.oid import NameOID
 import datetime
-from buildz import xf, pyz
+from buildz import xf, pyz, dz
 from buildz import fz
 from .pk import *
 from . import gen_names
@@ -71,10 +71,10 @@ def add_extension_dns(builder, dns):
     dns_arr = x509.SubjectAlternativeName(dns_arr)
     builder = builder.add_extension(dns_arr, critical=False)
     return builder
-def add_extension_ca(builder):
+def add_extension_ca(builder, path_length=None):
     '添加ca信息（说明当前证书是ca）'
     builder = builder.add_extension(
-        x509.BasicConstraints(ca=True, path_length=None),
+        x509.BasicConstraints(ca=True, path_length=path_length),
         critical=True
     )
     return builder
@@ -83,9 +83,29 @@ def add_extensions(builder, conf = {}):
     dns = xf.g(conf, dns = [])
     if len(dns)>0:
         builder = add_extension_dns(builder, dns)
-    ca = xf.g(conf, ca = False)
+    ca,ca_length = xf.g(conf, ca = False, ca_length=None)
+    conf_ns = xf.g(conf, ca_ns=None)
     if ca:
-        builder = add_extension_ca(builder)
+        builder = add_extension_ca(builder, ca_length)
+    if ca and conf_ns:
+        includes, excludes = xf.g(conf_ns, includes={}, excludes={})
+        subs = []
+        import ipaddress
+        for sub_conf in [includes, excludes]:
+            #print(f"sub_conf: {sub_conf}")
+            dns, ips = xf.g(sub_conf, dns=[], ips=[])
+            dns = [dns] if type(dns)==str else dns
+            ips = [ips] if type(ips)==str else ips
+            dns = [x509.DNSName(k) for k in dns]
+            ips = [ipaddress.ip_network(k) for k in ips]
+            subs.append(dns+ips)
+        builder = builder.add_extension(
+                x509.NameConstraints(
+                    permitted_subtrees=subs[0],
+                    excluded_subtrees=subs[1]
+                ),
+                critical=True
+        )
     return builder
 
 pass
@@ -210,6 +230,14 @@ def load_certs(bs):
     certs = [load_cert(pem) for pem in pems]
     return certs
 def verify_certs(certs, cas = None, verify_time=True):
+    '''
+        证书链验证，和常规证书链验证不同的是，ca的dns验证，被用来验证common_name字段，并且也不是dns的根域名在最后面的验证方式，是根域名在最前面的验证方式
+        举例:
+            ca设置可以签名的dns="org"
+            则常规是验证子证书的dns是类似"******.org"
+            这里则是验证子证书的common_name是类似"org.******"
+        如果要使用本代码，要么不设置dns验证，要么清楚本验证逻辑和常规不同
+    '''
     if type(certs)==bytes:
         certs = load_certs(certs)
     if certs is None:
@@ -227,14 +255,10 @@ def verify_certs(certs, cas = None, verify_time=True):
     #cas = [load_cert(ca) for ca in cas]
     roots = {ca.subject:[ca.public_key(), ca.signature_hash_algorithm] for ca in cas}
     #print(f"[TESTZ] verify certs: {len(certs)}")
-    for i in range(len(certs)-1):
-        #print(f"verify[{i}]")
-        curr = certs[i]
-        up = certs[i+1]
-        err = verify_cert(curr, up.public_key(), verify_time, up.signature_hash_algorithm)
-        if err:
-            return err
-    #print(f"verify last")
+    sub_commons=[]
+    # 先判断最后一个证书是否是根证书，
+    # 如果不是，找到并加上根证书，找不到就报错，
+    # 如果是，判断根证书在不在根证书列表里，不在就报错
     cert = certs[-1]
     issuer = cert.issuer
     if issuer == cert.subject and len(roots)==0:
@@ -242,8 +266,24 @@ def verify_certs(certs, cas = None, verify_time=True):
     if issuer not in roots:
         return f"not root cert find: {issuer}"
         raise CertVerifyException(f"not root cert find: {issuer}")
+    if issuer!=cert.subject:
+        certs.append(root[issuer])
+    for i in range(len(certs)-1):
+        #print(f"verify[{i}]")
+        curr = certs[i]
+        up = certs[i+1]
+        err = verify_cert(curr, up.public_key(), verify_time, up.signature_hash_algorithm, depth=i,sub_commons=sub_commons)
+        if err:
+            return err
+        sub_commons.append(get_sub_val(curr, 'common')[0])
+    #print(f"verify last")
+    cert = certs[-1]
+    issuer = cert.issuer
     pk, hash_alg = roots[issuer]
-    return verify_cert(cert, pk, verify_time, hash_alg)
+    # 最后验证的一定是自签证书，不用验证自己的common
+    depth=len(certs)-1
+    sub_commons=sub_commons[:-1]
+    return verify_cert(cert, pk, verify_time, hash_alg, depth=depth, sub_commons=sub_commons)
 
 pass
 
@@ -251,7 +291,7 @@ def verify_csr(csr, public_key = None, hash_alg=None):
     if type(csr)==bytes:
         csr = load_csr(csr)
     return verify_cert(csr, public_key, False, hash_alg, csr=True)
-def verify_cert(cert, public_key=None, verify_time=True, hash_alg = None, csr=False):
+def verify_cert(cert, public_key=None, verify_time=True, hash_alg = None, csr=False, depth=0, sub_commons = []):
     '''
         证书验证，用public_key验证证书，如果public_key为空，用证书的public_key验证（只有自签名证书才能用证书的公钥验证）
         verify_time: 是否验证证书是否在有效期（证书签名的时候可以设置有效期，默认是1年有效期）
@@ -270,15 +310,53 @@ def verify_cert(cert, public_key=None, verify_time=True, hash_alg = None, csr=Fa
     try:
         public_key.verify(cert.signature,tbs_bytes, padding.PKCS1v15(),hash_alg)
     except Exception as exp:
-        return f"sign verify error: {exp}"
+        return f"sign verify error: {(exp,)}"
+    try:
+        bc_ext = cert.extensions.get_extension_for_class(x509.BasicConstraints)
+    except x509.ExtensionNotFound:
+        bc_ext=None
+    if not bc_ext and depth>0:
+        return f"ca error: no ca info in depth {depth}"
+    if bc_ext:
+        if not bc_ext.value.ca and depth>0:
+            return f"ca error: not a ca cert in depth {depth}"
+        path_length = bc_ext.value.path_length
+        if path_length is not None and depth>(path_length+1):
+            return f"ca path_length error: cert in depth {depth} can't sign such depth certs with path_length: {path_length}"
+        try:
+            nc_ext = cert.extensions.get_extension_for_class(x509.NameConstraints)
+        except x509.ExtensionNotFound:
+            nc_ext=None
+        if nc_ext and len(sub_commons)>0:
+            nc=nc_ext.value
+            includes, excludes = [],[]
+            tmps = []
+            for subs in [nc.permitted_subtrees, nc.excluded_subtrees]:
+                tmp = []
+                for dns in subs:
+                    if isinstance(dns, x509.DNSName):
+                        val = str(dns.value)
+                        if val[-1]!=".":
+                            val+="."
+                        tmp.append(val)
+                tmps.append(tmp)
+            includes, excludes = tmps
+            for exclude in excludes:
+                for sub_common in sub_commons:
+                    if sub_common.find(exclude)==0:
+                        return f"common exclude error: {sub_common} not permmit in depth {depth}"
+            for sub_common in sub_commons:
+                find=0
+                for include in includes:
+                    if sub_common.find(include)==0:
+                        find=1
+                if not find:
+                    return f"common include error: {sub_common} not include in depth {depth}"
     if not verify_time:
         return None
     if valid_date(cert):
         return None
-    #if cert.not_valid_before_utc<datetime.datetime.now(datetime.timezone.utc)<cert.not_valid_after_utc:
-    #    return None
     return "date not pass"
-    raise CertVerifyException("date not pass")
 
 pass
 def valid_date(cert):
@@ -341,6 +419,38 @@ def des_subject(subject):
     return rst
 
 pass
+def des(cert):
+    rst = dz.mnn(subject=des_subject(cert.subject), extensions=des_extensions(cert))
+    return rst
+def des_extensions(cert):
+    rst = {}
+    try:
+        bc_ext = cert.extensions.get_extension_for_class(x509.BasicConstraints)
+    except x509.ExtensionNotFound:
+        bc_ext=None
+    if bc_ext:
+        conf_ca = dz.mnn(ca=bc_ext.value.ca, path_length=bc_ext.value.path_length)
+        rst['ca'] = conf_ca
+        try:
+            nc_ext = cert.extensions.get_extension_for_class(x509.NameConstraints)
+        except x509.ExtensionNotFound:
+            nc_ext=None
+        if nc_ext:
+            nc=nc_ext.value
+            tmps = []
+            for subs in [nc.permitted_subtrees, nc.excluded_subtrees]:
+                tmp = {'dns':[], 'ips':[]}
+                for dns in subs:
+                    if isinstance(dns, x509.DNSName):
+                        tmp['dns'].append(str(dns.value))
+                    elif isinstance(dns, x509.IPAddress):
+                        tmp['ips'].append(str(dns.value))
+                tmps.append(tmp)
+            conf_nc = dz.mnn(includes=tmps[0], excludes=tmps[1])
+            rst['nc']= conf_nc
+    return rst
+
+
 def test():
     pass
 

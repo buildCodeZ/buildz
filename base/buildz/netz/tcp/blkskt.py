@@ -74,6 +74,8 @@ class BlockSocket:
         #print(f"[{gid()}][BlockSocket][{self}] before send: {len(dt)}")
         self.skt.send(dt)
         #print(f"[{gid()}][BlockSocket][{self}] done send: {len(dt)}")
+    def readable(self):
+        return self.blk.readable()
     def recv(self, size=1024*1024*10):
         #print(f"[{gid()}][BlockSocket][{self}] before recv")
         bts, ch = self.blk.get()

@@ -15,6 +15,17 @@ class Block:
         self.build = self.wrap
     def empty(self):
         return len(self.caches)==0
+    def readable(self, bts=b''):
+        if bts!=b'':
+            self.caches+=bts
+        lc = len(self.caches)
+        if lc<4:
+            return False
+        bsz = self.caches[:4]
+        sz = struct.unpack("<I", bsz)[0]
+        if lc<sz+4:
+            return False
+        return True
     def clean(self):
         self.caches = b''
     def get(self, bts=b""):

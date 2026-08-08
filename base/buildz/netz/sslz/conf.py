@@ -10,6 +10,8 @@ conf = xf.loads("""
     prv: private_key
     P: need_pwd
     common: params.common
+    ca: params.ca
+    ca_length: params.ca_length
     uid: params.userID
     country: params.country
     before: params.valid_before
@@ -26,6 +28,10 @@ calls = {}
 def test():
     conf = fetch()
     conf = xf.flush_maps(conf)
+    if 'ca_ns' in conf:
+        if 'params' not in conf:
+            conf['params'] = {}
+        conf['params']['ca_ns'] = conf['ca_ns']
     log_fp =conf.get("log", "buildz_sslz.log")
     log = logz.simple(log_fp)
     call = conf.get("call")
@@ -73,10 +79,14 @@ def test():
         certz.signf_csr(ofp, certz.loadf_prv(fp_prv, pwd), certz.loadf_csr(fp_csr), fz.read(fp_cert))#certz.loadf_cert(fp_cert)) 
     elif call in ('show_csr', 'show_cert'):
         if call == 'show_csr':
-            subject = certz.loadf_csr(ofp).subject
+            cert = certz.loadf_csr(ofp)
+            subject = cert.subject
         elif call == 'show_cert':
-            subject = certz.loadf_cert(ofp).subject
-        rst = certz.des_subject(subject)
+            cert=certz.loadf_cert(ofp)
+            subject = cert.subject
+        #rst = certz.des_subject(subject)
+        #extensions = certz.des_extensions(cert)
+        rst = certz.des(cert)
         rs = xf.dumps(rst, format=1)
         print(f"{call} {ofp}:\n{rs}")
     elif call in ('verify_csr', "verify_cert", "verify_certs"):
