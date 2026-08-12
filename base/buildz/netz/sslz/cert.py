@@ -315,6 +315,8 @@ def verify_cert(cert, public_key=None, verify_time=True, hash_alg = None, csr=Fa
         bc_ext = cert.extensions.get_extension_for_class(x509.BasicConstraints)
     except x509.ExtensionNotFound:
         bc_ext=None
+    except Exception:
+        bc_ext=None
     if not bc_ext and depth>0:
         return f"ca error: no ca info in depth {depth}"
     if bc_ext:

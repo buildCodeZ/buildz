@@ -169,7 +169,9 @@ def main(name, fc, *args, **maps):
         fc(*args, **maps)
 
 pass
-
+def listcall(fc, args):
+    for k in args:
+        fc(k)
 def bylocals(mlocals, fc, *args, **maps):
     if mlocals['__name__']=="__main__":
         fc(*args, **maps)

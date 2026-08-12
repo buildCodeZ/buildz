@@ -47,7 +47,9 @@ class Selector(Base):
         rms = []
         skts = []
         self.log.debug(f"slt.deal start: {self.wait_sec}")
-        for k, dt in self.datas.items():
+        ks = list(self.datas.keys())
+        for k in ks:
+            dt = self.datas[k]
             skt, fc, tm, skt_tm = dt
             skt = dt[0]
             add = 1

@@ -11,7 +11,10 @@ not really rpc
 rest in fact
 just to make it easy to use
 
+对比nrpcs.py是新代码，使用中
 '''
+class NRPCException(Exception):
+    pass
 class Server(Base):
     def init(self, obj, skt, fns = None, log=None):
         log = log or logz.simple()
@@ -141,7 +144,7 @@ class Client:
         err = rst.get("error", None)
         if err:
             self.log.debug(f"nrpc client get error: {err}")
-            raise Exception(err)
+            raise NRPCException(err)
         self.log.debug(f"nrpc.client.call done result for {fn}")
         self.set_cache(fn, args, maps, rst)
         return rst.get('data', None)
