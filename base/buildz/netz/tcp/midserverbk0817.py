@@ -77,14 +77,6 @@ class SERVER:
     ADDR='addr'
     MID='mid'
 pass
-def init_deal_fc(deal_fc, skt):
-    deal_out = None
-    if deal_fc:
-        deal_out = deal_fc(skt)
-        if not callable(deal_out):
-            skt = deal_out
-            deal_out = None
-    return skt, deal_out
 class MidServer(Base):
     def init(self, addr, listen_num=50, log=None, deal_fc = None, deal_yield=False):
         log = (log or logz.simple())("midServer")
@@ -101,27 +93,41 @@ class MidServer(Base):
         self.server_id = self.slt.add(self.server, self.deal)
         self.dealers = {}
         self.running=1
+        # 
         # id -> mid_skt
         self.servers = {}
         # id -> (mid_skt, mid_skt)
         self.pairs = {}
         self.pairs_id = 0
+        '''
+        deal:
+            connect_mid(sid)
+                if sid in servers:
+                    pid = new_pair_id()
+                    sv = servers[sid]
+                    sv.connect()
+                    ;
+                    cnn(id) -> sv: add dealer on id
+                    
+                    ;
+                    pass
+                    ;
+                    pass
+                pass
+            pass
+        '''
     def wrap_deal_fc(self, skt, deal_out):
         def wrap(_skt, ind):
             def fc(opt):
                 obj = deal_out()
-                if obj is None:
+                if type(obj)==str:
                     return
                 skt = obj
                 self.slt.remove(ind)
-                self.add_cli(skt)
+                self.slt.add(skt, self.wrap_deal_cli(skt), True)
                 return
             return fc
         return wrap
-    def add_cli(self, skt):
-        skt = BlockSocket.wrap(skt, 0)
-        skt.enable_v2bs()
-        self.slt.add(skt, self.wrap_deal_cli(skt), True)
     def deal(self, opt):
         '''
             服务端监听新连接
@@ -130,11 +136,12 @@ class MidServer(Base):
             return
         skt, addr = self.server.accept()
         try:
-            skt, deal_out = init_deal_fc(self.deal_fc, skt)
-            if deal_out:
-                self.slt.add(skt, self.wrap_deal_fc(skt, deal_out), True)
-            else:
-                self.add_cli(skt)
+            skt = BlockSocket.wrap(skt, 0)
+            if self.deal_fc:
+                deal_out = self.deal_fc(skt)
+            skt.enable_v2bs()
+            self.slt.add(skt, self.wrap_deal_fc(skt, deal_out), True)
+            self.slt.add(skt, self.wrap_deal_cli(skt), True)
             self.log.debug(f"accept: {addr}, {skt}")
         except Exception as exp:
             self.log.error(f"exp in accept {addr}, {skt}: {exp}")
@@ -195,33 +202,6 @@ class MidClient(Base):
             addr: ip/sock_path
             mid: mid_server_id
     '''
-    def add_mid_cli(self, mid_cli, local_addr, remote_addr, listen, remote_type):
-        self.mid_cli = BlockSocket.wrap(mid_cli, 0)
-        self.mid_cli.enable_v2bs()
-        data = dz.m(listen=not listen, addr = remote_addr, remote_type = remote_type)
-        self.log.debug(f"[TEST.MIDCLIENT] mid_cli send: {data}")
-        self.mid_cli.send(data)
-        self.log.debug(f"[TEST.MIDCLIENT] mid_cli done send")
-        def wrap(_skt, ind):
-            def fc(otp):
-                rst = self.mid_cli.recv()
-                self.log.debug(f"[TEST.MIDCLIENT] mid_cli recv: {rst}")
-                assert rst.get("success")
-                self.slt.remove(ind)
-                self.mid_dealer = MidDealer(self.slt, self.mid_cli, local_addr, listen, log=self.log)
-            return fc
-        self.slt.add(self.mid_cli, wrap, True)
-    def wrap_deal_fc(self, skt, deal_out, local_addr, remote_addr, listen, remote_type):
-        def wrap(_skt, ind):
-            def fc(opt):
-                obj = deal_out()
-                if obj is None:
-                    return
-                skt = obj
-                self.slt.remove(ind)
-                self.add_mid_cli(skt, local_addr, remote_addr, listen, remote_type)
-            return fc
-        return wrap
     def connect(self, local_addr, remote_addr, listen=False, remote_type=SERVER.ADDR):
         local_addr = fetch_addr(local_addr)
         remote_addr = fetch_addr(remote_addr) if remote_type==SERVER.ADDR else remote_addr
@@ -229,11 +209,18 @@ class MidClient(Base):
         self.log.debug(f"[TEST.MIDCLIENT] before connect to {self.addr}")
         mid_cli.connect(self.addr)
         self.log.debug(f"[TEST.MIDCLIENT] done connect to {self.addr}")
-        mid_cli, deal_out = init_deal_fc(self.deal_fc, mid_cli)
-        if deal_out:
-            self.slt.add(mid_cli, self.wrap_deal_fc(mid_cli, deal_out, local_addr, remote_addr, listen, remote_type), True)
-        else:
-            self.add_mid_cli(mid_cli, local_addr, remote_addr, listen, remote_type)
+        if self.deal_fc:
+            mid_cli = self.deal_fc(mid_cli)
+        self.mid_cli = BlockSocket.wrap(mid_cli, 0)
+        self.mid_cli.enable_v2bs()
+        data = dz.m(listen=not listen, addr = remote_addr, remote_type = remote_type)
+        self.log.debug(f"[TEST.MIDCLIENT] mid_cli send: {data}")
+        self.mid_cli.send(data)
+        self.log.debug(f"[TEST.MIDCLIENT] mid_cli done send")
+        rst = self.mid_cli.recv()
+        self.log.debug(f"[TEST.MIDCLIENT] mid_cli recv: {rst}")
+        assert rst.get("success")
+        self.mid_dealer = MidDealer(self.slt, self.mid_cli, local_addr, listen, log=self.log)
     def call(self):
         self.running=True
         while self.running and self.slt.num()>0:
@@ -293,11 +280,10 @@ class MidDealer(Base):
         self.slt = slt
         self.mid_srvs = mid_srvs
         self.mid_id = self.slt.add(self.mid_skt, self.deal_mid, timeout=self.deal_ping)
-        if self.is_server:
-            if server_type == SERVER.ADDR:
-                self.listen()
-            else:
-                self.mid_srvs.listen(addr, self)
+        if self.is_server and server_type == SERVER.ADDR:
+            self.listen()
+        else:
+            self.mid_srvs.listen(addr, self)
     def listen(self):
         self.server = new_skt(self.addr)
         self.log.debug(f"[TESTZ] middealer try server bind: {self.addr}")

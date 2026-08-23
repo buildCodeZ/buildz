@@ -1,0 +1,48 @@
+分层处理
+
+最下层可以处理类型:
+
+trans.regist
+trans.send
+:查询和转发
+
+send
+:直接上传
+
+
+deal(msg):
+  self.clone
+
+
+
+
+1，封装后转发，在处理的时候提取数据重新调用处理逻辑
+2，终端直接处理，
+2.1 转发的时候修改type，修改成终端可以处理的type
+2.2 不修改type，终端处理逻辑不同
+
+发送的时候处理：
+默认封装到转发包里
+
+以ssh连接推理：
+
+用户连接到本地mid监听端口
+
+本地mid生成数据:
+{type=new_connect}
+加密成dt
+生成
+{type=trans.send, mid=self.target_id, msg=dt}
+
+终端处理逻辑:
+
+获取dt,解密成msg
+
+处理msg，新建连接并存储在nid，返回{type=done connect, error=None, nid=nid}
+
+
+{type=send, nid=nid, dt=b'...'}
+
+
+
+

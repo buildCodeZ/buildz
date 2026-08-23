@@ -1,69 +1,7 @@
 '''
-middleserver
-和middle类似的功能，但是是作为服务器/客户端存在的
+多线程版middleserver
+slect写起来太复杂了，先在多线程搞一版
 
-作为服务器，会在机器上监听一个端口
-
-当用户要求创建一个通道，需要设定本地地址（包括端口），远程地址（包括端口），以及监听本地还是监听远程
-
-然后新建一个客户端程序，连接服务端，告知服务端通道要求
-如果监听远程，服务端会新建对远程地址的监听，并在有连接连接到该地址的时候，通知客户端连接本地地址
-如果监听本地，客户端会监听本地地址，并在有连接连本地该地址的时候，通知服务端连接远程地址
-之后不管是本地连接往本地地址发数据，还是远程连接往远程地址发数据，都会转发到另一端
-
-运行服务端：
-
-python3 -m buildz.netz.tcp.midsv server 服务器地址
-
-运行客户端：
-监听本地：
-python3 -m buildz.netz.tcp.midsv client 服务器地址 本地地址 远程地址
-监听远程：
-python3 -m buildz.netz.tcp.midsv client 服务器地址 本地地址 远程地址 --listen
-
-所有地址格式都是: ip:port
-例:
-    127.0.0.1:8080
-    192.168.1.1:9001
-
-注意：
-    远程地址里的ip不一定要写服务器地址的ip，主要看要在服务器上监听什么ip，监听其他网卡的，就写其他网卡的ip，如果是监听服务器上的回环ip，远程地址也可以写是127.0.0.1:port；本地地址同理
-
-如果要加公私钥认证和加密，则运行指令加上如下参数（客户端和服务器都要加，双向认证）
-
---cert 证书文件路径 --prv 证书私钥文件路径 --cas 根证书文件路径
-
-作用是证书认证和加密通信
-
-如果客户端要验证服务器证书的common字段，可以加上--sid xxx，比如验证common字段是不是"cloud_mid_test", 可以加上 --sid cloud_mid_test
-
----------------
-以下注释是草稿，直接忽略
-服务端:
-    ip,port as server
-
-客户端:
-    connect and send listen port, 
-    local: connect to other port
-    server: listen such port
-
-user: connect to listen port
-
-add ssl verify
-
-服务端启动，监听端口
-
-客户端连接服务端，发送模式和端口
-
-模式：
-    服务端到客户端：
-        服务端新启动监听端口
-        有用户连上（新socket），通知客户端新建连接，存到处理队列：
-            处理逻辑：转发
-    客户端到服务端:
-        客户端启动监听端口
-        有用户脸上（新socket），通知服务端新建连接，存到处理队列：
-            处理逻辑：转发
 '''
 
 import socket, select, traceback, threading, time, os
@@ -71,25 +9,17 @@ from buildz.base import Base
 from buildz import log as logz, pyz, xf, fz, dz
 from buildz import args as argx
 from .base import *
-from .slt import Selector
+#from .slt import Selector
+import threading as th
 from .blkskt import BlockSocket
 class SERVER:
     ADDR='addr'
     MID='mid'
 pass
-def init_deal_fc(deal_fc, skt):
-    deal_out = None
-    if deal_fc:
-        deal_out = deal_fc(skt)
-        if not callable(deal_out):
-            skt = deal_out
-            deal_out = None
-    return skt, deal_out
 class MidServer(Base):
-    def init(self, addr, listen_num=50, log=None, deal_fc = None, deal_yield=False):
+    def init(self, addr, listen_num=50, log=None, deal_fc = None):
         log = (log or logz.simple())("midServer")
         self.deal_fc = deal_fc
-        self.deal_yield=deal_yield
         self.log = log
         self.addr = fetch_addr(addr)
         self.server = new_skt(self.addr)
@@ -97,8 +27,6 @@ class MidServer(Base):
         self.server.bind(self.addr)
         self.log.debug(f"ms done server bind: {self.addr}")
         self.server.listen(listen_num)
-        self.slt = Selector(log=self.log)
-        self.server_id = self.slt.add(self.server, self.deal)
         self.dealers = {}
         self.running=1
         # id -> mid_skt
@@ -106,22 +34,9 @@ class MidServer(Base):
         # id -> (mid_skt, mid_skt)
         self.pairs = {}
         self.pairs_id = 0
-    def wrap_deal_fc(self, skt, deal_out):
-        def wrap(_skt, ind):
-            def fc(opt):
-                obj = deal_out()
-                if obj is None:
-                    return
-                skt = obj
-                self.slt.remove(ind)
-                self.add_cli(skt)
-                return
-            return fc
-        return wrap
-    def add_cli(self, skt):
-        skt = BlockSocket.wrap(skt, 0)
-        skt.enable_v2bs()
-        self.slt.add(skt, self.wrap_deal_cli(skt), True)
+    def th_server(self):
+        while True:
+            self.server.accept()
     def deal(self, opt):
         '''
             服务端监听新连接
@@ -130,11 +45,11 @@ class MidServer(Base):
             return
         skt, addr = self.server.accept()
         try:
-            skt, deal_out = init_deal_fc(self.deal_fc, skt)
-            if deal_out:
-                self.slt.add(skt, self.wrap_deal_fc(skt, deal_out), True)
-            else:
-                self.add_cli(skt)
+            if self.deal_fc:
+                skt = self.deal_fc(skt)
+            skt = BlockSocket.wrap(skt, 0)
+            skt.enable_v2bs()
+            self.slt.add(skt, self.wrap_deal_cli(skt), True)
             self.log.debug(f"accept: {addr}, {skt}")
         except Exception as exp:
             self.log.error(f"exp in accept {addr}, {skt}: {exp}")
@@ -195,33 +110,6 @@ class MidClient(Base):
             addr: ip/sock_path
             mid: mid_server_id
     '''
-    def add_mid_cli(self, mid_cli, local_addr, remote_addr, listen, remote_type):
-        self.mid_cli = BlockSocket.wrap(mid_cli, 0)
-        self.mid_cli.enable_v2bs()
-        data = dz.m(listen=not listen, addr = remote_addr, remote_type = remote_type)
-        self.log.debug(f"[TEST.MIDCLIENT] mid_cli send: {data}")
-        self.mid_cli.send(data)
-        self.log.debug(f"[TEST.MIDCLIENT] mid_cli done send")
-        def wrap(_skt, ind):
-            def fc(otp):
-                rst = self.mid_cli.recv()
-                self.log.debug(f"[TEST.MIDCLIENT] mid_cli recv: {rst}")
-                assert rst.get("success")
-                self.slt.remove(ind)
-                self.mid_dealer = MidDealer(self.slt, self.mid_cli, local_addr, listen, log=self.log)
-            return fc
-        self.slt.add(self.mid_cli, wrap, True)
-    def wrap_deal_fc(self, skt, deal_out, local_addr, remote_addr, listen, remote_type):
-        def wrap(_skt, ind):
-            def fc(opt):
-                obj = deal_out()
-                if obj is None:
-                    return
-                skt = obj
-                self.slt.remove(ind)
-                self.add_mid_cli(skt, local_addr, remote_addr, listen, remote_type)
-            return fc
-        return wrap
     def connect(self, local_addr, remote_addr, listen=False, remote_type=SERVER.ADDR):
         local_addr = fetch_addr(local_addr)
         remote_addr = fetch_addr(remote_addr) if remote_type==SERVER.ADDR else remote_addr
@@ -229,11 +117,18 @@ class MidClient(Base):
         self.log.debug(f"[TEST.MIDCLIENT] before connect to {self.addr}")
         mid_cli.connect(self.addr)
         self.log.debug(f"[TEST.MIDCLIENT] done connect to {self.addr}")
-        mid_cli, deal_out = init_deal_fc(self.deal_fc, mid_cli)
-        if deal_out:
-            self.slt.add(mid_cli, self.wrap_deal_fc(mid_cli, deal_out, local_addr, remote_addr, listen, remote_type), True)
-        else:
-            self.add_mid_cli(mid_cli, local_addr, remote_addr, listen, remote_type)
+        if self.deal_fc:
+            mid_cli = self.deal_fc(mid_cli)
+        self.mid_cli = BlockSocket.wrap(mid_cli, 0)
+        self.mid_cli.enable_v2bs()
+        data = dz.m(listen=not listen, addr = remote_addr, remote_type = remote_type)
+        self.log.debug(f"[TEST.MIDCLIENT] mid_cli send: {data}")
+        self.mid_cli.send(data)
+        self.log.debug(f"[TEST.MIDCLIENT] mid_cli done send")
+        rst = self.mid_cli.recv()
+        self.log.debug(f"[TEST.MIDCLIENT] mid_cli recv: {rst}")
+        assert rst.get("success")
+        self.mid_dealer = MidDealer(self.slt, self.mid_cli, local_addr, listen, log=self.log)
     def call(self):
         self.running=True
         while self.running and self.slt.num()>0:
@@ -293,11 +188,10 @@ class MidDealer(Base):
         self.slt = slt
         self.mid_srvs = mid_srvs
         self.mid_id = self.slt.add(self.mid_skt, self.deal_mid, timeout=self.deal_ping)
-        if self.is_server:
-            if server_type == SERVER.ADDR:
-                self.listen()
-            else:
-                self.mid_srvs.listen(addr, self)
+        if self.is_server and server_type == SERVER.ADDR:
+            self.listen()
+        else:
+            self.mid_srvs.listen(addr, self)
     def listen(self):
         self.server = new_skt(self.addr)
         self.log.debug(f"[TESTZ] middealer try server bind: {self.addr}")

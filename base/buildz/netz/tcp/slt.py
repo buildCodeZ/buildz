@@ -24,6 +24,7 @@ class Selector(Base):
         '''
         skt = BlockSocket.unwrap(skt)
         ind = id(skt)
+        self.datas[ind] = [skt, None, timeout, 0.0]
         if call:
             fc = fc(skt, ind)
         self.datas[ind] = [skt, fc, timeout, 0.0]
@@ -32,6 +33,11 @@ class Selector(Base):
         if ind not in self.datas:
             return
         del self.datas[ind]
+    def replace(self, ind, fc, timeout=None):
+        self.datas[ind][1]=fc
+        if timeout is not None:
+            self.datas[ind][2]=timeout
+        self.datas[ind][3]=0.0
     def call(self):
         try:
             self.deal()

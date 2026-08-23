@@ -1,9 +1,9 @@
-import os
+import os,time
 from buildz.netz.tcp import midserver as ms
 from buildz.netz import sc
 from getpass import getpass
 from buildz.netz.sslz import cert as certz
-from buildz import args as argx, xf, dz, log as logz, fz
+from buildz import args as argx, xf, dz, log as logz, fz, pyz
 fetch = argx.Fetch(*xf.loads(r"""
 (action, addr, localaddr, remoteaddr, listen),
 {
@@ -19,11 +19,11 @@ fetch = argx.Fetch(*xf.loads(r"""
     log: logpath
     l: listen
     d: debug
-
-
+    r4c: restart_for_close
+    r4x: restart_for_except
     // sid
 }
-(listen,l,d,debug)
+(listen,l,d,debug, r4c, r4x)
 """))
 def test():
     conf = fetch()
@@ -32,11 +32,15 @@ def test():
         src = xf.loadf(fp).get("conf", {})
         dz.fill(src, conf, replace=0)
     act, addr, laddr, raddr, listen, log,debug = dz.g(conf, action=0, addr=0, localaddr=0, remoteaddr=0, listen=0, logpath="log.txt",debug=0)
+    act = act.lower()[0]
+    def_r4c = False if act=='s' else True
+    restart4exp,restart4close = dz.g(conf, restart_for_except=True, restart_for_close=def_r4c)
     shows = 'info,warn,error'.split(",")
     if debug:
         shows.append("debug")
     log = logz.simple(log,shows=shows)("test")
     log.debug(f"conf: {conf}")
+    log.info(f"restart4exp: {restart4exp}, restart4close: {restart4close}")
     cert, prv, pwd, cas, sid = dz.g(conf, cert=None, prv=False, password=None, cas=None, sid=None)
     if cas:
         if type(cas)!=list:
@@ -55,17 +59,31 @@ def test():
         except:
             pwd = getpass(f"input password for {prv}:")
             prv = certz.loadf_prv(prv, pwd)
-    deal_fc = sc.Verify(cert, prv, sid, cas)
-    act = act.lower()[0]
-    if act=='s':
-        sv = ms.MidServer(addr, log=log, deal_fc = deal_fc)
-        sv()
-    elif act == 'c':
-        cl = ms.MidClient(addr, log=log, deal_fc= deal_fc)
-        cl.connect(laddr, raddr, listen)
-        cl()
-    else:
-        assert 0
+    deal_fc = sc.Verify(cert, prv, sid, cas, do_yield=True)
+    while True:
+        try:
+            if act=='s':
+                # deal_fc = sc.Verify(cert, prv, sid, cas, do_yield=True)
+                sv = ms.MidServer(addr, log=log, deal_fc = deal_fc)
+                sv()
+            elif act == 'c':
+                cl = ms.MidClient(addr, log=log, deal_fc= deal_fc)
+                cl.connect(laddr, raddr, listen)
+                cl()
+            else:
+                assert 0
+        except Exception as exp:
+            log.error(f"exp in midsv: {exp}")
+            log.error(f"full exp: {pyz.s_exp()}")
+            if not restart4exp:
+                break
+            log.info(f"restart for exception: {exp}")
+            time.sleep(5.0)
+            continue
+        if restart4close:
+            time.sleep(5.0)
+            continue
+        break
 
 pass
 
