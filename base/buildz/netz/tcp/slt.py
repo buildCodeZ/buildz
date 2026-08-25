@@ -55,7 +55,13 @@ class Selector(Base):
         self.log.debug(f"slt.deal start: {self.wait_sec}")
         ks = list(self.datas.keys())
         for k in ks:
-            dt = self.datas[k]
+            dt=None
+            try:
+                if k not in self.datas:
+                    continue
+                dt = self.datas[k]
+            except KeyError as ker:
+                continue
             skt, fc, tm, skt_tm = dt
             skt = dt[0]
             add = 1

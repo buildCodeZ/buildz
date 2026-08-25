@@ -133,12 +133,14 @@ class Datas(Base):
             incs = xml.arr(obj, "increments", "increment")
             dels = xml.arr(obj, "removes", "remove")
             rps = xml.arr(obj, "replaces", "replace")
+        def clean(arr):
+            return [k for k in arr if k is not None]
         for rp in rps:
-            out_rps+=[self.do_replace(rp)]
+            out_rps+=clean([self.do_replace(rp)])
         for inc in incs:
-            out_incs+=[self.do_inc(inc)]
+            out_incs+=clean([self.do_inc(inc)])
         for rm in dels:
-            out_dels += [self.do_del(rm)]
+            out_dels += clean([self.do_del(rm)])
         return out_rps, out_incs, out_dels
     def find(self, obj):
         for i in range(len(self.datas)):
@@ -149,6 +151,9 @@ class Datas(Base):
         rm = xml.x2j(rm)
         dt = self.data_from_json(rm)
         find = self.find(dt)
+        if find<0:
+            print(f"error do del on {rm}: not found")
+            return None
         assert find>=0
         return self.datas.pop(find)
     def do_inc(self, inc):
@@ -165,6 +170,9 @@ class Datas(Base):
         rpl = self.data_from_json(rpl)
         rpl.date = self.sec2date()
         find = self.find(src)
+        if find<0:
+            print(f"error do replace on {rp}: not found")
+            return None
         assert find>=0
         self.datas[find] = rpl
         return rpl
@@ -295,11 +303,11 @@ class Client(Base):
             self.do_mem()
     def build_msg(self, msg):
         if self.do_json:
-            chats, mems = self.mems.build_json(self.msgs, abs="relation")
+            chats, mems, rls = self.mems.build_json(self.msgs, abs="relation")
             msg = dz.mnn(date=self.mems.sec2date(), content=msg)
             send = dz.jnn(memories=mems, chats=chats, quest=msg)
         else:
-            chats, mems = self.mems.build_xml(self.msgs, abs="relation")
+            chats, mems, rls = self.mems.build_xml(self.msgs, abs="relation")
             msg = xml.xr(date=self.mems.sec2date(), content=msg)
             send = xml.xr(memories=mems, chats=chats, quest=msg)
         return send

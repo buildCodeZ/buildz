@@ -19,12 +19,38 @@ fetch = argx.Fetch(*xf.loads(r"""
     log: logpath
     l: listen
     d: debug
+    o:opens
+    opens:open_ports
     r4c: restart_for_close
     r4x: restart_for_except
     // sid
 }
 (listen,l,d,debug, r4c, r4x)
 """))
+def deal_ports(ports):
+    if ports is None:
+        return None
+    if type(ports)==set:
+        ports = list(ports)
+    if type(ports) not in (list,tuple):
+        ports = [ports]
+    rst = []
+    for port in ports:
+        if type(port)==int:
+            rst.append(port)
+            continue
+        arr = port.split(",")
+        for tmp in arr:
+            tmp=tmp.strip()
+            if tmp.find("-")<0:
+                tmp = int(tmp)
+                rst.append(tmp)
+                continue
+            down,up=tmp.split("-")
+            up = int(up.strip())
+            down=int(down.strip())
+            rst+=list(range(down, up+1))
+    return set(rst)
 def test():
     conf = fetch()
     fp = conf.get("confpath", None)
@@ -42,6 +68,9 @@ def test():
     log.debug(f"conf: {conf}")
     log.info(f"restart4exp: {restart4exp}, restart4close: {restart4close}")
     cert, prv, pwd, cas, sid = dz.g(conf, cert=None, prv=False, password=None, cas=None, sid=None)
+    open_ports = dz.g(conf, open_ports=None)
+    open_ports=deal_ports(open_ports)
+    log.info(f"open_ports: {type(open_ports), len(open_ports) if open_ports is not None else None}")
     if cas:
         if type(cas)!=list:
             cas = cas.split(",")
@@ -64,7 +93,7 @@ def test():
         try:
             if act=='s':
                 # deal_fc = sc.Verify(cert, prv, sid, cas, do_yield=True)
-                sv = ms.MidServer(addr, log=log, deal_fc = deal_fc)
+                sv = ms.MidServer(addr, log=log, deal_fc = deal_fc, open_ports=open_ports)
                 sv()
             elif act == 'c':
                 cl = ms.MidClient(addr, log=log, deal_fc= deal_fc)

@@ -86,13 +86,14 @@ def init_deal_fc(deal_fc, skt):
             deal_out = None
     return skt, deal_out
 class MidServer(Base):
-    def init(self, addr, listen_num=50, log=None, deal_fc = None, deal_yield=False):
+    def init(self, addr, listen_num=50, log=None, deal_fc = None, deal_yield=False, open_ports=None):
         log = (log or logz.simple())("midServer")
         self.deal_fc = deal_fc
         self.deal_yield=deal_yield
         self.log = log
         self.addr = fetch_addr(addr)
         self.server = new_skt(self.addr)
+        self.open_ports = open_ports
         self.log.debug(f"ms try server bind: {self.addr}")
         self.server.bind(self.addr)
         self.log.debug(f"ms done server bind: {self.addr}")
@@ -159,7 +160,7 @@ class MidServer(Base):
                 self.slt.remove(ind)
                 skt.send({"success":True})
                 self.log.debug(f"new dealer: {skt}, {addr}, {listen}")
-                dealer = MidDealer(self.slt, skt, addr, listen, log=self.log)
+                dealer = MidDealer(self.slt, skt, addr, listen, log=self.log, open_ports=self.open_ports)
                 _id = id(skt)
                 self.dealers[_id] = dealer
                 #self.dealers.append(dealer)
@@ -278,7 +279,7 @@ class MidDealer(Base):
         如果是服务端：
             监听端口等待连接，有连接就往客户端发新建连接请求并新建id
     '''
-    def init(self, slt, mid_skt, addr, is_server=False, listen_num=50, max_recv=1024*1024*10, log=None, deal_ping=30, server_type = SERVER.ADDR, mid_srvs = None):
+    def init(self, slt, mid_skt, addr, is_server=False, listen_num=50, max_recv=1024*1024*10, log=None, deal_ping=30, server_type = SERVER.ADDR, mid_srvs = None, open_ports=None):
         self.server_type = server_type
         self.log = (log or logz.simple())("midDealer")
         self.log.debug(f"init dealer: mid_skt: {mid_skt}, addr: {addr}, is_server: {is_server}")
@@ -289,6 +290,9 @@ class MidDealer(Base):
         self.id = 0
         self.listen_num = listen_num
         self.clis = {}
+        self.open_ports=open_ports
+        if self.invalid():
+            return
         self.deal_ping=deal_ping
         self.slt = slt
         self.mid_srvs = mid_srvs
@@ -298,6 +302,14 @@ class MidDealer(Base):
                 self.listen()
             else:
                 self.mid_srvs.listen(addr, self)
+    def invalid(self):
+        if self.server_type != SERVER.ADDR:
+            return False
+        if self.open_ports is not None and type(self.addr) in (list, tuple):
+            port = self.addr[1]
+            if port not in self.open_ports:
+                return True
+        return False
     def listen(self):
         self.server = new_skt(self.addr)
         self.log.debug(f"[TESTZ] middealer try server bind: {self.addr}")

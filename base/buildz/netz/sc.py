@@ -168,10 +168,10 @@ def verify_yield(cert, prv_key, sid=None, cas=None, cls_crypt = cryptz.BlockCryp
     yield [], [CryptCount(remote_encrypt, r_n+1).encrypt, CryptCount(remote_decrypt, remote_reply_n).decrypt]
 
 
-    
 class CryptCount(Base):
     '''
         加解密里加个随机数防止重发
+        接受和发送分成两个独立的随机数
     '''
     N_1 = (1<<32)-1
     N = 1<<32
