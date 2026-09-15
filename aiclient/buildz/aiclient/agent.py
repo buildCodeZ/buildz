@@ -9,7 +9,7 @@ from . import tlx
 
 class SimpleAgent(Base):
     '''
-        封装对openai和ollama接口的调用，封装成一样的接口
+        封装对openai和ollama接口的调用，封装成一样的接口，并封装对方法的使用
     '''
     @staticmethod
     def build_conf(conf, log=None, tools=None):

@@ -5,6 +5,13 @@ from buildz.base import Base
 from buildz import log as logz, dz, xf
 from .toolcall import ToolCall
 class Recv(Base):
+    '''
+        api返回数据，包括字段：
+        role: 回答问题的角色
+        content: 回答的文字
+        think: 思考的文字
+        tool_calls: 调用的技能列表
+    '''
     @staticmethod
     def from_conf(conf):
         role, content, think, tools = dz.g(conf, role=None, content=None, thinkg=None, tool_calls=None)
@@ -39,7 +46,7 @@ class Recv(Base):
         rs = json.dumps(rst)
         return len(rs)//4
     def out(self):
-        rst = dz.mnn(role=self.role, content=self.content, tool_calls=self.out_tool_calls())
+        rst = dz.mnn(role=self.role, content=self.content, tool_calls=self.out_tool_calls(), think=self.think)
         return rst
     def out_json(self):
         rst = dz.mnn(role=self.role, content=self.content, tool_calls=self.out_tool_calls_json())

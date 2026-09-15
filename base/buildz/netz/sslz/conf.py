@@ -18,6 +18,10 @@ conf = xf.loads("""
     after: valid
     valid: params.valid
     l:log
+    inc: ca_ns.includes.dns
+    exc: ca_ns.excludes.dns
+    inc_ip: ca_ns.includes.ips
+    exc_ip: ca_ns.excludes.ips
 }
 (P, need_pwd)
 """)

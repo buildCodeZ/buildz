@@ -1,4 +1,9 @@
-
+'''
+没在使用
+老的封装成通用接口的版本，用的配置文件进行映射
+后续发现写配置文件也成了一个负担，还不如直接代码写，就弃了
+实际还能用，但没在用
+'''
 from buildz.base import Base
 from buildz import log as logz, dz, xf
 import openai 

@@ -5,6 +5,13 @@ from buildz.base import Base
 from buildz import log as logz, dz, xf
 import json
 class Message(Base):
+    '''
+        单条消息，包括：
+        content: 消息内容
+        role: 消息角色，默认'user'也就是用户
+        tool_call_id: 技能调用id，用在api返回说要调用技能，本机调用技能后返回技能调用结果，会带上该id
+            该字段有些别扭，后续openapi等接口可能会进行修改
+    '''
     def clone(self):
         return Message(self.content, self.role, self.tool_call_id)
     def init(self, content, role='user', tool_call_id=None):

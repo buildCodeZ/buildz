@@ -7,6 +7,7 @@ from ._dz.confs import Conf as Confs
 from ._dz.confx import Conf as Confx
 from ._dz.oconf import ObjConf, ObjTypeConf
 from ._dz.check import Check
+from ._dz.lists import Lists, List, ListDeal
 def format_size(n, unit=1024):
     units = ",K,M,G,T,P,E,Z,Y".split(",")
     i=0

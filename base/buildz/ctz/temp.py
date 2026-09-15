@@ -16,7 +16,22 @@ def gpu_temp():
     rst = arr[0].split(":")[-1].strip()
     rst = rst.split(" ")[0]
     return int(rst)
-
+def hdd_temp():
+    s = cmd("cat /sys/class/hwmon/hwmon*/name")
+    arr = s.strip().split("\n")
+    find=-1
+    for i in range(len(arr)):
+        k = arr[i].strip()
+        if k.lower().find("drivetemp")==0:
+            find=i
+            break
+    if find<0:
+        print(f"you could try 'sudo modprobe drivetemp' to enable drivetemp to see hdd temperature")
+        return -1
+    assert find>=0
+    s = cmd(f"cat /sys/class/hwmon/hwmon{find}/temp1_input").strip()
+    v = int(s)*0.001
+    return v
 def disk_temp():
     s = cmd("cat /sys/class/hwmon/hwmon*/name")
     arr = s.strip().split("\n")
@@ -48,6 +63,7 @@ def test():
     print(f"CPU%: {cpu_rate()} %")
     print(f"GPU: {gpu_temp()} C")
     print(f"Disk: {disk_temp()} C")
+    print(f"HDD Disk: {hdd_temp()} C")
 
 pass
 

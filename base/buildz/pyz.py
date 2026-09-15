@@ -7,6 +7,8 @@ import inspect
 def s_exp():
     import traceback
     return traceback.format_exc()
+str_exp=s_exp
+format_exp=s_exp
 class With:
     def __init__(self, fc_in, fc_out, args = False):
         self.fc_in = fc_in

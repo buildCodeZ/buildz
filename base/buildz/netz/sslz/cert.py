@@ -78,6 +78,13 @@ def add_extension_ca(builder, path_length=None):
         critical=True
     )
     return builder
+def add_extension_no_ca(builder):
+    '添加非ca信息（说明当前证书不是ca）'
+    builder = builder.add_extension(
+        x509.BasicConstraints(ca=False, path_length=None),
+        critical=True
+    )
+    return builder
 def add_extensions(builder, conf = {}):
     "添加额外信息"
     dns = xf.g(conf, dns = [])
@@ -87,6 +94,8 @@ def add_extensions(builder, conf = {}):
     conf_ns = xf.g(conf, ca_ns=None)
     if ca:
         builder = add_extension_ca(builder, ca_length)
+    else:
+        builder = add_extension_no_ca(builder)
     if ca and conf_ns:
         includes, excludes = xf.g(conf_ns, includes={}, excludes={})
         subs = []
@@ -99,6 +108,7 @@ def add_extensions(builder, conf = {}):
             dns = [x509.DNSName(k) for k in dns]
             ips = [ipaddress.ip_network(k) for k in ips]
             subs.append(dns+ips)
+        subs = [k if len(k)>0 else None for k in subs]
         builder = builder.add_extension(
                 x509.NameConstraints(
                     permitted_subtrees=subs[0],
@@ -269,7 +279,7 @@ def verify_certs(certs, cas = None, verify_time=True):
     if issuer!=cert.subject:
         certs.append(root[issuer])
     for i in range(len(certs)-1):
-        #print(f"verify[{i}]")
+        print(f"verify[{i}]")
         curr = certs[i]
         up = certs[i+1]
         err = verify_cert(curr, up.public_key(), verify_time, up.signature_hash_algorithm, depth=i,sub_commons=sub_commons)
@@ -313,15 +323,17 @@ def verify_cert(cert, public_key=None, verify_time=True, hash_alg = None, csr=Fa
         return f"sign verify error: {(exp,)}"
     try:
         bc_ext = cert.extensions.get_extension_for_class(x509.BasicConstraints)
-    except x509.ExtensionNotFound:
+    except x509.ExtensionNotFound as fexp:
+        print(f"extension not found: {fexp}")
         bc_ext=None
-    except Exception:
+    except Exception as exp:
+        print(f"exp in get_extension :{exp}")
         bc_ext=None
     if not bc_ext and depth>0:
         return f"ca error: no ca info in depth {depth}"
-    if bc_ext:
-        if not bc_ext.value.ca and depth>0:
-            return f"ca error: not a ca cert in depth {depth}"
+    if bc_ext and not bc_ext.value.ca and depth>0:
+        return f"ca error: not a ca cert in depth {depth}"
+    if bc_ext and bc_ext.value.ca:
         path_length = bc_ext.value.path_length
         if path_length is not None and depth>(path_length+1):
             return f"ca path_length error: cert in depth {depth} can't sign such depth certs with path_length: {path_length}"
@@ -334,6 +346,7 @@ def verify_cert(cert, public_key=None, verify_time=True, hash_alg = None, csr=Fa
             includes, excludes = [],[]
             tmps = []
             for subs in [nc.permitted_subtrees, nc.excluded_subtrees]:
+                subs = subs or []
                 tmp = []
                 for dns in subs:
                     if isinstance(dns, x509.DNSName):
@@ -442,6 +455,7 @@ def des_extensions(cert):
             tmps = []
             for subs in [nc.permitted_subtrees, nc.excluded_subtrees]:
                 tmp = {'dns':[], 'ips':[]}
+                subs = subs or []
                 for dns in subs:
                     if isinstance(dns, x509.DNSName):
                         tmp['dns'].append(str(dns.value))

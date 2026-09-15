@@ -5,7 +5,17 @@ from .message import Message
 from typing import List, Dict, Any, Optional
 class Send(Base):
     '''
-       发送报文的结构化对象体 
+       发送报文的结构化对象体
+       发送的数据包括模型model，发送消息列表messages，发送工具列表tools，以及其他参数
+       该对象里的数据是自定义的统一数据格式，调用接口的时候还需要转换成接口实际数据格式
+       具体如下:
+       messages:
+       tools: 
+       tool_choice: 是否调用工具，默认auto自动选择，其他可选项待测试
+       model: 模型名称
+       think: 是否思考，bool，默认True（设置不一定有用，比如ollama该字段基本没用，openapi还有用）
+       stop: 结束标记
+       max_tokens: 最多的token数（不一定有效，llama有效，ollama无效）
        messages: Message的列表，默认空
        tools: 
     '''

@@ -18,6 +18,10 @@ class Data(Base):
         for k in self._data_ks:
             if k in kwargs:
                 setattr(self, k, kwargs[k])
+        #for k,v in kv.items():
+        #    setattr(self, k, v)
+        #self._data_ks = list(kv.keys())
+        #self._match_ks = list(self._data_ks)
     def out(self, abs=None):
         if abs is None:
             abs = set()

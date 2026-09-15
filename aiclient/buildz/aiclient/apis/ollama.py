@@ -15,6 +15,7 @@ class OllamaApi(Api):
     def send_dict(self, send:dict)->tuple[dict, dict]:
         if 'tool_choice' in send:
             del send['tool_choice']
+        print(f"[TESTZ] ollama send: {send}")
         rsp = self.client.chat(**send)
         usage =dz.maps(
             send = rsp.prompt_eval_count,

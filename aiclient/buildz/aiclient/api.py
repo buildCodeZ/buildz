@@ -3,6 +3,10 @@ from buildz.base import Base
 from buildz import xf, fz, dz
 from .struct import *
 from buildz import log as logz
+'''
+    只是一个接口，说明实现该接口需要实现的方法
+    实际的api调用在apis文件夹中
+'''
 class Api(Base):
     def init(self, log=None):
         self.log = log or logz.simple()

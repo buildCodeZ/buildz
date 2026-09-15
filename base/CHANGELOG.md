@@ -22,3 +22,11 @@ v 0.9.51
 midsrv增加端口限制，可以控制哪些端口可以开放
 增加buildz.netz.tcp.slt代码的报错处理
 buildz.ctz.temp增加CPU使用率展示
+
+## 2026/09/15
+v 0.9.52
+修改_dz.lists，增加更简单的List类
+修改ctz.temp，增加hdd磁盘温度查询
+修改netz.sslz.cert，不管是否是ca，都加上BasicConstraints扩展
+    修改NameConstraints扩展添加逻辑，***subtrees添加的时候，如果列表为空，则设置为None
+重构urlget代码

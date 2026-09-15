@@ -7,6 +7,12 @@ import json
 class ToolCall(Base):
     '''
         工具调用对象转化的结构化对象，解析其他库调用模型后获取的工具调用对象，转换成本工具调用对象，方便不同模型库的调用处理
+        id: 技能调用id
+        fn: 调用的方法名
+        args: 调用的方法参数（dict）
+        role：角色
+        用来传给实际方法管理器，方法管理器返回调用结果(字符串)
+        对象有调用方法管理器的方法msg，会返回封装好的Message对象
     '''
     def str(self):
         rst = dz.mapsnn(id=self.id, fn=self.fn, args=self.args, type="tool_call")
